@@ -1,0 +1,24 @@
+{
+  "name": "s-ide-py",
+  "version": "0.2.1",
+  "description": "S-IDE Python core",
+  "ignore": [
+    "dist",
+    "logs",
+    ".nodegraph.json"
+  ],
+  "run": {
+    "gui": "python gui/app.py",
+    "test": "python test/test_suite.py",
+    "self-update": "python update.py",
+    "build": "python main.py build . --kind tarball",
+    "clean": "python main.py build . --no-minify --kind tarball",
+    "server": "python gui/server.py"
+  },
+  "versions": {
+    "dir": "versions",
+    "compress": true,
+    "keep": 20
+  },
+  "meta": {}
+}

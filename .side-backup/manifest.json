@@ -1,0 +1,66 @@
+{
+  "created": "2026-03-18T09:47:47.673112+00:00",
+  "root": "/home/n0v4p4x/DevOps/s-ide-py",
+  "files": [
+    {
+      "rel": "main.py",
+      "backup": "/home/n0v4p4x/DevOps/s-ide-py/.side-backup/main.py"
+    },
+    {
+      "rel": "update.py",
+      "backup": "/home/n0v4p4x/DevOps/s-ide-py/.side-backup/update.py"
+    },
+    {
+      "rel": "parser/doc_check.py",
+      "backup": "/home/n0v4p4x/DevOps/s-ide-py/.side-backup/parser/doc_check.py"
+    },
+    {
+      "rel": "parser/layout.py",
+      "backup": "/home/n0v4p4x/DevOps/s-ide-py/.side-backup/parser/layout.py"
+    },
+    {
+      "rel": "parser/project_config.py",
+      "backup": "/home/n0v4p4x/DevOps/s-ide-py/.side-backup/parser/project_config.py"
+    },
+    {
+      "rel": "parser/resolve_edges.py",
+      "backup": "/home/n0v4p4x/DevOps/s-ide-py/.side-backup/parser/resolve_edges.py"
+    },
+    {
+      "rel": "parser/walker.py",
+      "backup": "/home/n0v4p4x/DevOps/s-ide-py/.side-backup/parser/walker.py"
+    },
+    {
+      "rel": "parser/parsers/js_parser.py",
+      "backup": "/home/n0v4p4x/DevOps/s-ide-py/.side-backup/parser/parsers/js_parser.py"
+    },
+    {
+      "rel": "parser/parsers/json_parser.py",
+      "backup": "/home/n0v4p4x/DevOps/s-ide-py/.side-backup/parser/parsers/json_parser.py"
+    },
+    {
+      "rel": "parser/parsers/python_parser.py",
+      "backup": "/home/n0v4p4x/DevOps/s-ide-py/.side-backup/parser/parsers/python_parser.py"
+    },
+    {
+      "rel": "parser/parsers/shell_parser.py",
+      "backup": "/home/n0v4p4x/DevOps/s-ide-py/.side-backup/parser/parsers/shell_parser.py"
+    },
+    {
+      "rel": "parser/parsers/toml_yaml_parser.py",
+      "backup": "/home/n0v4p4x/DevOps/s-ide-py/.side-backup/parser/parsers/toml_yaml_parser.py"
+    },
+    {
+      "rel": "version/version_manager.py",
+      "backup": "/home/n0v4p4x/DevOps/s-ide-py/.side-backup/version/version_manager.py"
+    },
+    {
+      "rel": "gui/log.py",
+      "backup": "/home/n0v4p4x/DevOps/s-ide-py/.side-backup/gui/log.py"
+    },
+    {
+      "rel": "gui/server.py",
+      "backup": "/home/n0v4p4x/DevOps/s-ide-py/.side-backup/gui/server.py"
+    }
+  ]
+}

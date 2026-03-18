@@ -26,7 +26,9 @@ Dependencies: tkinter (stdlib), nothing else for the GUI itself.
 from __future__ import annotations
 import os
 import sys
+import re
 import json
+import subprocess
 import math
 import threading
 import datetime
@@ -34,7 +36,7 @@ import time
 import tkinter as tk
 import tkinter.font as tkfont
 from tkinter import ttk, filedialog, messagebox
-from typing import Optional
+from typing import Optional, Any, Union, List, Dict, Set, Tuple
 from dataclasses import dataclass, field
 
 # ── Path bootstrap ────────────────────────────────────────────────────────────
@@ -49,7 +51,44 @@ for _p in (_ROOT_DIR, _GUI_DIR):
         sys.path.insert(0, _p)
 
 # Now safe to import anything from the s-ide-py package tree
-from gui.log import get_logger, get_log_path, recent_lines, clear_ring
+# Import workarounds to help some IDEs resolve local packages while maintaining script compatibility.
+try:
+    from .log import get_logger, get_log_path, recent_lines, clear_ring
+    from .editor import EditorWindow
+except (ImportError, ValueError):
+    from gui.log import get_logger, get_log_path, recent_lines, clear_ring
+    from gui.editor import EditorWindow
+
+try:
+    from ..monitor.perf import MetricsWatcher, ParseTimer, ProcessMonitor
+    from ..monitor.instrumenter import rollback_available, rollback, Instrumenter, InstrumentOptions
+    from ..ai.client import OllamaClient, ChatMessage as CM
+    from ..ai.tools import TOOLS, dispatch_tool
+    from ..ai.context import build_context, build_system_message
+    from ..process.process_manager import ProcessManager
+    from ..build.sandbox import SandboxRun, SandboxOptions
+    from ..parser.project_parser import parse_project
+    from ..version.version_manager import (
+        archive_version, apply_update, list_versions, compress_loose as compress_versions
+    )
+    from ..build.packager import package_project, PackageOptions
+    from ..parser.project_config import load_project_config, save_project_config, bump_version
+    from ..build.cleaner import clean_project, CleanOptions
+except (ImportError, ValueError):
+    from monitor.perf import MetricsWatcher, ParseTimer, ProcessMonitor
+    from monitor.instrumenter import rollback_available, rollback, Instrumenter, InstrumentOptions
+    from ai.client import OllamaClient, ChatMessage as CM
+    from ai.tools import TOOLS, dispatch_tool
+    from ai.context import build_context, build_system_message
+    from process.process_manager import ProcessManager
+    from build.sandbox import SandboxRun, SandboxOptions
+    from parser.project_parser import parse_project
+    from version.version_manager import (
+        archive_version, apply_update, list_versions, compress_loose as compress_versions
+    )
+    from build.packager import package_project, PackageOptions
+    from parser.project_config import load_project_config, save_project_config, bump_version
+    from build.cleaner import clean_project, CleanOptions
 
 
 # ── Colour palette ────────────────────────────────────────────────────────────
@@ -153,7 +192,9 @@ def edge_style(etype: str):
     return EDGE_STYLES.get(etype, EDGE_DEFAULT)
 
 
-def node_height(node: dict) -> int:
+def node_height(node: dict | None) -> int:
+    if not node:
+        return NH_HEADER + NH_PAD
     """Calculate the canvas height of a node card in world units."""
     h = NH_HEADER + NH_PAD
     if node.get("tags"):
@@ -203,8 +244,8 @@ class SIDE_App(tk.Tk):
         # ── State ─────────────────────────────────────────────────────────────
         self.graph: Optional[dict] = None           # current ProjectGraph dict
         self.positions: dict       = {}             # node_id → (x, y)
-        self.projects:  list       = []             # [{name, path}]
-        self.processes: dict       = {}             # proc_id → ManagedProcess
+        self.projects:  List[Dict[str, Any]] = []             # [{name, path}]
+        self.processes: dict[str, Any] = {}         # proc_id → ManagedProcess
 
         # Viewport
         self.vp_x = 0.0
@@ -223,111 +264,174 @@ class SIDE_App(tk.Tk):
         self.search_q    = ""
 
         # Drag/pan state
-        self._drag       = None   # {id, ox, oy, sx, sy}
-        self._pan        = None   # {sx, sy, ox, oy}
+        self._drag: Optional[dict] = None   # {id, ox, oy, sx, sy}
+        self._pan:  Optional[dict] = None   # {sx, sy, ox, oy}
 
-        # ── Render cache — invalidated when graph/filter/positions change ────
-        self._cache_nodes: list | None = None   # cached _vis_nodes() result
-        self._cache_edges: list | None = None   # cached _vis_edges() result
-        self._cache_node_map: dict | None = None  # id → node dict
-        # Hit-test bounding boxes: {node_id: (x0,y0,x1,y1)} in screen coords
-        # Rebuilt after pan/zoom/drag; avoids recomputing on every motion event
-        self._hit_boxes: dict = {}
-        # Pending redraw — coalesces multiple rapid requests into one frame
-        self._redraw_pending: bool = False
-        self._redraw_after_id = None
-        # Resize debounce
-        self._resize_after_id = None
-        # Render timing — kept as a ring for the perf display
-        self._render_times: list = []   # [(label, ms), ...] last 60 frames
-
-        # Process manager (lazy import to keep startup fast)
-        self._proc_mgr   = None
-        # Whether the currently-loaded project is S-IDE itself
-        self._is_self      = False
-        # Editor windows keyed by filepath
-        self._editors: dict = {}
         # AI panel state
-        self._ai_model:      str  = "llama3.2"
-        self._ai_messages:   list = []   # [ChatMessage, ...]
-        self._ai_available:  bool = False
-        # MetricsWatcher — polls .side-metrics.json for live timing overlays
-        self._metrics_watcher = None
-        # Cache: rel_path → file metrics dict (refreshed from watcher)
+        self._ai_model: str = "llama3.2"
+        self._ai_input_var  = tk.StringVar()
+        self._ai_status_var = tk.StringVar()
+        self._ai_model_var  = tk.StringVar(value="llama3.2")
+        self._ai_messages: list[CM] = []
+        self._ai_available: bool = False
+        self._ai_state: dict = {
+            'in_thought': False, 'in_code': False, 'in_bold': False, 'buffer': ""
+        }
+        self._ai_conv: Optional[tk.Text] = None
+        self._ai_input: Optional[tk.Entry] = None
+
+        # Plan / Playground
+        self._plan_text: Optional[tk.Text] = None
+        self._play_text: Optional[tk.Text] = None
+        self._play_out: Optional[tk.Text] = None
+
+        # Terminal
+        self._term_tab: Optional[tk.Frame] = None
+        self._term_out: Optional[tk.Text] = None
+        self._term_input: Optional[tk.Entry] = None
+        self._term_input_var = tk.StringVar()
+        self._term_history: List[str] = []
+        self._term_history_idx: int = -1
+        self._term_current_draft: str = ""
+
+        # Bottom Panel & Tabs
+        self._main_pw: Optional[tk.PanedWindow] = None
+        self._main_paned: Optional[tk.PanedWindow] = None
+        self._bottom_wrapper: Optional[tk.Frame] = None
+        self._bottom_body: Optional[tk.Frame] = None
+        self._bottom_expanded: bool = True
+        self._bottom_notebook: Optional[ttk.Notebook] = None
+        self._saved_bottom_height: int = 250
+        self._tabs: dict[str, dict] = {}
+        self._current_tab: Optional[str] = None
+
+        # Sidebar & Panels
+        self._sidebar: Optional[tk.Frame] = None
+        self._proj_tab: Optional[tk.Frame] = None
+        self._plan_tab: Optional[tk.Frame] = None
+        self._play_tab: Optional[tk.Frame] = None
+        self._editor_tab: Optional[tk.Frame] = None
+        self._ai_tab: Optional[tk.Frame] = None
+        self._terminal_tab: Optional[tk.Frame] = None
+        self._proj_list_frame: Optional[tk.Frame] = None
+        
+        self._inspector_width: int = 300
+
+        # Canvas & Inspector
+        self._canvas: Optional[tk.Canvas] = None
+        self._minimap: Optional[tk.Canvas] = None
+        self._inspector: Optional[tk.Frame] = None
+        self._inspector_open: bool = False
+        self._insp_inner: Optional[tk.Frame] = None
+        self._zw_pct: Optional[tk.Label] = None
+
+        # UI elements (buttons/vars)
+        self._lbl_project: Optional[tk.Label] = None
+        self._doc_badge: Optional[tk.Label] = None
+        self._doc_badge_var = tk.StringVar(value="")
+        self._cat_btns: dict[str, tk.Label] = {}
+        self._ext_btn: Optional[tk.Label] = None
+        self._zoom_var = tk.StringVar(value="100%")
+        self._search_var = tk.StringVar()
+        self._ai_btn: Optional[tk.Label] = None
+        self._metrics_btn: Optional[tk.Label] = None
+        self._help_btn: Optional[tk.Label] = None
+        self._settings_btn: Optional[tk.Label] = None
+        self._run_btn: Optional[tk.Label] = None
+        self._build_btn: Optional[tk.Label] = None
+        self._clean_btn: Optional[tk.Label] = None
+        self._package_btn: Optional[tk.Label] = None
+        self._history_btn: Optional[tk.Label] = None
+        self._versions_btn: Optional[tk.Label] = None
+
+        # Sidebar Panels
+        self._run_chevron: Optional[tk.Label] = None
+        self._run_body: Optional[tk.Frame] = None
+        self._run_scripts_frame: Optional[tk.Frame] = None
+        self._run_open: bool = False
+        self._ver_chevron: Optional[tk.Label] = None
+        self._ver_body: Optional[tk.Frame] = None
+        self._ver_list_frame: Optional[tk.Frame] = None
+        self._ver_open: bool = False
+        self._bump_var = tk.StringVar(value="patch")
+
+        # Topbar / Statusbar widgets
+        self._conn_dot: Optional[tk.Frame] = None
+        self._sb_langs_frame: Optional[tk.Frame] = None
+        self._sb_parsed_var = tk.StringVar(value="")
+        self._metrics_badge: Optional[tk.Label] = None
+        self._metrics_badge_var = tk.StringVar(value="")
+        self._self_badge: Optional[tk.Label] = None
+        self._self_badge_var = tk.StringVar(value="")
+        self._proc_badge: Optional[tk.Label] = None
+        self._proc_badge_var = tk.StringVar(value="")
+        self._proc_count_var = tk.StringVar(value="0")
+
+        # Watchers & Systems
+        self._metrics_watcher: Optional[MetricsWatcher] = None
+        self._proc_mgr: Optional[ProcessManager] = None
+        self._proc_monitor: Optional[ProcessMonitor] = None
+        self._sandboxes: dict[str, SandboxRun] = {}
+        self._proc_win: Optional[tk.Toplevel] = None
+        self._proc_log_widgets: dict[str, tk.Text] = {}
+        self._proc_cmd_var = tk.StringVar()
+        self._proc_cwd_var = tk.StringVar()
+        self.project_root: str = ""
+        self._proc_list_canvas: Optional[tk.Canvas] = None
+        self._proc_list_inner: Optional[tk.Frame] = None
+        self._warnings_index: Dict[str, List[Any]] = {}
+        self._log_win: Optional[tk.Toplevel] = None
+        self._log_text: Optional[tk.Text] = None
+        self._editors: dict[str, EditorWindow] = {}
         self._file_metrics: dict = {}
 
-        # ── UI attributes (formalized for linting) ───────────────────────────
-        self._main_pw = None
-        self._main_paned  = None
-        self._bottom_notebook = None
-        self._bottom_wrapper = None
-        self._bottom_body = None
-        self._bottom_expanded = True
-        self._saved_bottom_height = 250
+        # Build Panel
+        self._build_win: Optional[tk.Toplevel] = None
+        self._build_log_text: Optional[tk.Text] = None
+        self._build_kind_var = tk.StringVar(value="tarball")
+        self._build_plat_var = tk.StringVar(value="auto")
+        self._build_bump_var = tk.StringVar(value="none")
+        self._build_minify_var = tk.BooleanVar(value=True)
+        self._build_clean_var = tk.BooleanVar(value=True)
+        self._build_tests_var = tk.BooleanVar(value=False)
+        self._perf_frame: Optional[tk.Frame] = None
+        self._render_timing_active: bool = False
+        self._render_timing_frame: Optional[tk.Frame] = None
+        self._render_timing_after_id: Optional[str] = None
         
-        self._proj_tab    = None
-        self._plan_tab    = None
-        self._play_tab    = None
-        self._editor_tab  = None
-        self._ai_tab      = None
-        self._terminal_tab= None
+        # Loading Overlay
+        self._loading_win: Optional[tk.Toplevel] = None
+        self._loading_progress: int = 0
+        self._loading_msg: Optional[tk.Label] = None
+        self._loading_fill: Optional[tk.Frame] = None
+        self._loading_after_id: Optional[str] = None
         
-        self._sidebar     = None
-        self._inspector   = None
-        self._canvas      = None
-        self._proj_list_frame = None
+        # IDs for after()
+        self._poll_watcher_id: Optional[str] = None
+        self._side_metrics_after_id: Optional[str] = None
+        self._redraw_after_id: Optional[str] = None
+        self._resize_after_id: Optional[str] = None
+
+        # Render cache
+        self._cache_nodes: list | None = None
+        self._cache_edges: list | None = None
+        self._cache_node_map: dict | None = None
+        self._hit_boxes: dict = {}
+        self._redraw_pending: bool = False
+        self._render_times: list = []
+
+        self._is_self: bool = False
+        self._sidebar_scroll: Optional[tk.Scrollbar] = None
+        self._sidebar_canvas: Optional[tk.Canvas] = None
+        self._sidebar_inner:  Optional[tk.Frame] = None
         
-        self._inspector_width = 300
-        
-        # AI/Plan/Playground vars
-        self._ai_input_var = tk.StringVar()
-        self._ai_status_var= tk.StringVar()
-        self._ai_model_var = tk.StringVar()
-        self._ai_model     = 'llama3.2'
-        self._ai_messages  = []
-        self._ai_available = False
-        self._ai_state     = {'in_thought': False, 'in_code': False, 'in_bold': False, 'buffer': ""}
-        self._ai_conv      = None
-        self._plan_text    = None
-        self._play_text    = None
-        self._play_out     = None
-        
-        # Terminal
-        self._term_output  = None
-        self._term_input   = None
-        self._ai_input     = None
-        self._term_input_var = tk.StringVar()
-        self._term_input_widget = None
-        self._term_history = []
-        self._term_history_idx = -1
-        
-        # UI Elements
-        self._lbl_project    = None
-        self._doc_badge_var  = tk.StringVar()
-        self._ai_btn         = None
-        self._metrics_btn    = None
-        self._help_btn       = None
-        self._settings_btn   = None
-        self._run_btn        = None
-        self._build_btn      = None
-        self._clean_btn      = None
-        self._package_btn    = None
-        self._history_btn    = None
-        self._versions_btn   = None
-        
-        # Timers/IDs
-        self._redraw_after_id = None
-        self._resize_after_id = None
-        self._side_metrics_after_id = None
-        self._poll_watcher_id = None
-        self._search_var = tk.StringVar()
-        
-        # Properties/State helpers
-        self.project_root = os.getcwd() # Fallback
-        
-        self._sidebar_scroll = None
-        self._sidebar_canvas = None
-        self._sidebar_inner  = None
+        # State used by various panels/methods
+        self.project_root: str = ""
+        self._proc_list_canvas: Optional[tk.Canvas] = None
+        self._proc_list_inner: Optional[tk.Frame] = None
+        self._warnings_index: dict[str, list] = {}
+        self._log_path: str = ""
+        self._log_file: str = ""
         
         self._load_terminal_history()
 
@@ -339,6 +443,7 @@ class SIDE_App(tk.Tk):
         # Clean shutdown — stop all processes and monitor on window close
         self.protocol("WM_DELETE_WINDOW", self._on_close)
 
+
     def _start_metrics_watcher(self, project_root: str) -> None:
         """Start (or restart) MetricsWatcher for the loaded project."""
         # Stop existing watcher
@@ -347,10 +452,12 @@ class SIDE_App(tk.Tk):
                 self._metrics_watcher.stop()
             except Exception:
                 pass
-        from monitor.perf import MetricsWatcher
-        self._metrics_watcher = MetricsWatcher(project_root)
-        self._metrics_watcher.start()
-        self._log.debug("MetricsWatcher started for %s", project_root)
+        mw = MetricsWatcher(project_root)
+        self._metrics_watcher = mw
+        if mw:
+            mw.start()
+        if self._log:
+            self._log.debug("MetricsWatcher started for %s", project_root)
         # Schedule periodic refresh of the metrics cache
         self._schedule_metrics_refresh()
 
@@ -363,29 +470,31 @@ class SIDE_App(tk.Tk):
 
     def _refresh_file_metrics(self) -> None:
         """Pull latest file metrics from the watcher into _file_metrics."""
-        if not self._metrics_watcher:
+        mw = self._metrics_watcher
+        if not mw:
             return
-        new_metrics = self._metrics_watcher.get_file_metrics()
+        new_metrics = mw.get_file_metrics()
         changed = (new_metrics != self._file_metrics)
         self._file_metrics = new_metrics
         # Only trigger a redraw if metrics actually changed
         if changed and self.graph:
             self._schedule_redraw()
 
-    def _node_metrics(self, node_path: str) -> dict | None:
-        """Return timing metrics for a node path, or None if unavailable."""
+    def _node_metrics(self, node_path: str) -> Dict[str, Any]:
+        """Return timing metrics for a node path, or empty dict if unavailable."""
         if not self._file_metrics:
-            return None
+            return {}
         # Try exact match first, then basename match
         m = self._file_metrics.get(node_path)
-        if m:
+        if m and isinstance(m, dict):
             return m
         # Normalise separators for cross-platform
         norm = node_path.replace("\\", "/")
         for key, val in self._file_metrics.items():
+            if not isinstance(key, str): continue
             if key.replace("\\", "/").endswith(norm) or norm.endswith(key.replace("\\", "/")):
-                return val
-        return None
+                return val if isinstance(val, dict) else {}
+        return {}
 
     # ── Editor ───────────────────────────────────────────────────────────────
 
@@ -404,8 +513,7 @@ class SIDE_App(tk.Tk):
                     existing.scroll_to_line(line)
                 return
             except Exception:
-                del self._editors[filepath]
-        from gui.editor import EditorWindow
+                self._editors.pop(filepath, None)
         ed = EditorWindow(
             master=self, filepath=filepath,
             project_root=self.graph['meta']['root'] if self.graph else '',
@@ -509,9 +617,11 @@ class SIDE_App(tk.Tk):
         self._ai_input = tk.Entry(inp_f, textvariable=self._ai_input_var,
                         bg=P['bg3'], fg=P['t0'], insertbackground=P['green'],
                         bd=0, font=(self._mono_xs.actual()['family'], 11), width=50)
-        self._ai_input.pack(side='left', fill='x', expand=True, ipady=5, padx=(0, 8))
-        self._ai_input.bind('<Return>', lambda _: self._ai_send())
-        self._ai_input.focus_set()
+        if self._ai_input:
+            self._ai_input.pack(side='left', fill='x', expand=True, ipady=5, padx=(0, 8))
+            self._ai_input.bind('<Return>', lambda _: self._ai_send())
+            self._ai_input.focus_set()
+        
         send_btn = tk.Label(inp_f, text='Send', bg=P['green2'], fg=P['green'],
                              font=self._mono_s, padx=10, pady=5, cursor='hand2',
                              highlightbackground=P['green'], highlightthickness=1)
@@ -526,19 +636,19 @@ class SIDE_App(tk.Tk):
                                 font=(self._mono_xs.actual()['family'], 10),
                                 yscrollcommand=csb.set, bd=0, wrap='word',
                                 state='disabled', padx=14, pady=8)
-        self._ai_conv.pack(fill='both', expand=True)
-        csb.config(command=self._ai_conv.yview)
-        self._ai_conv.tag_config('user',    foreground=P['cyan'])
-        self._ai_conv.tag_config('ai',      foreground=P['t0'])
-        self._ai_conv.tag_config('tool',    foreground=P['amber'])
-        self._ai_conv.tag_config('error',   foreground=P['red'])
-        self._ai_conv.tag_config('dim',     foreground=P['t2'])
-        self._ai_conv.tag_config('thought', font=(self._mono_xs.actual()['family'], 9, 'italic'), foreground=P['t2'])
-        self._ai_conv.tag_config('bold',    font=(self._mono_xs.actual()['family'], 10, 'bold'))
-        self._ai_conv.tag_config('code',    font=(self._mono_xs.actual()['family'], 10), background=P['bg3'])
-        self._ai_conv.tag_config('block',   font=(self._mono_xs.actual()['family'], 10), background=P['bg1'])
+        if self._ai_conv:
+            self._ai_conv.pack(fill='both', expand=True)
+            csb.config(command=self._ai_conv.yview)
+            self._ai_conv.tag_config('user',    foreground=P['cyan'])
+            self._ai_conv.tag_config('ai',      foreground=P['t0'])
+            self._ai_conv.tag_config('tool',    foreground=P['amber'])
+            self._ai_conv.tag_config('error',   foreground=P['red'])
+            self._ai_conv.tag_config('dim',     foreground=P['t2'])
+            self._ai_conv.tag_config('thought', font=(self._mono_xs.actual()['family'], 9, 'italic'), foreground=P['t2'])
+            self._ai_conv.tag_config('bold',    font=(self._mono_xs.actual()['family'], 10, 'bold'))
+            self._ai_conv.tag_config('code',    font=(self._mono_xs.actual()['family'], 10), background=P['bg3'])
+            self._ai_conv.tag_config('block',   font=(self._mono_xs.actual()['family'], 10), background=P['bg1'])
         self._ai_conv.tag_config('exec',    foreground=P['cyan'], font=(self._mono_xs.actual()['family'], 9, 'italic'))
-        import threading
         threading.Thread(target=lambda: self._ai_check_ollama(model_combo),
                          daemon=True).start()
         self._ai_append('Ask anything about the project. I can read files, search',
@@ -547,7 +657,6 @@ class SIDE_App(tk.Tk):
 
     def _ai_check_ollama(self, model_combo):
         try:
-            from ai.client import OllamaClient
             client = OllamaClient()
             if client.is_available():
                 models = client.list_models()
@@ -558,13 +667,15 @@ class SIDE_App(tk.Tk):
                     if models:
                         model_combo.set(models[0])
                         self._ai_model = models[0]
-                    self._ai_btn.config(fg=P['green'])
+                    if self._ai_btn:
+                        self._ai_btn.config(fg=P['green'])
                 self.after(0, _ok)
             else:
-                self.after(0, lambda: (
-                    self._ai_status_var.set('Ollama not running  (ollama serve)'),
-                    self._ai_btn.config(fg=P['red']),
-                ))
+                def _fail():
+                    self._ai_status_var.set('Ollama not running  (ollama serve)')
+                    if self._ai_btn:
+                        self._ai_btn.config(fg=P['red'])
+                self.after(0, _fail)
         except Exception as e:
             self.after(0, lambda: self._ai_status_var.set(f'Error: {e}'))
 
@@ -589,8 +700,8 @@ class SIDE_App(tk.Tk):
             try:
                 w.config(state='normal')
                 w.delete('1.0', 'end')
+                self.after(0, lambda: self._ai_append('Conversation cleared.\n\n', 'dim'))
                 w.config(state='disabled')
-                self._ai_append('Conversation cleared.\n\n', 'dim')
             except Exception:
                 pass
 
@@ -607,9 +718,6 @@ class SIDE_App(tk.Tk):
         self._ai_append(f'\nYou: {prompt}\n', 'user')
         self._ai_reset_stream_state()
         
-        from ai.client import OllamaClient, ChatMessage as CM
-        from ai.tools import TOOLS, dispatch_tool
-        from ai.context import build_context, build_system_message
         focused = None
         if self.sel_nodes:
             nid = next(iter(self.sel_nodes))
@@ -640,7 +748,7 @@ class SIDE_App(tk.Tk):
                 )
                 self._ai_messages.append(CM(role='assistant', content=res.content))
                 # Auto-refresh plan if it changed
-                self.after(0, self._refresh_plan)
+                self.after(0, lambda: self._refresh_plan())
             except Exception as e:
                 self.after(0, lambda: self._ai_append(f'\nError: {e}\n', 'error'))
 
@@ -655,7 +763,6 @@ class SIDE_App(tk.Tk):
         except: pass
 
         self._ai_state['buffer'] += text
-        import re
         
         while True:
             buf = str(self._ai_state['buffer'])
@@ -667,14 +774,14 @@ class SIDE_App(tk.Tk):
                 match_c = re.search(r'```', buf)
                 
                 if match_t and (not match_c or match_t.start() < match_c.start()):
-                    pre = buf[:match_t.start()]
-                    if pre: self._ai_append_md_flat(pre)
+                    pre = buf[0:match_t.start()]
+                    if pre: self._ai_append_md_flat(str(pre))
                     self._ai_append("\n[THOUGHT: ", 'thought')
                     self._ai_state['in_thought'] = True
                     self._ai_state['buffer'] = buf[match_t.end():]
                     continue
                 elif match_c:
-                    pre = buf[:match_c.start()]
+                    pre = buf[0:match_c.start()]
                     if pre: self._ai_append_md_flat(pre)
                     self._ai_state['in_code'] = True
                     self._ai_append("\n", 'ai')
@@ -739,7 +846,6 @@ class SIDE_App(tk.Tk):
     def _ai_append_md_flat(self, text):
         """Append text while handling bold and inline code styling."""
         # This is a basic regex-free parser for streaming-friendly growth
-        import re
         parts = re.split(r'(\*\*|`)', text)
         current_tag = 'ai'
         
@@ -897,7 +1003,8 @@ class SIDE_App(tk.Tk):
                                   highlightbackground=P["green2"],
                                   highlightthickness=1)
         self._ext_btn.grid(row=0, column=col[0], padx=2, pady=8)
-        self._ext_btn.bind("<Button-1>", self._toggle_ext)
+        if self._ext_btn:
+            self._ext_btn.bind("<Button-1>", self._toggle_ext)
         col[0] += 1
 
         # FIT
@@ -1036,7 +1143,7 @@ class SIDE_App(tk.Tk):
         self._select_bottom_tab("projects")
 
     def _select_bottom_tab(self, name):
-        if self._current_tab:
+        if self._current_tab is not None and self._current_tab in self._tabs:
             prev = self._tabs[self._current_tab]
             prev["btn"].config(bg=P["bg2"], fg=P["t2"])
             prev["frame"].pack_forget()
@@ -1069,8 +1176,6 @@ class SIDE_App(tk.Tk):
     # ── Terminal panel ────────────────────────────────────────────────────────
 
     def _build_terminal_panel(self, parent):
-        import subprocess, threading
-
         # Input (pack bottom first)
         tk.Frame(parent, bg=P['line'], height=1).pack(fill='x', side='bottom')
         inp_f = tk.Frame(parent, bg=P['bg2'])
@@ -1161,7 +1266,6 @@ class SIDE_App(tk.Tk):
         except Exception: pass
 
     def _load_terminal_history(self):
-        import json, os
         try:
             path = os.path.expanduser("~/.s_ide_terminal_history.json")
             if os.path.exists(path):
@@ -1234,9 +1338,8 @@ class SIDE_App(tk.Tk):
         hdr.pack(fill="x")
         tk.Label(hdr, text="RUN", bg=P["bg1"], fg=P["t3"],
                  font=self._mono_xs, padx=10, pady=6).pack(side="left")
-        self._run_chevron = tk.Label(hdr, text="▸", bg=P["bg1"], fg=P["t3"],
-                                      font=self._mono_xs, padx=8)
-        self._run_chevron.pack(side="right")
+        if self._run_chevron:
+            self._run_chevron.pack(side="right")
 
         self._run_body = tk.Frame(run_frame, bg=P["bg1"])
         self._run_scripts_frame = tk.Frame(self._run_body, bg=P["bg1"])
@@ -1246,12 +1349,12 @@ class SIDE_App(tk.Tk):
         def _toggle(_event=None):
             self._run_open = not self._run_open
             if self._run_open:
-                self._run_body.pack(fill="x")
-                self._run_chevron.config(text="▾")
+                if self._run_body: self._run_body.pack(fill="x")
+                if self._run_chevron: self._run_chevron.config(text="▾")
                 self._refresh_run_scripts()
             else:
-                self._run_body.pack_forget()
-                self._run_chevron.config(text="▸")
+                if self._run_body: self._run_body.pack_forget()
+                if self._run_chevron: self._run_chevron.config(text="▸")
 
         hdr.bind("<Button-1>", _toggle)
         self._run_chevron.bind("<Button-1>", _toggle)
@@ -1336,7 +1439,6 @@ class SIDE_App(tk.Tk):
         tool_row = tk.Frame(self._run_scripts_frame, bg=P["bg1"])
         tool_row.pack(fill="x", pady=2)
 
-        from monitor.instrumenter import rollback_available
         has_backup = rollback_available(self.graph["meta"]["root"])
 
         instr_btn = tk.Label(tool_row, text="⏱ Instrument", bg=P["bg3"],
@@ -1360,7 +1462,6 @@ class SIDE_App(tk.Tk):
             return
         cwd = self.graph["meta"]["root"]
         if self._proc_mgr is None:
-            from process.process_manager import ProcessManager
             self._proc_mgr = ProcessManager()
 
         proc = self._proc_mgr.start(name=name, command=command, cwd=cwd)
@@ -1392,7 +1493,6 @@ class SIDE_App(tk.Tk):
         if not hasattr(self, "_sandboxes"):
             self._sandboxes: dict = {}
 
-        from build.sandbox import SandboxRun, SandboxOptions
         opts = SandboxOptions(mode=mode, keep_log_runs=3)
         sb   = SandboxRun(root, opts)
         self._log.info("Sandbox (%s) starting for '%s'", mode, name)
@@ -1412,7 +1512,6 @@ class SIDE_App(tk.Tk):
         def _do_start(tmp):
             self._hide_loading()
             if self._proc_mgr is None:
-                from process.process_manager import ProcessManager
                 self._proc_mgr = ProcessManager()
             proc = sb.start(command, name=f"[{mode}] {name}")
             self.processes[proc.id] = proc
@@ -1439,11 +1538,10 @@ class SIDE_App(tk.Tk):
             proc.on_stderr(_on_err)
             proc.on_exit(_on_exit)
 
-            if not (hasattr(self, "_proc_win") and self._proc_win.winfo_exists()):
+            if not (self._proc_win and self._proc_win.winfo_exists()):
                 self._build_proc_panel()
             self.after(200, self._refresh_run_scripts)
 
-        import threading
         threading.Thread(target=_prepare_and_start, daemon=True).start()
 
     def _open_instrument_dialog(self) -> None:
@@ -1520,7 +1618,6 @@ class SIDE_App(tk.Tk):
             out_text.config(state="disabled")
 
         def _run_instrument():
-            from monitor.instrumenter import Instrumenter, InstrumentOptions
             opts = InstrumentOptions(
                 public_only    = public_var.get(),
                 top_level_only = toplevel_var.get(),
@@ -1537,7 +1634,6 @@ class SIDE_App(tk.Tk):
                     self.after(0, lambda r=result: _show_result(r))
                 except Exception as e:
                     self.after(0, lambda m=str(e): _log_out(f"ERROR: {m}", "err"))
-            import threading
             threading.Thread(target=_do, daemon=True).start()
 
         def _show_result(result):
@@ -1583,7 +1679,6 @@ class SIDE_App(tk.Tk):
             "This will remove all @timed decorators that were added."
         ):
             return
-        from monitor.instrumenter import rollback
         result = rollback(root)
         n = len(result["restored"])
         if result["errors"]:
@@ -1780,6 +1875,14 @@ class SIDE_App(tk.Tk):
 
         # Self-monitoring badge — "◈ SELF" when S-IDE watches itself
         self._self_badge_var = tk.StringVar(value="")
+        for node in self._vis_nodes():
+            node_id = node.get("id")
+            if not node_id: continue
+            pos = node.get("position")
+            if not pos: continue
+            
+            hx = (pos["x"] - self.vp_x) * self.vp_z + self.winfo_width() / 2
+            hy = (pos["y"] - self.vp_y) * self.vp_z + self.winfo_height() / 2
         self._self_badge = tk.Label(
             inner, textvariable=self._self_badge_var,
             bg=P["bg0"], fg=P["green"], font=self._mono_xs,
@@ -1872,14 +1975,14 @@ class SIDE_App(tk.Tk):
             pts = self._bezier_points(x1s, y1s, x1s, y1s + cp,
                                        x2s, y2s - cp, x2s, y2s, steps=6)
             for i in range(len(pts) - 1):
-                ax, ay = pts[i]
-                bx, by = pts[i + 1]
+                ax, ay = (float(pts[i][0]), float(pts[i][1]))
+                bx, by = (float(pts[i + 1][0]), float(pts[i + 1][1]))
                 dx, dy2 = bx - ax, by - ay
                 seg_len2 = dx * dx + dy2 * dy2
-                if seg_len2 < 1:
+                if seg_len2 < 1.0:
                     continue
-                t = max(0.0, min(1.0, ((sx - ax) * dx + (sy - ay) * dy2) / seg_len2))
-                dist = math.hypot(sx - (ax + t * dx), sy - (ay + t * dy2))
+                t = max(0.0, min(1.0, ((float(sx) - float(ax)) * dx + (float(sy) - float(ay)) * dy2) / seg_len2))
+                dist = math.hypot(float(sx) - (float(ax) + t * dx), float(sy) - (float(ay) + t * dy2))
                 if dist < best_dist:
                     best_dist = dist
                     best_id = edge["id"]
@@ -1993,17 +2096,19 @@ class SIDE_App(tk.Tk):
 
     def _draw_grid(self):
         c = self._canvas
-        W = c.winfo_width()  or 1200
-        H = c.winfo_height() or 800
+        if not c:
+            return
+        W = float(c.winfo_width() or 1200)
+        H = float(c.winfo_height() or 800)
 
         # Minor grid (20 units)
         minor = 20 * self.vp_z
         if minor > 6:
             ox = self.vp_x % minor
             oy = self.vp_y % minor
-            x = ox
+            x = float(ox)
             while x <= W:
-                c.create_line(x, 0, x, H, fill=P["grid_minor"], width=1)
+                c.create_line(x, 0.0, x, H, fill=P["grid_minor"], width=1)
                 x += minor
             y = oy
             while y <= H:
@@ -2033,14 +2138,20 @@ class SIDE_App(tk.Tk):
         self._cache_node_map = None
         self._hit_boxes = {}
 
-    def _vis_nodes(self) -> list:
+    def _vis_nodes(self) -> List[Any]:
         """Cached visible node list. Rebuilt only when cache is invalidated."""
-        if self._cache_nodes is not None:
-            return self._cache_nodes
+        res: List[Any] = []
+        cn = self._cache_nodes
+        if cn is not None:
+            # Use list() to ensure we return a new list of Any, not a potential None
+            return list(cn)
+        
         if not self.graph:
-            self._cache_nodes = []
-            return []
-        nodes = list(self.graph.get("nodes", []))
+            self._cache_nodes = res
+            return res
+        
+        nodes_raw = self.graph.get("nodes", [])
+        nodes = list(nodes_raw) if isinstance(nodes_raw, list) else []
         # Virtual external nodes
         if self.show_ext:
             have = {n["id"] for n in nodes}
@@ -2726,7 +2837,6 @@ class SIDE_App(tk.Tk):
         def _parse():
             try:
                 self._log.debug("parse_project thread started")
-                from parser.project_parser import parse_project
                 graph = parse_project(path, save_json=True)
                 gdict = graph.to_dict()
                 # Embed per-stage perf data into the dict
@@ -2794,6 +2904,7 @@ class SIDE_App(tk.Tk):
         if self._is_self:
             self._log.info("S-IDE is monitoring itself: %s", _ROOT_DIR)
 
+        self.project_root = path
         # Start/restart MetricsWatcher for the new project
         self._start_metrics_watcher(gdict["meta"]["root"])
         self._render_project_list()
@@ -2803,7 +2914,7 @@ class SIDE_App(tk.Tk):
         if self._run_open:
             self._refresh_run_scripts()
         # Refresh perf panel if build window is open
-        if hasattr(self, "_build_win") and self._build_win.winfo_exists():
+        if self._build_win and self._build_win.winfo_exists():
             if hasattr(self, "_perf_frame"):
                 self._refresh_perf_display()
         self._hide_loading()
@@ -3046,11 +3157,18 @@ class SIDE_App(tk.Tk):
                 # Per-function breakdown for this file
                 node_path = node.get("path", "")
                 fn_prefix = node_path.replace("\\", "/")
+                
+                mw = self._metrics_watcher
+                if mw:
+                    fn_data = mw.get_function_metrics()
+                else:
+                    fn_data = {}
+                
                 fn_metrics = {
                     k.split("::")[-1]: v
-                    for k, v in self._metrics_watcher.get_function_metrics().items()
+                    for k, v in fn_data.items()
                     if "::" in k and k.split("::")[0].replace("\\", "/").endswith(fn_prefix)
-                } if self._metrics_watcher else {}
+                }
 
                 if fn_metrics:
                     self._insp_section(inner, f"FUNCTIONS ({len(fn_metrics)})")
@@ -3207,7 +3325,7 @@ class SIDE_App(tk.Tk):
         # Cancel any previous animation loop before creating a new window
         self._stop_loading_animation()
 
-        if hasattr(self, "_loading_win") and self._loading_win.winfo_exists():
+        if self._loading_win and self._loading_win.winfo_exists():
             # Already open — just update the message
             if hasattr(self, "_loading_msg"):
                 self._loading_msg.config(text=msg)
@@ -3261,7 +3379,7 @@ class SIDE_App(tk.Tk):
 
     def _tick_loading(self):
         """Single animation tick — reschedules itself until window is gone."""
-        if not hasattr(self, "_loading_win") or not self._loading_win.winfo_exists():
+        if not self._loading_win or not self._loading_win.winfo_exists():
             self._loading_after_id = None
             return
         self._loading_progress = min(self._loading_progress + 2, 88)
@@ -3305,7 +3423,6 @@ class SIDE_App(tk.Tk):
             return
         root = self.graph["meta"]["root"]
         try:
-            from version.version_manager import archive_version
             path = archive_version(root)
             self._refresh_version_list()
             messagebox.showinfo("Archived", f"Snapshot saved:\n{os.path.basename(path)}")
@@ -3317,8 +3434,7 @@ class SIDE_App(tk.Tk):
             return
         root = self.graph["meta"]["root"]
         try:
-            from version.version_manager import compress_loose
-            results = compress_loose(root)
+            results = compress_versions(root)
             self._refresh_version_list()
             ok = sum(1 for r in results if "tarball" in r)
             messagebox.showinfo("Compressed", f"Compressed {ok} director{'y' if ok==1 else 'ies'}.")
@@ -3338,7 +3454,6 @@ class SIDE_App(tk.Tk):
         root = self.graph["meta"]["root"]
         bump = self._bump_var.get()
         try:
-            from version.version_manager import apply_update
             new_ver, arch = apply_update(root, path, bump)
             self._refresh_version_list()
             self._load_project(root)   # re-parse after update
@@ -3355,7 +3470,6 @@ class SIDE_App(tk.Tk):
         cmd = f"{sys.executable} {update_script} --yes --no-relaunch"
         self._log.info("Running self-update: %s", cmd)
         if self._proc_mgr is None:
-            from process.process_manager import ProcessManager
             self._proc_mgr = ProcessManager()
         proc = self._proc_mgr.start(name="self-update", command=cmd, cwd=_ROOT_DIR)
         self.processes[proc.id] = proc
@@ -3383,7 +3497,7 @@ class SIDE_App(tk.Tk):
         proc.on_exit(_on_exit)
 
         # Open proc panel to show progress
-        if not (hasattr(self, "_proc_win") and self._proc_win.winfo_exists()):
+        if not (self._proc_win and self._proc_win.winfo_exists()):
             self._build_proc_panel()
         self.after(100, self._render_proc_list)
 
@@ -3395,7 +3509,6 @@ class SIDE_App(tk.Tk):
             return
         root = self.graph["meta"]["root"]
         try:
-            from version.version_manager import list_versions
             versions = list_versions(root)
         except Exception:
             versions = []
@@ -3414,14 +3527,17 @@ class SIDE_App(tk.Tk):
                      font=self._mono_xs).pack(side="left")
             tk.Label(row, text=v["name"][:26], bg=P["bg1"], fg=P["t2"],
                      font=self._mono_xs).pack(side="left", fill="x", expand=True)
-            tk.Label(row, text=fmt_size(v["size"]), bg=P["bg1"], fg=P["t3"],
-                     font=self._mono_xs).pack(side="right", padx=4)
-            tk.Frame(self._ver_list_frame, bg=P["line"], height=1).pack(fill="x")
+            lb = tk.Label(row, text=fmt_size(v["size"]), bg=P["bg1"], fg=P["t3"],
+                     font=self._mono_xs)
+            lb.pack(side="right", padx=4)
+            if self._ver_list_frame:
+                tk.Frame(self._ver_list_frame, bg=P["line"], height=1).pack(fill="x")
 
     # ── Process panel ─────────────────────────────────────────────────────────
 
     def _toggle_proc_panel(self):
-        if hasattr(self, "_proc_win") and self._proc_win.winfo_exists():
+        pw = self._proc_win
+        if pw is not None and pw.winfo_exists():
             self._proc_win.destroy()
             return
         self._build_proc_panel()
@@ -3463,18 +3579,22 @@ class SIDE_App(tk.Tk):
         self._proc_list_canvas = tk.Canvas(list_outer, bg=P["bg1"],
                                             yscrollcommand=scroll.set,
                                             highlightthickness=0)
-        self._proc_list_canvas.pack(fill="both", expand=True)
-        scroll.config(command=self._proc_list_canvas.yview)
-        self._proc_list_inner = tk.Frame(self._proc_list_canvas, bg=P["bg1"])
-        self._proc_list_canvas.create_window((0, 0), window=self._proc_list_inner,
-                                              anchor="nw")
-        # Keep inner frame width in sync with canvas width
-        def _on_canvas_resize(e):
-            self._proc_list_canvas.itemconfig(1, width=e.width)
-        self._proc_list_canvas.bind("<Configure>", _on_canvas_resize)
-        self._proc_list_inner.bind("<Configure>",
-            lambda e: self._proc_list_canvas.configure(
-                scrollregion=self._proc_list_canvas.bbox("all")))
+        if self._proc_list_canvas:
+            self._proc_list_canvas.pack(fill="both", expand=True)
+            scroll.config(command=self._proc_list_canvas.yview)
+        
+            self._proc_list_inner = tk.Frame(self._proc_list_canvas, bg=P["bg1"])
+            self._proc_list_canvas.create_window((0, 0), window=self._proc_list_inner,
+                                                 anchor="nw")
+            # Keep inner frame width in sync with canvas width
+            def _on_canvas_resize(e):
+                if self._proc_list_canvas:
+                    self._proc_list_canvas.itemconfig(1, width=e.width)
+            self._proc_list_canvas.bind("<Configure>", _on_canvas_resize)
+            if self._proc_list_inner:
+                self._proc_list_inner.bind("<Configure>",
+                    lambda e: self._proc_list_canvas.configure(
+                        scrollregion=self._proc_list_canvas.bbox("all")) if self._proc_list_canvas else None)
 
         # Command input
         tk.Frame(self._proc_win, bg=P["line"], height=1).pack(fill="x")
@@ -3518,7 +3638,7 @@ class SIDE_App(tk.Tk):
             if p.info()["status"] in ("stopped", "crashed")
         ]
         for pid in to_remove:
-            del self.processes[pid]
+            self.processes.pop(pid, None)
         if self._proc_mgr:
             self._proc_mgr.purge_stopped()
         self._render_proc_list()
@@ -3531,7 +3651,6 @@ class SIDE_App(tk.Tk):
             self.graph["meta"]["root"] if self.graph else os.getcwd())
 
         if self._proc_mgr is None:
-            from process.process_manager import ProcessManager
             self._proc_mgr = ProcessManager()
 
         name = cmd.split()[0]
@@ -3651,7 +3770,6 @@ class SIDE_App(tk.Tk):
         if not self._proc_mgr:
             return
         if not hasattr(self, "_proc_monitor") or self._proc_monitor is None:
-            from monitor.perf import ProcessMonitor
             self._proc_monitor = ProcessMonitor(self._proc_mgr)
             self._proc_monitor.start()
             self._log.debug("ProcessMonitor started")
@@ -3664,7 +3782,7 @@ class SIDE_App(tk.Tk):
             p.info()["status"] == "running"
             for p in self.processes.values()
         )
-        if running and hasattr(self, "_proc_list_inner")                    and self._proc_list_inner.winfo_exists():
+        if running and self._proc_list_inner and self._proc_list_inner.winfo_exists():
             self._render_proc_list()
             self.after(2500, self._schedule_proc_refresh)
 
@@ -3681,7 +3799,7 @@ class SIDE_App(tk.Tk):
 
     def _toggle_log_panel(self):
         """Open or close the floating log panel."""
-        if hasattr(self, "_log_win") and self._log_win.winfo_exists():
+        if self._log_win and self._log_win.winfo_exists():
             self._log_win.destroy()
             return
         self._build_log_panel()
@@ -3761,7 +3879,7 @@ class SIDE_App(tk.Tk):
         clear_btn.bind("<Button-1>", lambda _: _clear())
         # Auto-refresh every 2s while panel is open
         def _auto_refresh():
-            if self._log_win.winfo_exists():
+            if self._log_win and self._log_win.winfo_exists():
                 _refresh()
                 self._log_win.after(2000, _auto_refresh)
         _auto_refresh()
@@ -3775,7 +3893,7 @@ class SIDE_App(tk.Tk):
 
     def _toggle_build_panel(self):
         """Open or close the floating build panel."""
-        if hasattr(self, "_build_win") and self._build_win.winfo_exists():
+        if self._build_win and self._build_win.winfo_exists():
             self._build_win.destroy()
             return
         self._open_build_panel()
@@ -4003,7 +4121,7 @@ class SIDE_App(tk.Tk):
         """Refresh the live render timing display in the build panel."""
         if not self._render_timing_active:
             return
-        if not hasattr(self, "_render_timing_frame") or                 not self._render_timing_frame.winfo_exists():
+        if not self._render_timing_frame or                 not self._render_timing_frame.winfo_exists():
             return
 
         for w in self._render_timing_frame.winfo_children():

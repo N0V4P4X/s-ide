@@ -69,6 +69,7 @@ class ChatResponse:
     model:      str = ""
     done:       bool = True
     did_execute_tools: bool = False
+    executed_tool_names: list[str] = field(default_factory=list)
 
     @classmethod
     def from_dict(cls, d: dict) -> "ChatResponse":
@@ -250,6 +251,7 @@ class OllamaClient:
         msgs = list(messages)
         final_content = ""
         did_execute_tools = False
+        executed_tool_names: list[str] = []
 
         def _strip_outer_quotes(s: str) -> str:
             s = s.strip()
@@ -456,7 +458,12 @@ class OllamaClient:
             final_content = curr_content
             
             if not curr_tool_calls:
-                return ChatResponse(content=final_content, done=True, did_execute_tools=did_execute_tools)
+                return ChatResponse(
+                    content=final_content,
+                    done=True,
+                    did_execute_tools=did_execute_tools,
+                    executed_tool_names=executed_tool_names,
+                )
             
             # Execute tool calls and append results
             for tc in curr_tool_calls:
@@ -469,10 +476,12 @@ class OllamaClient:
                         snippet = snippet[:500] + "…"
                     on_text(f"[tool result: {tc.name}] {snippet}\n")
                 did_execute_tools = True
+                executed_tool_names.append(tc.name)
                 msgs.append(result.to_message())
         
         return ChatResponse(
             content=final_content or "[max rounds reached]",
             done=True,
             did_execute_tools=did_execute_tools,
+            executed_tool_names=executed_tool_names,
         )

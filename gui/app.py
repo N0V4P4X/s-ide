@@ -750,7 +750,10 @@ class SIDE_App(tk.Tk):
                 # Auto-refresh plan if it changed
                 self.after(0, lambda: self._refresh_plan())
                 # If tools executed (e.g. write_file/run_command), re-parse so changes show up.
-                if getattr(res, "did_execute_tools", False) and ctx.project_root:
+                # Re-parse only after side-effecting tools to avoid expensive full parses.
+                side_effect_tools = {"write_file", "run_command"}
+                executed = set(getattr(res, "executed_tool_names", []) or [])
+                if executed.intersection(side_effect_tools) and ctx.project_root:
                     self.after(0, lambda: self._load_project(ctx.project_root))
             except Exception as e:
                 self.after(0, lambda: self._ai_append(f'\nError: {e}\n', 'error'))

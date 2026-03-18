@@ -749,6 +749,9 @@ class SIDE_App(tk.Tk):
                 self._ai_messages.append(CM(role='assistant', content=res.content))
                 # Auto-refresh plan if it changed
                 self.after(0, lambda: self._refresh_plan())
+                # If tools executed (e.g. write_file/run_command), re-parse so changes show up.
+                if getattr(res, "did_execute_tools", False) and ctx.project_root:
+                    self.after(0, lambda: self._load_project(ctx.project_root))
             except Exception as e:
                 self.after(0, lambda: self._ai_append(f'\nError: {e}\n', 'error'))
 

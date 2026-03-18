@@ -259,6 +259,15 @@ def dispatch_tool(name: str, args: dict, context: "AppContext") -> ToolResult:  
     Route a tool call to the appropriate handler.
     context is the AppContext from ai/context.py.
     """
+    # Ollama may send tool arguments as a JSON string; normalise to a dict
+    if isinstance(args, str):
+        try:
+            args = json.loads(args)
+        except Exception:
+            args = {}
+    elif args is None:
+        args = {}
+
     try:
         handler = _HANDLERS.get(name)
         if handler is None:

@@ -68,6 +68,7 @@ class ChatResponse:
     tool_calls: list[ToolCall] = field(default_factory=list)
     model:      str = ""
     done:       bool = True
+    did_execute_tools: bool = False
 
     @classmethod
     def from_dict(cls, d: dict) -> "ChatResponse":
@@ -248,14 +249,117 @@ class OllamaClient:
         """
         msgs = list(messages)
         final_content = ""
+        did_execute_tools = False
+
+        def _strip_outer_quotes(s: str) -> str:
+            s = s.strip()
+            if len(s) >= 2 and ((s[0] == s[-1] == "'") or (s[0] == s[-1] == '"')):
+                return s[1:-1]
+            return s
+
+        def _parse_value(v: str) -> Any:
+            v = v.strip()
+            # Strings
+            if len(v) >= 2 and ((v[0] == v[-1] == "'") or (v[0] == v[-1] == '"')):
+                return _strip_outer_quotes(v)
+            # Lists
+            if v.startswith("[") and v.endswith("]"):
+                try:
+                    return json.loads(v.replace("'", '"'))
+                except Exception:
+                    return v
+            # Ints/floats
+            try:
+                if "." in v:
+                    return float(v)
+                return int(v)
+            except Exception:
+                return v
+
+        def _extract_text_tool_calls(txt: str) -> list[ToolCall]:
+            """
+            Best-effort extraction of tool calls from plain text like:
+              [Tool Call: write_file(path='x', content="y")]
+            Only supports single-line-ish arg lists (no nested parens).
+            """
+            import re
+            tool_names = {t["function"]["name"] for t in tools if t.get("function", {}).get("name")}
+
+            # Match "Tool Call: name(k=v, ...)" and allow optional brackets
+            # This intentionally uses "no nested parens" assumption.
+            call_re = re.compile(
+                r"(?:\[)?\s*Tool\s+Call\s*:\s*([a-zA-Z_][a-zA-Z0-9_]*)\(([^)]*)\)\s*(?:\])?"
+            )
+            calls: list[ToolCall] = []
+            for m in call_re.finditer(txt):
+                fn_name = m.group(1)
+                if fn_name not in tool_names:
+                    continue
+                raw_args = m.group(2).strip()
+                args: dict[str, Any] = {}
+                if raw_args:
+                    parts = re.split(
+                        r",\s*(?=[a-zA-Z_][a-zA-Z0-9_]*\s*=)",
+                        raw_args,
+                    )
+                    for part in parts:
+                        if "=" not in part:
+                            continue
+                        k, v = part.split("=", 1)
+                        k = k.strip()
+                        args[k] = _parse_value(v)
+                calls.append(ToolCall(name=fn_name, arguments=args, id=f"text_{m.start()}"))
+            return calls
+
+        def _extract_tag_tool_calls(txt: str) -> list[ToolCall]:
+            """
+            Fallback for models that narrate tool use inside <tool-calling>...</tool-calling>
+            blocks with phrases like:
+              Invoked write_file(path="...", content="...")
+            """
+            import re
+            tool_names = {t["function"]["name"] for t in tools if t.get("function", {}).get("name")}
+
+            # Limit to the content inside any <tool-calling> blocks if present
+            segments: list[str] = []
+            tag_re = re.compile(r"<tool-calling>(.*?)</tool-calling>", re.DOTALL | re.IGNORECASE)
+            for m in tag_re.finditer(txt):
+                segments.append(m.group(1))
+            if not segments:
+                segments = [txt]
+
+            calls: list[ToolCall] = []
+            call_re = re.compile(r"([a-zA-Z_][a-zA-Z0-9_]*)\(([^)]*)\)")
+
+            for seg in segments:
+                for m in call_re.finditer(seg):
+                    fn_name = m.group(1)
+                    if fn_name not in tool_names:
+                        continue
+                    raw_args = m.group(2).strip()
+                    args: dict[str, Any] = {}
+                    if raw_args:
+                        parts = re.split(
+                            r",\s*(?=[a-zA-Z_][a-zA-Z0-9_]*\s*=)",
+                            raw_args,
+                        )
+                        for part in parts:
+                            if "=" not in part:
+                                continue
+                            k, v = part.split("=", 1)
+                            k = k.strip()
+                            args[k] = _parse_value(v)
+                    calls.append(ToolCall(name=fn_name, arguments=args, id=f"tag_{m.start()}"))
+            return calls
         
         for _ in range(max_rounds):
             payload: dict = {
                 "model":    model,
                 "messages": [m.to_dict() for m in msgs],
                 "stream":   True,
-                "tools":    tools,
             }
+            if tools:
+                payload["tools"] = tools
             url  = f"{self.host}/api/chat"
             body = json.dumps(payload).encode()
             req  = urllib.request.Request(url, data=body,
@@ -280,9 +384,16 @@ class OllamaClient:
                     if tcs:
                         for tc in tcs:
                             fn = tc.get("function", {})
+                            raw_args = fn.get("arguments", {})
+                            # Normalise tool call arguments to a dict
+                            if isinstance(raw_args, str):
+                                try:
+                                    raw_args = json.loads(raw_args)
+                                except Exception:
+                                    raw_args = {}
                             curr_tool_calls.append(ToolCall(
                                 name=fn.get("name", ""),
-                                arguments=fn.get("arguments", {}),
+                                arguments=raw_args,
                                 id=tc.get("id", "")
                             ))
             except Exception as e:
@@ -316,6 +427,21 @@ class OllamaClient:
                                     args[k.strip()] = v
                             curr_tool_calls.append(ToolCall(name=fn_name, arguments=args, id=f"sim_{m.start()}"))
                         except: pass
+
+            # Fallback: some models write "Tool Call: ..." into plain text.
+            # If no formal tool_calls were returned, parse and dispatch them.
+            if not curr_tool_calls and "Tool Call" in curr_content:
+                try:
+                    curr_tool_calls = _extract_text_tool_calls(curr_content)
+                except Exception:
+                    curr_tool_calls = curr_tool_calls
+
+            # Fallback: some prompts wrap narrated tool use in <tool-calling> tags.
+            if not curr_tool_calls and "<tool-calling>" in curr_content:
+                try:
+                    curr_tool_calls = _extract_tag_tool_calls(curr_content)
+                except Exception:
+                    curr_tool_calls = curr_tool_calls
             
             # Save the message from this round
             msgs.append(ChatMessage(
@@ -330,13 +456,23 @@ class OllamaClient:
             final_content = curr_content
             
             if not curr_tool_calls:
-                return ChatResponse(content=final_content, done=True)
+                return ChatResponse(content=final_content, done=True, did_execute_tools=did_execute_tools)
             
             # Execute tool calls and append results
             for tc in curr_tool_calls:
                 if on_text: on_text(f"\n[executing tool: {tc.name}...]\n")
                 result = dispatch_fn(tc.name, tc.arguments)
-                if on_text: on_text(f"[tool result: {result.name}]\n")
+                if on_text:
+                    # Show actual content to make tool effects/debugging visible
+                    snippet = (result.content or "").strip()
+                    if len(snippet) > 500:
+                        snippet = snippet[:500] + "…"
+                    on_text(f"[tool result: {tc.name}] {snippet}\n")
+                did_execute_tools = True
                 msgs.append(result.to_message())
         
-        return ChatResponse(content=final_content or "[max rounds reached]", done=True)
+        return ChatResponse(
+            content=final_content or "[max rounds reached]",
+            done=True,
+            did_execute_tools=did_execute_tools,
+        )

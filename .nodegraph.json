@@ -1,103 +1,87 @@
 {
   "version": "1.0.0",
   "meta": {
-    "root": "/home/n0v4p4x/DevOps/s-ide-py",
-    "parsedAt": "2026-03-18T19:53:47.852432+00:00",
-    "parseTime": 389.37,
+    "root": "/home/n0v4p4x/DevOps/S-IDE/s-ide-py",
+    "parsedAt": "2026-03-18T21:15:10.969731+00:00",
+    "parseTime": 442.23,
     "perf": {
-      "total_ms": 406.18,
+      "total_ms": 461.12,
       "stages": [
         {
           "name": "config",
-          "ms": 0.21
+          "ms": 0.29
         },
         {
           "name": "walk",
-          "ms": 1.47
+          "ms": 1.58
         },
         {
           "name": "parse_files",
-          "ms": 385.94
+          "ms": 438.48
         },
         {
           "name": "resolve_edges",
-          "ms": 1.46
+          "ms": 1.52
         },
         {
           "name": "layout",
-          "ms": 0.1
-        },
-        {
-          "name": "doc_audit",
           "ms": 0.12
         },
         {
+          "name": "doc_audit",
+          "ms": 0.15
+        },
+        {
           "name": "write_json",
-          "ms": 16.78
+          "ms": 18.85
         }
       ],
       "slowest": "parse_files"
     },
-    "totalFiles": 47,
-    "totalEdges": 248,
+    "totalFiles": 48,
+    "totalEdges": 253,
     "languages": {
       "docs": {
-        "files": 11,
-        "lines": 647
+        "files": 12,
+        "lines": 688
       },
       "python": {
         "files": 36,
-        "lines": 13220
+        "lines": 13541
       }
     },
     "docs": {
       "healthy": false,
       "summary": {
         "missingReadmes": 0,
-        "staleReadmes": 4,
+        "staleReadmes": 3,
         "emptyModules": 0,
-        "total": 4
+        "total": 3
       },
       "warnings": [
         {
           "type": "stale-readme",
           "severity": "info",
-          "message": "README.md in '.' is older than 1 file(s)",
-          "dir": ".",
-          "node_id": null,
-          "readme_path": "README.md",
-          "affected_files": [
-            "update_py"
-          ],
-          "stale_since": "2026-03-18T14:55:01.856027"
-        },
-        {
-          "type": "stale-readme",
-          "severity": "info",
-          "message": "README.md in 'ai' is older than 3 file(s)",
-          "dir": "ai",
-          "node_id": null,
-          "readme_path": "ai/README.md",
-          "affected_files": [
-            "ai_client_py",
-            "ai_standards_py",
-            "ai_tools_py"
-          ],
-          "stale_since": "2026-03-18T15:25:27.170850"
-        },
-        {
-          "type": "stale-readme",
-          "severity": "info",
-          "message": "README.md in 'gui' is older than 3 file(s)",
+          "message": "README.md in 'gui' is older than 1 file(s)",
           "dir": "gui",
           "node_id": null,
           "readme_path": "gui/README.md",
           "affected_files": [
-            "gui___init___py",
-            "gui_app_py",
-            "gui_editor_py"
+            "gui_app_py"
           ],
-          "stale_since": "2026-03-18T15:50:22.254842"
+          "stale_since": "2026-03-18T17:09:56.946587"
+        },
+        {
+          "type": "stale-readme",
+          "severity": "info",
+          "message": "README.md in 'parser' is older than 1 file(s)",
+          "dir": "parser",
+          "node_id": null,
+          "readme_path": "parser/README.md",
+          "affected_files": [
+            "parser_walker_py"
+          ],
+          "stale_since": "2026-03-18T17:09:26.241970"
         },
         {
           "type": "stale-readme",
@@ -109,7 +93,7 @@
           "affected_files": [
             "test_test_suite_py"
           ],
-          "stale_since": "2026-03-18T15:25:27.174850"
+          "stale_since": "2026-03-18T17:12:29.157294"
         }
       ]
     },
@@ -133,12 +117,12 @@
       "id": "README_md",
       "label": "README.md",
       "path": "README.md",
-      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/README.md",
+      "fullPath": "/home/n0v4p4x/DevOps/S-IDE/s-ide-py/README.md",
       "category": "docs",
       "ext": ".md",
-      "lines": 113,
-      "size": 3861,
-      "modified": "2026-03-18T18:55:01.848027+00:00",
+      "lines": 120,
+      "size": 4131,
+      "modified": "2026-03-18T21:14:58.023483+00:00",
       "imports": [],
       "exports": [],
       "definitions": [],
@@ -146,19 +130,39 @@
       "errors": [],
       "position": {
         "x": 0.0,
-        "y": -105.0
+        "y": -210.0
+      }
+    },
+    {
+      "id": "SELF_IMPROVEMENT_md",
+      "label": "SELF_IMPROVEMENT.md",
+      "path": "SELF_IMPROVEMENT.md",
+      "fullPath": "/home/n0v4p4x/DevOps/S-IDE/s-ide-py/SELF_IMPROVEMENT.md",
+      "category": "docs",
+      "ext": ".md",
+      "lines": 34,
+      "size": 1153,
+      "modified": "2026-03-18T21:14:54.543436+00:00",
+      "imports": [],
+      "exports": [],
+      "definitions": [],
+      "tags": [],
+      "errors": [],
+      "position": {
+        "x": 0.0,
+        "y": 0.0
       }
     },
     {
       "id": "main_py",
       "label": "main.py",
       "path": "main.py",
-      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/main.py",
+      "fullPath": "/home/n0v4p4x/DevOps/S-IDE/s-ide-py/main.py",
       "category": "python",
       "ext": ".py",
-      "lines": 291,
-      "size": 10590,
-      "modified": "2026-03-18T18:55:01.836027+00:00",
+      "lines": 389,
+      "size": 14080,
+      "modified": "2026-03-18T21:13:46.142474+00:00",
       "imports": [
         {
           "type": "from-import",
@@ -198,9 +202,16 @@
           "alias": null
         },
         {
+          "type": "import",
+          "source": "time",
+          "line": 45,
+          "names": [],
+          "alias": null
+        },
+        {
           "type": "from-import",
           "source": "parser.project_parser",
-          "line": 69,
+          "line": 70,
           "names": [
             "parse_project"
           ],
@@ -209,7 +220,7 @@
         {
           "type": "from-import",
           "source": "version.version_manager",
-          "line": 93,
+          "line": 94,
           "names": [
             "list_versions"
           ],
@@ -218,7 +229,7 @@
         {
           "type": "from-import",
           "source": "version.version_manager",
-          "line": 109,
+          "line": 110,
           "names": [
             "archive_version"
           ],
@@ -227,7 +238,7 @@
         {
           "type": "from-import",
           "source": "version.version_manager",
-          "line": 119,
+          "line": 120,
           "names": [
             "apply_update"
           ],
@@ -236,14 +247,14 @@
         {
           "type": "import",
           "source": "subprocess",
-          "line": 137,
+          "line": 138,
           "names": [],
           "alias": null
         },
         {
           "type": "from-import",
           "source": "parser.project_config",
-          "line": 138,
+          "line": 139,
           "names": [
             "load_project_config"
           ],
@@ -252,7 +263,7 @@
         {
           "type": "from-import",
           "source": "version.version_manager",
-          "line": 164,
+          "line": 165,
           "names": [
             "compress_loose"
           ],
@@ -261,7 +272,7 @@
         {
           "type": "from-import",
           "source": "build.packager",
-          "line": 182,
+          "line": 183,
           "names": [
             "package_project",
             "PackageOptions"
@@ -271,7 +282,7 @@
         {
           "type": "from-import",
           "source": "version.version_manager",
-          "line": 202,
+          "line": 203,
           "names": [
             "apply_update"
           ],
@@ -280,11 +291,27 @@
         {
           "type": "from-import",
           "source": "parser.project_config",
-          "line": 204,
+          "line": 205,
           "names": [
             "load_project_config",
             "save_project_config",
             "bump_version"
+          ],
+          "alias": null
+        },
+        {
+          "type": "import",
+          "source": "subprocess",
+          "line": 220,
+          "names": [],
+          "alias": null
+        },
+        {
+          "type": "from-import",
+          "source": "parser.project_parser",
+          "line": 221,
+          "names": [
+            "parse_project"
           ],
           "alias": null
         }
@@ -348,6 +375,14 @@
         },
         {
           "type": "implicit",
+          "name": "cmd_self_check",
+          "names": [],
+          "source": null,
+          "kind": null,
+          "line": null
+        },
+        {
+          "type": "implicit",
           "name": "build_parser",
           "names": [],
           "source": null,
@@ -367,8 +402,8 @@
         {
           "name": "_require_dir",
           "kind": "function",
-          "line": 49,
-          "end_line": 54,
+          "line": 50,
+          "end_line": 55,
           "indent": 0,
           "is_async": false,
           "decorators": [],
@@ -392,8 +427,8 @@
         {
           "name": "_fmt_size",
           "kind": "function",
-          "line": 57,
-          "end_line": 62,
+          "line": 58,
+          "end_line": 63,
           "indent": 0,
           "is_async": false,
           "decorators": [],
@@ -412,8 +447,8 @@
         {
           "name": "cmd_parse",
           "kind": "function",
-          "line": 67,
-          "end_line": 88,
+          "line": 68,
+          "end_line": 89,
           "indent": 0,
           "is_async": false,
           "decorators": [],
@@ -440,8 +475,8 @@
         {
           "name": "cmd_versions",
           "kind": "function",
-          "line": 91,
-          "end_line": 104,
+          "line": 92,
+          "end_line": 105,
           "indent": 0,
           "is_async": false,
           "decorators": [],
@@ -466,8 +501,8 @@
         {
           "name": "cmd_archive",
           "kind": "function",
-          "line": 107,
-          "end_line": 114,
+          "line": 108,
+          "end_line": 115,
           "indent": 0,
           "is_async": false,
           "decorators": [],
@@ -490,8 +525,8 @@
         {
           "name": "cmd_update",
           "kind": "function",
-          "line": 117,
-          "end_line": 132,
+          "line": 118,
+          "end_line": 133,
           "indent": 0,
           "is_async": false,
           "decorators": [],
@@ -517,8 +552,8 @@
         {
           "name": "cmd_run",
           "kind": "function",
-          "line": 135,
-          "end_line": 159,
+          "line": 136,
+          "end_line": 160,
           "indent": 0,
           "is_async": false,
           "decorators": [],
@@ -545,8 +580,8 @@
         {
           "name": "cmd_compress",
           "kind": "function",
-          "line": 162,
-          "end_line": 177,
+          "line": 163,
+          "end_line": 178,
           "indent": 0,
           "is_async": false,
           "decorators": [],
@@ -569,8 +604,8 @@
         {
           "name": "cmd_build",
           "kind": "function",
-          "line": 180,
-          "end_line": 209,
+          "line": 181,
+          "end_line": 210,
           "indent": 0,
           "is_async": false,
           "decorators": [],
@@ -598,10 +633,49 @@
           "complexity": 4
         },
         {
+          "name": "cmd_self_check",
+          "kind": "function",
+          "line": 213,
+          "end_line": 295,
+          "indent": 0,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "args",
+              "argparse.Namespace"
+            ]
+          ],
+          "return_type": "None",
+          "calls": [
+            "_require_dir",
+            "time.time",
+            "path.join",
+            "subprocess.run",
+            "parse_project",
+            "graph.to_dict",
+            "bool",
+            "int",
+            "sys.exit",
+            "path.dirname",
+            "get('meta') or {}).get",
+            "docs.get",
+            "print",
+            "json.dumps",
+            "t['stderr_tail'].splitlines",
+            "dchk.get",
+            "d.get",
+            "s.get"
+          ],
+          "raises": [],
+          "complexity": 7
+        },
+        {
           "name": "build_parser",
           "kind": "function",
-          "line": 214,
-          "end_line": 267,
+          "line": 300,
+          "end_line": 364,
           "indent": 0,
           "is_async": false,
           "decorators": [],
@@ -620,8 +694,8 @@
         {
           "name": "main",
           "kind": "function",
-          "line": 272,
-          "end_line": 286,
+          "line": 369,
+          "end_line": 384,
           "indent": 0,
           "is_async": false,
           "decorators": [],
@@ -643,19 +717,19 @@
       "errors": [],
       "position": {
         "x": 0.0,
-        "y": -2205.0
+        "y": -2310.0
       }
     },
     {
       "id": "update_py",
       "label": "update.py",
       "path": "update.py",
-      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/update.py",
+      "fullPath": "/home/n0v4p4x/DevOps/S-IDE/s-ide-py/update.py",
       "category": "python",
       "ext": ".py",
-      "lines": 335,
-      "size": 12324,
-      "modified": "2026-03-18T18:55:01.856027+00:00",
+      "lines": 396,
+      "size": 14828,
+      "modified": "2026-03-18T21:14:23.003002+00:00",
       "imports": [
         {
           "type": "from-import",
@@ -709,9 +783,16 @@
           "alias": null
         },
         {
+          "type": "import",
+          "source": "tarfile",
+          "line": 55,
+          "names": [],
+          "alias": null
+        },
+        {
           "type": "from-import",
           "source": "parser.project_config",
-          "line": 120,
+          "line": 121,
           "names": [
             "load_project_config"
           ],
@@ -720,7 +801,7 @@
         {
           "type": "from-import",
           "source": "version.version_manager",
-          "line": 185,
+          "line": 201,
           "names": [
             "archive_version"
           ],
@@ -729,7 +810,7 @@
         {
           "type": "from-import",
           "source": "version.version_manager",
-          "line": 198,
+          "line": 214,
           "names": [
             "_extract_tarball"
           ],
@@ -738,12 +819,19 @@
         {
           "type": "from-import",
           "source": "parser.project_config",
-          "line": 211,
+          "line": 227,
           "names": [
             "load_project_config",
             "save_project_config",
             "bump_version"
           ],
+          "alias": null
+        },
+        {
+          "type": "import",
+          "source": "subprocess",
+          "line": 243,
+          "names": [],
           "alias": null
         }
       ],
@@ -841,8 +929,8 @@
         {
           "name": "_colour",
           "kind": "function",
-          "line": 71,
-          "end_line": 75,
+          "line": 72,
+          "end_line": 76,
           "indent": 0,
           "is_async": false,
           "decorators": [],
@@ -867,8 +955,8 @@
         {
           "name": "green",
           "kind": "function",
-          "line": 77,
-          "end_line": 79,
+          "line": 78,
+          "end_line": 80,
           "indent": 0,
           "is_async": false,
           "decorators": [],
@@ -889,8 +977,8 @@
         {
           "name": "yellow",
           "kind": "function",
-          "line": 80,
-          "end_line": 82,
+          "line": 81,
+          "end_line": 83,
           "indent": 0,
           "is_async": false,
           "decorators": [],
@@ -911,8 +999,8 @@
         {
           "name": "red",
           "kind": "function",
-          "line": 83,
-          "end_line": 85,
+          "line": 84,
+          "end_line": 86,
           "indent": 0,
           "is_async": false,
           "decorators": [],
@@ -933,8 +1021,8 @@
         {
           "name": "bold",
           "kind": "function",
-          "line": 86,
-          "end_line": 88,
+          "line": 87,
+          "end_line": 89,
           "indent": 0,
           "is_async": false,
           "decorators": [],
@@ -955,8 +1043,8 @@
         {
           "name": "dim",
           "kind": "function",
-          "line": 89,
-          "end_line": 91,
+          "line": 90,
+          "end_line": 92,
           "indent": 0,
           "is_async": false,
           "decorators": [],
@@ -977,8 +1065,8 @@
         {
           "name": "_fmt_size",
           "kind": "function",
-          "line": 94,
-          "end_line": 100,
+          "line": 95,
+          "end_line": 101,
           "indent": 0,
           "is_async": false,
           "decorators": [],
@@ -997,8 +1085,8 @@
         {
           "name": "find_newest_tarball",
           "kind": "function",
-          "line": 103,
-          "end_line": 114,
+          "line": 104,
+          "end_line": 115,
           "indent": 0,
           "is_async": false,
           "decorators": [],
@@ -1021,8 +1109,8 @@
         {
           "name": "get_current_version",
           "kind": "function",
-          "line": 117,
-          "end_line": 124,
+          "line": 118,
+          "end_line": 125,
           "indent": 0,
           "is_async": false,
           "decorators": [],
@@ -1044,8 +1132,8 @@
         {
           "name": "confirm",
           "kind": "function",
-          "line": 127,
-          "end_line": 134,
+          "line": 128,
+          "end_line": 135,
           "indent": 0,
           "is_async": false,
           "decorators": [],
@@ -1069,8 +1157,8 @@
         {
           "name": "run_update",
           "kind": "function",
-          "line": 139,
-          "end_line": 242,
+          "line": 140,
+          "end_line": 282,
           "indent": 0,
           "is_async": false,
           "decorators": [],
@@ -1095,6 +1183,18 @@
             [
               "yes",
               "bool"
+            ],
+            [
+              "dry_run",
+              "bool"
+            ],
+            [
+              "self_check",
+              "bool"
+            ],
+            [
+              "self_check_strict_docs",
+              "bool"
             ]
           ],
           "return_type": "int",
@@ -1105,6 +1205,7 @@
             "get_current_version",
             "print",
             "path.isfile",
+            "tarfile.is_tarfile",
             "path.isdir",
             "path.getsize",
             "bold",
@@ -1117,17 +1218,16 @@
             "green",
             "path.join",
             "red",
-            "confirm",
-            "config.get"
+            "confirm"
           ],
           "raises": [],
-          "complexity": 9
+          "complexity": 17
         },
         {
           "name": "build_parser",
           "kind": "function",
-          "line": 247,
-          "end_line": 298,
+          "line": 287,
+          "end_line": 356,
           "indent": 0,
           "is_async": false,
           "decorators": [],
@@ -1144,8 +1244,8 @@
         {
           "name": "main",
           "kind": "function",
-          "line": 301,
-          "end_line": 330,
+          "line": 359,
+          "end_line": 391,
           "indent": 0,
           "is_async": false,
           "decorators": [],
@@ -1176,19 +1276,19 @@
       "errors": [],
       "position": {
         "x": 0.0,
-        "y": -1995.0
+        "y": -2100.0
       }
     },
     {
       "id": "ai_README_md",
       "label": "README.md",
       "path": "ai/README.md",
-      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/ai/README.md",
+      "fullPath": "/home/n0v4p4x/DevOps/S-IDE/s-ide-py/ai/README.md",
       "category": "docs",
       "ext": ".md",
       "lines": 79,
       "size": 2652,
-      "modified": "2026-03-18T18:55:01.852027+00:00",
+      "modified": "2026-03-18T21:09:26.229970+00:00",
       "imports": [],
       "exports": [],
       "definitions": [],
@@ -1196,19 +1296,19 @@
       "errors": [],
       "position": {
         "x": 0.0,
-        "y": 105.0
+        "y": 210.0
       }
     },
     {
       "id": "ai___init___py",
       "label": "__init__.py",
       "path": "ai/__init__.py",
-      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/ai/__init__.py",
+      "fullPath": "/home/n0v4p4x/DevOps/S-IDE/s-ide-py/ai/__init__.py",
       "category": "python",
       "ext": ".py",
       "lines": 5,
       "size": 222,
-      "modified": "2026-03-18T18:55:01.852027+00:00",
+      "modified": "2026-03-18T21:09:26.229970+00:00",
       "imports": [
         {
           "type": "from-import",
@@ -1259,19 +1359,19 @@
       "errors": [],
       "position": {
         "x": 0.0,
-        "y": -1365.0
+        "y": -1470.0
       }
     },
     {
       "id": "ai_client_py",
       "label": "client.py",
       "path": "ai/client.py",
-      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/ai/client.py",
+      "fullPath": "/home/n0v4p4x/DevOps/S-IDE/s-ide-py/ai/client.py",
       "category": "python",
       "ext": ".py",
       "lines": 343,
       "size": 12720,
-      "modified": "2026-03-18T19:25:27.170850+00:00",
+      "modified": "2026-03-18T21:09:26.229970+00:00",
       "imports": [
         {
           "type": "from-import",
@@ -1865,12 +1965,12 @@
       "id": "ai_context_py",
       "label": "context.py",
       "path": "ai/context.py",
-      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/ai/context.py",
+      "fullPath": "/home/n0v4p4x/DevOps/S-IDE/s-ide-py/ai/context.py",
       "category": "python",
       "ext": ".py",
       "lines": 142,
       "size": 5167,
-      "modified": "2026-03-18T18:55:01.852027+00:00",
+      "modified": "2026-03-18T21:09:26.229970+00:00",
       "imports": [
         {
           "type": "from-import",
@@ -2115,12 +2215,12 @@
       "id": "ai_standards_py",
       "label": "standards.py",
       "path": "ai/standards.py",
-      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/ai/standards.py",
+      "fullPath": "/home/n0v4p4x/DevOps/S-IDE/s-ide-py/ai/standards.py",
       "category": "python",
       "ext": ".py",
       "lines": 104,
       "size": 5312,
-      "modified": "2026-03-18T19:25:27.170850+00:00",
+      "modified": "2026-03-18T21:09:26.229970+00:00",
       "imports": [],
       "exports": [
         {
@@ -2167,12 +2267,12 @@
       "id": "ai_tools_py",
       "label": "tools.py",
       "path": "ai/tools.py",
-      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/ai/tools.py",
+      "fullPath": "/home/n0v4p4x/DevOps/S-IDE/s-ide-py/ai/tools.py",
       "category": "python",
       "ext": ".py",
       "lines": 585,
       "size": 21564,
-      "modified": "2026-03-18T19:25:27.170850+00:00",
+      "modified": "2026-03-18T21:09:26.229970+00:00",
       "imports": [
         {
           "type": "from-import",
@@ -2757,12 +2857,12 @@
       "id": "graph_README_md",
       "label": "README.md",
       "path": "graph/README.md",
-      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/graph/README.md",
+      "fullPath": "/home/n0v4p4x/DevOps/S-IDE/s-ide-py/graph/README.md",
       "category": "docs",
       "ext": ".md",
       "lines": 42,
       "size": 1443,
-      "modified": "2026-03-18T18:55:01.852027+00:00",
+      "modified": "2026-03-18T21:09:26.229970+00:00",
       "imports": [],
       "exports": [],
       "definitions": [],
@@ -2770,19 +2870,19 @@
       "errors": [],
       "position": {
         "x": 0.0,
-        "y": 315.0
+        "y": 420.0
       }
     },
     {
       "id": "graph___init___py",
       "label": "__init__.py",
       "path": "graph/__init__.py",
-      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/graph/__init__.py",
+      "fullPath": "/home/n0v4p4x/DevOps/S-IDE/s-ide-py/graph/__init__.py",
       "category": "python",
       "ext": ".py",
       "lines": 6,
       "size": 148,
-      "modified": "2026-03-18T18:55:01.852027+00:00",
+      "modified": "2026-03-18T21:09:26.229970+00:00",
       "imports": [
         {
           "type": "from-import",
@@ -2809,19 +2909,19 @@
       "errors": [],
       "position": {
         "x": 0.0,
-        "y": -1155.0
+        "y": -1260.0
       }
     },
     {
       "id": "graph_types_py",
       "label": "types.py",
       "path": "graph/types.py",
-      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/graph/types.py",
+      "fullPath": "/home/n0v4p4x/DevOps/S-IDE/s-ide-py/graph/types.py",
       "category": "python",
       "ext": ".py",
       "lines": 272,
       "size": 9926,
-      "modified": "2026-03-18T18:55:01.852027+00:00",
+      "modified": "2026-03-18T21:09:26.229970+00:00",
       "imports": [
         {
           "type": "from-import",
@@ -3208,12 +3308,12 @@
       "id": "gui_README_md",
       "label": "README.md",
       "path": "gui/README.md",
-      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/gui/README.md",
+      "fullPath": "/home/n0v4p4x/DevOps/S-IDE/s-ide-py/gui/README.md",
       "category": "docs",
       "ext": ".md",
       "lines": 66,
       "size": 2845,
-      "modified": "2026-03-18T18:55:01.868027+00:00",
+      "modified": "2026-03-18T21:09:26.229970+00:00",
       "imports": [],
       "exports": [],
       "definitions": [],
@@ -3221,19 +3321,19 @@
       "errors": [],
       "position": {
         "x": 0.0,
-        "y": 525.0
+        "y": 630.0
       }
     },
     {
       "id": "gui___init___py",
       "label": "__init__.py",
       "path": "gui/__init__.py",
-      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/gui/__init__.py",
+      "fullPath": "/home/n0v4p4x/DevOps/S-IDE/s-ide-py/gui/__init__.py",
       "category": "python",
       "ext": ".py",
       "lines": 2,
       "size": 32,
-      "modified": "2026-03-18T19:25:27.170850+00:00",
+      "modified": "2026-03-18T21:09:26.229970+00:00",
       "imports": [
         {
           "type": "from-import",
@@ -3252,19 +3352,19 @@
       "errors": [],
       "position": {
         "x": 0.0,
-        "y": -945.0
+        "y": -1050.0
       }
     },
     {
       "id": "gui_app_py",
       "label": "app.py",
       "path": "gui/app.py",
-      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/gui/app.py",
+      "fullPath": "/home/n0v4p4x/DevOps/S-IDE/s-ide-py/gui/app.py",
       "category": "python",
       "ext": ".py",
-      "lines": 4337,
-      "size": 192911,
-      "modified": "2026-03-18T19:50:22.254842+00:00",
+      "lines": 4417,
+      "size": 196564,
+      "modified": "2026-03-18T21:09:56.946587+00:00",
       "imports": [
         {
           "type": "from-import",
@@ -3369,7 +3469,12 @@
           "line": 39,
           "names": [
             "Optional",
-            "Any"
+            "Any",
+            "Union",
+            "List",
+            "Dict",
+            "Set",
+            "Tuple"
           ],
           "alias": null
         },
@@ -3385,8 +3490,29 @@
         },
         {
           "type": "from-import",
+          "source": ".log",
+          "line": 56,
+          "names": [
+            "get_logger",
+            "get_log_path",
+            "recent_lines",
+            "clear_ring"
+          ],
+          "alias": null
+        },
+        {
+          "type": "from-import",
+          "source": ".editor",
+          "line": 57,
+          "names": [
+            "EditorWindow"
+          ],
+          "alias": null
+        },
+        {
+          "type": "from-import",
           "source": "gui.log",
-          "line": 54,
+          "line": 59,
           "names": [
             "get_logger",
             "get_log_path",
@@ -3398,7 +3524,7 @@
         {
           "type": "from-import",
           "source": "gui.editor",
-          "line": 55,
+          "line": 60,
           "names": [
             "EditorWindow"
           ],
@@ -3406,8 +3532,132 @@
         },
         {
           "type": "from-import",
+          "source": "..monitor.perf",
+          "line": 63,
+          "names": [
+            "MetricsWatcher",
+            "ParseTimer",
+            "ProcessMonitor"
+          ],
+          "alias": null
+        },
+        {
+          "type": "from-import",
+          "source": "..monitor.instrumenter",
+          "line": 64,
+          "names": [
+            "rollback_available",
+            "rollback",
+            "Instrumenter",
+            "InstrumentOptions"
+          ],
+          "alias": null
+        },
+        {
+          "type": "from-import",
+          "source": "..ai.client",
+          "line": 65,
+          "names": [
+            "OllamaClient",
+            "ChatMessage"
+          ],
+          "alias": null
+        },
+        {
+          "type": "from-import",
+          "source": "..ai.tools",
+          "line": 66,
+          "names": [
+            "TOOLS",
+            "dispatch_tool"
+          ],
+          "alias": null
+        },
+        {
+          "type": "from-import",
+          "source": "..ai.context",
+          "line": 67,
+          "names": [
+            "build_context",
+            "build_system_message"
+          ],
+          "alias": null
+        },
+        {
+          "type": "from-import",
+          "source": "..process.process_manager",
+          "line": 68,
+          "names": [
+            "ProcessManager"
+          ],
+          "alias": null
+        },
+        {
+          "type": "from-import",
+          "source": "..build.sandbox",
+          "line": 69,
+          "names": [
+            "SandboxRun",
+            "SandboxOptions"
+          ],
+          "alias": null
+        },
+        {
+          "type": "from-import",
+          "source": "..parser.project_parser",
+          "line": 70,
+          "names": [
+            "parse_project"
+          ],
+          "alias": null
+        },
+        {
+          "type": "from-import",
+          "source": "..version.version_manager",
+          "line": 71,
+          "names": [
+            "archive_version",
+            "apply_update",
+            "list_versions",
+            "compress_loose"
+          ],
+          "alias": null
+        },
+        {
+          "type": "from-import",
+          "source": "..build.packager",
+          "line": 74,
+          "names": [
+            "package_project",
+            "PackageOptions"
+          ],
+          "alias": null
+        },
+        {
+          "type": "from-import",
+          "source": "..parser.project_config",
+          "line": 75,
+          "names": [
+            "load_project_config",
+            "save_project_config",
+            "bump_version"
+          ],
+          "alias": null
+        },
+        {
+          "type": "from-import",
+          "source": "..build.cleaner",
+          "line": 76,
+          "names": [
+            "clean_project",
+            "CleanOptions"
+          ],
+          "alias": null
+        },
+        {
+          "type": "from-import",
           "source": "monitor.perf",
-          "line": 56,
+          "line": 78,
           "names": [
             "MetricsWatcher",
             "ParseTimer",
@@ -3418,7 +3668,7 @@
         {
           "type": "from-import",
           "source": "monitor.instrumenter",
-          "line": 57,
+          "line": 79,
           "names": [
             "rollback_available",
             "rollback",
@@ -3430,7 +3680,7 @@
         {
           "type": "from-import",
           "source": "ai.client",
-          "line": 58,
+          "line": 80,
           "names": [
             "OllamaClient",
             "ChatMessage"
@@ -3440,7 +3690,7 @@
         {
           "type": "from-import",
           "source": "ai.tools",
-          "line": 59,
+          "line": 81,
           "names": [
             "TOOLS",
             "dispatch_tool"
@@ -3450,7 +3700,7 @@
         {
           "type": "from-import",
           "source": "ai.context",
-          "line": 60,
+          "line": 82,
           "names": [
             "build_context",
             "build_system_message"
@@ -3460,7 +3710,7 @@
         {
           "type": "from-import",
           "source": "process.process_manager",
-          "line": 61,
+          "line": 83,
           "names": [
             "ProcessManager"
           ],
@@ -3469,7 +3719,7 @@
         {
           "type": "from-import",
           "source": "build.sandbox",
-          "line": 62,
+          "line": 84,
           "names": [
             "SandboxRun",
             "SandboxOptions"
@@ -3479,7 +3729,7 @@
         {
           "type": "from-import",
           "source": "parser.project_parser",
-          "line": 63,
+          "line": 85,
           "names": [
             "parse_project"
           ],
@@ -3488,7 +3738,7 @@
         {
           "type": "from-import",
           "source": "version.version_manager",
-          "line": 64,
+          "line": 86,
           "names": [
             "archive_version",
             "apply_update",
@@ -3500,7 +3750,7 @@
         {
           "type": "from-import",
           "source": "build.packager",
-          "line": 67,
+          "line": 89,
           "names": [
             "package_project",
             "PackageOptions"
@@ -3510,7 +3760,7 @@
         {
           "type": "from-import",
           "source": "parser.project_config",
-          "line": 68,
+          "line": 90,
           "names": [
             "load_project_config",
             "save_project_config",
@@ -3521,7 +3771,7 @@
         {
           "type": "from-import",
           "source": "build.cleaner",
-          "line": 69,
+          "line": 91,
           "names": [
             "clean_project",
             "CleanOptions"
@@ -3531,28 +3781,28 @@
         {
           "type": "import",
           "source": "traceback",
-          "line": 2795,
+          "line": 2860,
           "names": [],
           "alias": null
         },
         {
           "type": "import",
           "source": "sys",
-          "line": 3395,
+          "line": 3468,
           "names": [],
           "alias": null
         },
         {
           "type": "import",
           "source": "sys",
-          "line": 3811,
+          "line": 3891,
           "names": [],
           "alias": null
         },
         {
           "type": "from-import",
           "source": "build.packager",
-          "line": 4149,
+          "line": 4229,
           "names": [
             "package_project",
             "PackageOptions"
@@ -3562,7 +3812,7 @@
         {
           "type": "from-import",
           "source": "parser.project_config",
-          "line": 4166,
+          "line": 4246,
           "names": [
             "load_project_config",
             "save_project_config",
@@ -3573,14 +3823,14 @@
         {
           "type": "import",
           "source": "traceback",
-          "line": 4177,
+          "line": 4257,
           "names": [],
           "alias": null
         },
         {
           "type": "from-import",
           "source": "build.cleaner",
-          "line": 4195,
+          "line": 4275,
           "names": [
             "clean_project",
             "CleanOptions"
@@ -3590,7 +3840,7 @@
         {
           "type": "from-import",
           "source": "datetime",
-          "line": 4308,
+          "line": 4388,
           "names": [
             "datetime"
           ],
@@ -3599,7 +3849,7 @@
         {
           "type": "import",
           "source": "subprocess",
-          "line": 4318,
+          "line": 4398,
           "names": [],
           "alias": null
         }
@@ -3658,8 +3908,8 @@
         {
           "name": "cat_style",
           "kind": "function",
-          "line": 163,
-          "end_line": 165,
+          "line": 185,
+          "end_line": 187,
           "indent": 0,
           "is_async": false,
           "decorators": [],
@@ -3680,8 +3930,8 @@
         {
           "name": "edge_style",
           "kind": "function",
-          "line": 168,
-          "end_line": 170,
+          "line": 190,
+          "end_line": 192,
           "indent": 0,
           "is_async": false,
           "decorators": [],
@@ -3702,8 +3952,8 @@
         {
           "name": "node_height",
           "kind": "function",
-          "line": 173,
-          "end_line": 183,
+          "line": 195,
+          "end_line": 207,
           "indent": 0,
           "is_async": false,
           "decorators": [],
@@ -3711,7 +3961,7 @@
           "args": [
             [
               "node",
-              "dict"
+              "dict | None"
             ]
           ],
           "return_type": "int",
@@ -3721,13 +3971,13 @@
             "len"
           ],
           "raises": [],
-          "complexity": 4
+          "complexity": 5
         },
         {
           "name": "fmt_size",
           "kind": "function",
-          "line": 186,
-          "end_line": 194,
+          "line": 210,
+          "end_line": 218,
           "indent": 0,
           "is_async": false,
           "decorators": [],
@@ -3746,8 +3996,8 @@
         {
           "name": "SIDE_App",
           "kind": "class",
-          "line": 199,
-          "end_line": 4324,
+          "line": 223,
+          "end_line": 4404,
           "indent": 0,
           "is_async": false,
           "decorators": [],
@@ -3763,8 +4013,8 @@
         {
           "name": "__init__",
           "kind": "dunder",
-          "line": 202,
-          "end_line": 408,
+          "line": 226,
+          "end_line": 444,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -3801,8 +4051,8 @@
         {
           "name": "_start_metrics_watcher",
           "kind": "method",
-          "line": 411,
-          "end_line": 423,
+          "line": 447,
+          "end_line": 462,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -3820,19 +4070,19 @@
           "return_type": "None",
           "calls": [
             "MetricsWatcher",
-            "_metrics_watcher.start",
-            "_log.debug",
             "self._schedule_metrics_refresh",
+            "mw.start",
+            "_log.debug",
             "_metrics_watcher.stop"
           ],
           "raises": [],
-          "complexity": 3
+          "complexity": 5
         },
         {
           "name": "_schedule_metrics_refresh",
           "kind": "method",
-          "line": 425,
-          "end_line": 430,
+          "line": 464,
+          "end_line": 469,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -3854,8 +4104,8 @@
         {
           "name": "_refresh_file_metrics",
           "kind": "method",
-          "line": 432,
-          "end_line": 441,
+          "line": 471,
+          "end_line": 481,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -3868,7 +4118,7 @@
           ],
           "return_type": "None",
           "calls": [
-            "_metrics_watcher.get_file_metrics",
+            "mw.get_file_metrics",
             "self._schedule_redraw"
           ],
           "raises": [],
@@ -3877,8 +4127,8 @@
         {
           "name": "_node_metrics",
           "kind": "method",
-          "line": 443,
-          "end_line": 456,
+          "line": 483,
+          "end_line": 497,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -3893,23 +4143,24 @@
               "str"
             ]
           ],
-          "return_type": "dict | None",
+          "return_type": "Dict[str, Any]",
           "calls": [
             "_file_metrics.get",
             "node_path.replace",
             "_file_metrics.items",
+            "isinstance",
             "replace('\\\\', '/').endswith",
             "norm.endswith",
             "key.replace"
           ],
           "raises": [],
-          "complexity": 5
+          "complexity": 6
         },
         {
           "name": "_open_editor",
           "kind": "method",
-          "line": 460,
-          "end_line": 489,
+          "line": 501,
+          "end_line": 530,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -3955,8 +4206,8 @@
         {
           "name": "_cleanup",
           "kind": "method",
-          "line": 487,
-          "end_line": 488,
+          "line": 528,
+          "end_line": 529,
           "indent": 8,
           "is_async": false,
           "decorators": [],
@@ -3977,8 +4228,8 @@
         {
           "name": "_on_editor_save",
           "kind": "method",
-          "line": 491,
-          "end_line": 494,
+          "line": 532,
+          "end_line": 535,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -4008,8 +4259,8 @@
         {
           "name": "_on_editor_ask_ai",
           "kind": "method",
-          "line": 496,
-          "end_line": 503,
+          "line": 537,
+          "end_line": 544,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -4042,8 +4293,8 @@
         {
           "name": "_canvas_double_click",
           "kind": "method",
-          "line": 507,
-          "end_line": 513,
+          "line": 548,
+          "end_line": 554,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -4072,8 +4323,8 @@
         {
           "name": "_canvas_right_click",
           "kind": "method",
-          "line": 515,
-          "end_line": 539,
+          "line": 556,
+          "end_line": 580,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -4109,8 +4360,8 @@
         {
           "name": "_toggle_ai_panel",
           "kind": "method",
-          "line": 543,
-          "end_line": 544,
+          "line": 584,
+          "end_line": 585,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -4131,8 +4382,8 @@
         {
           "name": "_build_ai_panel",
           "kind": "method",
-          "line": 546,
-          "end_line": 612,
+          "line": 587,
+          "end_line": 656,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -4165,19 +4416,19 @@
             "Frame(parent, bg=P['line'], height=1).pack",
             "inp_f.pack",
             "tk.Entry",
-            "_ai_input.pack",
-            "_ai_input.bind",
-            "_ai_input.focus_set",
-            "send_btn.pack"
+            "send_btn.pack",
+            "send_btn.bind",
+            "co.pack",
+            "tk.Scrollbar"
           ],
           "raises": [],
-          "complexity": 1
+          "complexity": 3
         },
         {
           "name": "_ai_check_ollama",
           "kind": "method",
-          "line": 614,
-          "end_line": 634,
+          "line": 658,
+          "end_line": 680,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -4200,18 +4451,18 @@
             "self.after",
             "_ai_status_var.set",
             "model_combo.config",
-            "_ai_btn.config",
             "model_combo.set",
+            "_ai_btn.config",
             "len"
           ],
           "raises": [],
-          "complexity": 4
+          "complexity": 6
         },
         {
           "name": "_ok",
           "kind": "method",
-          "line": 620,
-          "end_line": 626,
+          "line": 664,
+          "end_line": 671,
           "indent": 16,
           "is_async": false,
           "decorators": [],
@@ -4221,18 +4472,18 @@
           "calls": [
             "_ai_status_var.set",
             "model_combo.config",
-            "_ai_btn.config",
             "model_combo.set",
+            "_ai_btn.config",
             "len"
           ],
           "raises": [],
-          "complexity": 2
+          "complexity": 3
         },
         {
           "name": "_fail",
           "kind": "method",
-          "line": 629,
-          "end_line": 631,
+          "line": 674,
+          "end_line": 677,
           "indent": 16,
           "is_async": false,
           "decorators": [],
@@ -4244,13 +4495,13 @@
             "_ai_btn.config"
           ],
           "raises": [],
-          "complexity": 1
+          "complexity": 2
         },
         {
           "name": "_ai_append",
           "kind": "method",
-          "line": 636,
-          "end_line": 648,
+          "line": 682,
+          "end_line": 694,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -4283,8 +4534,8 @@
         {
           "name": "_ai_clear",
           "kind": "method",
-          "line": 650,
-          "end_line": 660,
+          "line": 696,
+          "end_line": 706,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -4309,8 +4560,8 @@
         {
           "name": "_ai_send",
           "kind": "method",
-          "line": 662,
-          "end_line": 709,
+          "line": 708,
+          "end_line": 755,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -4350,8 +4601,8 @@
         {
           "name": "_on_chunk",
           "kind": "method",
-          "line": 686,
-          "end_line": 687,
+          "line": 732,
+          "end_line": 733,
           "indent": 8,
           "is_async": false,
           "decorators": [],
@@ -4373,8 +4624,8 @@
         {
           "name": "run_ai",
           "kind": "method",
-          "line": 689,
-          "end_line": 707,
+          "line": 735,
+          "end_line": 753,
           "indent": 8,
           "is_async": false,
           "decorators": [],
@@ -4389,6 +4640,7 @@
             "CM",
             "build_system_message",
             "dispatch_tool",
+            "self._refresh_plan",
             "self._ai_append"
           ],
           "raises": [],
@@ -4397,8 +4649,8 @@
         {
           "name": "_ai_append_content",
           "kind": "method",
-          "line": 711,
-          "end_line": 798,
+          "line": 757,
+          "end_line": 844,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -4442,8 +4694,8 @@
         {
           "name": "_ai_append_md_flat",
           "kind": "method",
-          "line": 800,
-          "end_line": 816,
+          "line": 846,
+          "end_line": 862,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -4470,8 +4722,8 @@
         {
           "name": "_ai_reset_stream_state",
           "kind": "method",
-          "line": 818,
-          "end_line": 824,
+          "line": 864,
+          "end_line": 870,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -4490,8 +4742,8 @@
         {
           "name": "_on_close",
           "kind": "method",
-          "line": 827,
-          "end_line": 842,
+          "line": 873,
+          "end_line": 888,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -4518,8 +4770,8 @@
         {
           "name": "_best_font",
           "kind": "method",
-          "line": 844,
-          "end_line": 851,
+          "line": 890,
+          "end_line": 897,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -4554,8 +4806,8 @@
         {
           "name": "_build_ui",
           "kind": "method",
-          "line": 855,
-          "end_line": 863,
+          "line": 901,
+          "end_line": 909,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -4580,8 +4832,8 @@
         {
           "name": "_build_topbar",
           "kind": "method",
-          "line": 865,
-          "end_line": 1011,
+          "line": 911,
+          "end_line": 1058,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -4616,13 +4868,13 @@
             "_mono_s).pack"
           ],
           "raises": [],
-          "complexity": 3
+          "complexity": 4
         },
         {
           "name": "add",
           "kind": "method",
-          "line": 872,
-          "end_line": 874,
+          "line": 918,
+          "end_line": 920,
           "indent": 8,
           "is_async": false,
           "decorators": [],
@@ -4647,8 +4899,8 @@
         {
           "name": "_build_main",
           "kind": "method",
-          "line": 1013,
-          "end_line": 1032,
+          "line": 1060,
+          "end_line": 1079,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -4680,8 +4932,8 @@
         {
           "name": "_build_bottom_panel",
           "kind": "method",
-          "line": 1034,
-          "end_line": 1096,
+          "line": 1081,
+          "end_line": 1143,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -4725,8 +4977,8 @@
         {
           "name": "_toggle_bottom",
           "kind": "method",
-          "line": 1049,
-          "end_line": 1059,
+          "line": 1096,
+          "end_line": 1106,
           "indent": 8,
           "is_async": false,
           "decorators": [],
@@ -4746,8 +4998,8 @@
         {
           "name": "add_tab",
           "kind": "method",
-          "line": 1072,
-          "end_line": 1078,
+          "line": 1119,
+          "end_line": 1125,
           "indent": 8,
           "is_async": false,
           "decorators": [],
@@ -4776,8 +5028,8 @@
         {
           "name": "_select_bottom_tab",
           "kind": "method",
-          "line": 1098,
-          "end_line": 1127,
+          "line": 1145,
+          "end_line": 1174,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -4816,8 +5068,8 @@
         {
           "name": "_build_terminal_panel",
           "kind": "method",
-          "line": 1131,
-          "end_line": 1195,
+          "line": 1178,
+          "end_line": 1242,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -4861,8 +5113,8 @@
         {
           "name": "_show_term_res",
           "kind": "method",
-          "line": 1150,
-          "end_line": 1158,
+          "line": 1197,
+          "end_line": 1205,
           "indent": 8,
           "is_async": false,
           "decorators": [],
@@ -4892,8 +5144,8 @@
         {
           "name": "_run_term",
           "kind": "method",
-          "line": 1160,
-          "end_line": 1185,
+          "line": 1207,
+          "end_line": 1232,
           "indent": 8,
           "is_async": false,
           "decorators": [],
@@ -4928,8 +5180,8 @@
         {
           "name": "run_proc",
           "kind": "method",
-          "line": 1176,
-          "end_line": 1183,
+          "line": 1223,
+          "end_line": 1230,
           "indent": 12,
           "is_async": false,
           "decorators": [],
@@ -4949,8 +5201,8 @@
         {
           "name": "_term_cycle_history",
           "kind": "method",
-          "line": 1197,
-          "end_line": 1212,
+          "line": 1244,
+          "end_line": 1259,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -4978,8 +5230,8 @@
         {
           "name": "_save_terminal_history",
           "kind": "method",
-          "line": 1214,
-          "end_line": 1219,
+          "line": 1261,
+          "end_line": 1266,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -5002,8 +5254,8 @@
         {
           "name": "_load_terminal_history",
           "kind": "method",
-          "line": 1221,
-          "end_line": 1230,
+          "line": 1268,
+          "end_line": 1277,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -5027,8 +5279,8 @@
         {
           "name": "_build_sidebar",
           "kind": "method",
-          "line": 1233,
-          "end_line": 1282,
+          "line": 1280,
+          "end_line": 1329,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -5070,8 +5322,8 @@
         {
           "name": "_build_run_panel",
           "kind": "method",
-          "line": 1284,
-          "end_line": 1314,
+          "line": 1331,
+          "end_line": 1363,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -5093,19 +5345,19 @@
             "_run_scripts_frame.pack",
             "hdr.bind",
             "_run_chevron.bind",
+            "self._refresh_run_scripts",
             "_run_body.pack",
             "_run_chevron.config",
-            "self._refresh_run_scripts",
             "_run_body.pack_forget"
           ],
           "raises": [],
-          "complexity": 2
+          "complexity": 6
         },
         {
           "name": "_toggle",
           "kind": "method",
-          "line": 1303,
-          "end_line": 1311,
+          "line": 1352,
+          "end_line": 1360,
           "indent": 8,
           "is_async": false,
           "decorators": [],
@@ -5118,19 +5370,19 @@
           ],
           "return_type": "",
           "calls": [
+            "self._refresh_run_scripts",
             "_run_body.pack",
             "_run_chevron.config",
-            "self._refresh_run_scripts",
             "_run_body.pack_forget"
           ],
           "raises": [],
-          "complexity": 2
+          "complexity": 6
         },
         {
           "name": "_refresh_run_scripts",
           "kind": "method",
-          "line": 1316,
-          "end_line": 1411,
+          "line": 1365,
+          "end_line": 1460,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -5170,8 +5422,8 @@
         {
           "name": "_stop_action",
           "kind": "method",
-          "line": 1362,
-          "end_line": 1371,
+          "line": 1411,
+          "end_line": 1420,
           "indent": 16,
           "is_async": false,
           "decorators": [],
@@ -5200,8 +5452,8 @@
         {
           "name": "_btn",
           "kind": "method",
-          "line": 1375,
-          "end_line": 1381,
+          "line": 1424,
+          "end_line": 1430,
           "indent": 16,
           "is_async": false,
           "decorators": [],
@@ -5237,8 +5489,8 @@
         {
           "name": "_run_script",
           "kind": "method",
-          "line": 1413,
-          "end_line": 1439,
+          "line": 1462,
+          "end_line": 1488,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -5275,8 +5527,8 @@
         {
           "name": "_on_line",
           "kind": "method",
-          "line": 1425,
-          "end_line": 1426,
+          "line": 1474,
+          "end_line": 1475,
           "indent": 8,
           "is_async": false,
           "decorators": [],
@@ -5302,8 +5554,8 @@
         {
           "name": "_on_err",
           "kind": "method",
-          "line": 1427,
-          "end_line": 1428,
+          "line": 1476,
+          "end_line": 1477,
           "indent": 8,
           "is_async": false,
           "decorators": [],
@@ -5329,8 +5581,8 @@
         {
           "name": "_on_exit",
           "kind": "method",
-          "line": 1429,
-          "end_line": 1431,
+          "line": 1478,
+          "end_line": 1480,
           "indent": 8,
           "is_async": false,
           "decorators": [],
@@ -5356,8 +5608,8 @@
         {
           "name": "_run_sandbox",
           "kind": "method",
-          "line": 1442,
-          "end_line": 1499,
+          "line": 1491,
+          "end_line": 1548,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -5409,8 +5661,8 @@
         {
           "name": "_prepare_and_start",
           "kind": "method",
-          "line": 1455,
-          "end_line": 1464,
+          "line": 1504,
+          "end_line": 1513,
           "indent": 8,
           "is_async": false,
           "decorators": [],
@@ -5432,8 +5684,8 @@
         {
           "name": "_do_start",
           "kind": "method",
-          "line": 1466,
-          "end_line": 1497,
+          "line": 1515,
+          "end_line": 1546,
           "indent": 8,
           "is_async": false,
           "decorators": [],
@@ -5468,8 +5720,8 @@
         {
           "name": "_on_line",
           "kind": "method",
-          "line": 1477,
-          "end_line": 1478,
+          "line": 1526,
+          "end_line": 1527,
           "indent": 12,
           "is_async": false,
           "decorators": [],
@@ -5495,8 +5747,8 @@
         {
           "name": "_on_err",
           "kind": "method",
-          "line": 1479,
-          "end_line": 1480,
+          "line": 1528,
+          "end_line": 1529,
           "indent": 12,
           "is_async": false,
           "decorators": [],
@@ -5522,8 +5774,8 @@
         {
           "name": "_on_exit",
           "kind": "method",
-          "line": 1481,
-          "end_line": 1489,
+          "line": 1530,
+          "end_line": 1538,
           "indent": 12,
           "is_async": false,
           "decorators": [],
@@ -5556,8 +5808,8 @@
         {
           "name": "_open_instrument_dialog",
           "kind": "method",
-          "line": 1501,
-          "end_line": 1623,
+          "line": 1550,
+          "end_line": 1672,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -5597,8 +5849,8 @@
         {
           "name": "_log_out",
           "kind": "method",
-          "line": 1567,
-          "end_line": 1572,
+          "line": 1616,
+          "end_line": 1621,
           "indent": 8,
           "is_async": false,
           "decorators": [],
@@ -5626,8 +5878,8 @@
         {
           "name": "_run_instrument",
           "kind": "method",
-          "line": 1574,
-          "end_line": 1591,
+          "line": 1623,
+          "end_line": 1640,
           "indent": 8,
           "is_async": false,
           "decorators": [],
@@ -5656,8 +5908,8 @@
         {
           "name": "_do",
           "kind": "method",
-          "line": 1585,
-          "end_line": 1590,
+          "line": 1634,
+          "end_line": 1639,
           "indent": 12,
           "is_async": false,
           "decorators": [],
@@ -5678,8 +5930,8 @@
         {
           "name": "_show_result",
           "kind": "method",
-          "line": 1593,
-          "end_line": 1607,
+          "line": 1642,
+          "end_line": 1656,
           "indent": 8,
           "is_async": false,
           "decorators": [],
@@ -5703,8 +5955,8 @@
         {
           "name": "_rollback_instrumentation",
           "kind": "method",
-          "line": 1625,
-          "end_line": 1642,
+          "line": 1674,
+          "end_line": 1691,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -5730,8 +5982,8 @@
         {
           "name": "_build_version_panel",
           "kind": "method",
-          "line": 1644,
-          "end_line": 1720,
+          "line": 1693,
+          "end_line": 1769,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -5771,8 +6023,8 @@
         {
           "name": "_toggle",
           "kind": "method",
-          "line": 1709,
-          "end_line": 1717,
+          "line": 1758,
+          "end_line": 1766,
           "indent": 8,
           "is_async": false,
           "decorators": [],
@@ -5796,8 +6048,8 @@
         {
           "name": "_build_canvas",
           "kind": "method",
-          "line": 1722,
-          "end_line": 1748,
+          "line": 1771,
+          "end_line": 1797,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -5832,8 +6084,8 @@
         {
           "name": "_build_zoom_widget",
           "kind": "method",
-          "line": 1750,
-          "end_line": 1776,
+          "line": 1799,
+          "end_line": 1825,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -5869,8 +6121,8 @@
         {
           "name": "_zw_btn",
           "kind": "method",
-          "line": 1754,
-          "end_line": 1763,
+          "line": 1803,
+          "end_line": 1812,
           "indent": 8,
           "is_async": false,
           "decorators": [],
@@ -5907,8 +6159,8 @@
         {
           "name": "_build_inspector",
           "kind": "method",
-          "line": 1778,
-          "end_line": 1788,
+          "line": 1827,
+          "end_line": 1837,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -5937,8 +6189,8 @@
         {
           "name": "_build_statusbar",
           "kind": "method",
-          "line": 1790,
-          "end_line": 1843,
+          "line": 1839,
+          "end_line": 1900,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -5964,17 +6216,21 @@
             "tk.StringVar",
             "tk.Label",
             "_metrics_badge.pack",
+            "self._vis_nodes",
             "_self_badge.pack",
-            "_proc_badge.pack"
+            "_proc_badge.pack",
+            "node.get",
+            "self.winfo_width",
+            "self.winfo_height"
           ],
           "raises": [],
-          "complexity": 1
+          "complexity": 4
         },
         {
           "name": "_bind_canvas",
           "kind": "method",
-          "line": 1847,
-          "end_line": 1871,
+          "line": 1904,
+          "end_line": 1928,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -5995,8 +6251,8 @@
         {
           "name": "_rebuild_hit_boxes",
           "kind": "method",
-          "line": 1873,
-          "end_line": 1887,
+          "line": 1930,
+          "end_line": 1944,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -6020,8 +6276,8 @@
         {
           "name": "_hit_test_node",
           "kind": "method",
-          "line": 1889,
-          "end_line": 1894,
+          "line": 1946,
+          "end_line": 1951,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -6050,8 +6306,8 @@
         {
           "name": "_hit_test_edge",
           "kind": "method",
-          "line": 1896,
-          "end_line": 1935,
+          "line": 1953,
+          "end_line": 1992,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -6084,7 +6340,8 @@
             "math.hypot",
             "min",
             "node_height",
-            "len"
+            "len",
+            "float"
           ],
           "raises": [],
           "complexity": 7
@@ -6092,8 +6349,8 @@
         {
           "name": "_canvas_motion",
           "kind": "method",
-          "line": 1937,
-          "end_line": 1955,
+          "line": 1994,
+          "end_line": 2012,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -6121,8 +6378,8 @@
         {
           "name": "_bind_keys",
           "kind": "method",
-          "line": 1957,
-          "end_line": 1960,
+          "line": 2014,
+          "end_line": 2017,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -6144,8 +6401,8 @@
         {
           "name": "_on_resize",
           "kind": "method",
-          "line": 1962,
-          "end_line": 1966,
+          "line": 2019,
+          "end_line": 2023,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -6171,8 +6428,8 @@
         {
           "name": "redraw",
           "kind": "method",
-          "line": 1968,
-          "end_line": 1970,
+          "line": 2025,
+          "end_line": 2027,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -6193,8 +6450,8 @@
         {
           "name": "_schedule_redraw",
           "kind": "method",
-          "line": 1972,
-          "end_line": 1979,
+          "line": 2029,
+          "end_line": 2036,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -6216,8 +6473,8 @@
         {
           "name": "_redraw",
           "kind": "method",
-          "line": 1981,
-          "end_line": 1987,
+          "line": 2038,
+          "end_line": 2044,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -6239,8 +6496,8 @@
         {
           "name": "_do_redraw",
           "kind": "method",
-          "line": 1989,
-          "end_line": 2027,
+          "line": 2046,
+          "end_line": 2084,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -6273,8 +6530,8 @@
         {
           "name": "_w2s",
           "kind": "method",
-          "line": 2031,
-          "end_line": 2034,
+          "line": 2088,
+          "end_line": 2091,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -6301,8 +6558,8 @@
         {
           "name": "_s2w",
           "kind": "method",
-          "line": 2036,
-          "end_line": 2039,
+          "line": 2093,
+          "end_line": 2096,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -6329,8 +6586,8 @@
         {
           "name": "_draw_grid",
           "kind": "method",
-          "line": 2043,
-          "end_line": 2074,
+          "line": 2100,
+          "end_line": 2133,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -6343,18 +6600,19 @@
           ],
           "return_type": "",
           "calls": [
+            "float",
             "c.winfo_width",
             "c.winfo_height",
             "c.create_line"
           ],
           "raises": [],
-          "complexity": 7
+          "complexity": 8
         },
         {
           "name": "_invalidate_cache",
           "kind": "method",
-          "line": 2078,
-          "end_line": 2083,
+          "line": 2137,
+          "end_line": 2142,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -6373,8 +6631,8 @@
         {
           "name": "_vis_nodes",
           "kind": "method",
-          "line": 2085,
-          "end_line": 2118,
+          "line": 2144,
+          "end_line": 2183,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -6385,11 +6643,12 @@
               ""
             ]
           ],
-          "return_type": "list",
+          "return_type": "List[Any]",
           "calls": [
-            "list",
-            "search_q.lower",
             "graph.get",
+            "search_q.lower",
+            "list",
+            "isinstance",
             "set",
             "e.get",
             "seen.add",
@@ -6404,8 +6663,8 @@
         {
           "name": "_vis_edges",
           "kind": "method",
-          "line": 2120,
-          "end_line": 2132,
+          "line": 2185,
+          "end_line": 2197,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -6427,8 +6686,8 @@
         {
           "name": "_node_map",
           "kind": "method",
-          "line": 2134,
-          "end_line": 2139,
+          "line": 2199,
+          "end_line": 2204,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -6449,8 +6708,8 @@
         {
           "name": "_npos",
           "kind": "method",
-          "line": 2141,
-          "end_line": 2145,
+          "line": 2206,
+          "end_line": 2210,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -6475,8 +6734,8 @@
         {
           "name": "_draw_nodes",
           "kind": "method",
-          "line": 2147,
-          "end_line": 2360,
+          "line": 2212,
+          "end_line": 2425,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -6516,8 +6775,8 @@
         {
           "name": "_draw_edges",
           "kind": "method",
-          "line": 2367,
-          "end_line": 2468,
+          "line": 2432,
+          "end_line": 2533,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -6557,8 +6816,8 @@
         {
           "name": "_bezier_points",
           "kind": "method",
-          "line": 2472,
-          "end_line": 2480,
+          "line": 2537,
+          "end_line": 2545,
           "indent": 4,
           "is_async": false,
           "decorators": [
@@ -6614,8 +6873,8 @@
         {
           "name": "_draw_arrowhead",
           "kind": "method",
-          "line": 2483,
-          "end_line": 2496,
+          "line": 2548,
+          "end_line": 2561,
           "indent": 4,
           "is_async": false,
           "decorators": [
@@ -6668,8 +6927,8 @@
         {
           "name": "_draw_minimap",
           "kind": "method",
-          "line": 2500,
-          "end_line": 2556,
+          "line": 2565,
+          "end_line": 2621,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -6706,8 +6965,8 @@
         {
           "name": "mm_pt",
           "kind": "method",
-          "line": 2523,
-          "end_line": 2524,
+          "line": 2588,
+          "end_line": 2589,
           "indent": 8,
           "is_async": false,
           "decorators": [],
@@ -6730,8 +6989,8 @@
         {
           "name": "_apply_vp",
           "kind": "method",
-          "line": 2560,
-          "end_line": 2567,
+          "line": 2625,
+          "end_line": 2632,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -6755,8 +7014,8 @@
         {
           "name": "_zoom_by",
           "kind": "method",
-          "line": 2569,
-          "end_line": 2580,
+          "line": 2634,
+          "end_line": 2645,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -6793,8 +7052,8 @@
         {
           "name": "_pan_step",
           "kind": "method",
-          "line": 2582,
-          "end_line": 2585,
+          "line": 2647,
+          "end_line": 2650,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -6823,8 +7082,8 @@
         {
           "name": "_fit_view",
           "kind": "method",
-          "line": 2587,
-          "end_line": 2604,
+          "line": 2652,
+          "end_line": 2669,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -6851,8 +7110,8 @@
         {
           "name": "_on_scroll",
           "kind": "method",
-          "line": 2608,
-          "end_line": 2613,
+          "line": 2673,
+          "end_line": 2678,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -6878,8 +7137,8 @@
         {
           "name": "_canvas_click",
           "kind": "method",
-          "line": 2615,
-          "end_line": 2633,
+          "line": 2680,
+          "end_line": 2698,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -6912,8 +7171,8 @@
         {
           "name": "_node_click",
           "kind": "method",
-          "line": 2635,
-          "end_line": 2647,
+          "line": 2700,
+          "end_line": 2712,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -6947,8 +7206,8 @@
         {
           "name": "_drag_move",
           "kind": "method",
-          "line": 2649,
-          "end_line": 2669,
+          "line": 2714,
+          "end_line": 2734,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -6978,8 +7237,8 @@
         {
           "name": "_drag_end",
           "kind": "method",
-          "line": 2671,
-          "end_line": 2674,
+          "line": 2736,
+          "end_line": 2739,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -7004,8 +7263,8 @@
         {
           "name": "_pan_start",
           "kind": "method",
-          "line": 2676,
-          "end_line": 2679,
+          "line": 2741,
+          "end_line": 2744,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -7030,8 +7289,8 @@
         {
           "name": "_pan_move",
           "kind": "method",
-          "line": 2681,
-          "end_line": 2685,
+          "line": 2746,
+          "end_line": 2750,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -7056,8 +7315,8 @@
         {
           "name": "_pan_end",
           "kind": "method",
-          "line": 2687,
-          "end_line": 2689,
+          "line": 2752,
+          "end_line": 2754,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -7082,8 +7341,8 @@
         {
           "name": "_node_enter",
           "kind": "method",
-          "line": 2693,
-          "end_line": 2693,
+          "line": 2758,
+          "end_line": 2758,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -7106,8 +7365,8 @@
         {
           "name": "_node_leave",
           "kind": "method",
-          "line": 2694,
-          "end_line": 2694,
+          "line": 2759,
+          "end_line": 2759,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -7130,8 +7389,8 @@
         {
           "name": "_edge_enter",
           "kind": "method",
-          "line": 2695,
-          "end_line": 2695,
+          "line": 2760,
+          "end_line": 2760,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -7154,8 +7413,8 @@
         {
           "name": "_edge_leave",
           "kind": "method",
-          "line": 2696,
-          "end_line": 2696,
+          "line": 2761,
+          "end_line": 2761,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -7178,8 +7437,8 @@
         {
           "name": "_edge_click",
           "kind": "method",
-          "line": 2698,
-          "end_line": 2704,
+          "line": 2763,
+          "end_line": 2769,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -7212,8 +7471,8 @@
         {
           "name": "_clear_selection",
           "kind": "method",
-          "line": 2706,
-          "end_line": 2710,
+          "line": 2771,
+          "end_line": 2775,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -7241,8 +7500,8 @@
         {
           "name": "_set_filter_cat",
           "kind": "method",
-          "line": 2714,
-          "end_line": 2718,
+          "line": 2779,
+          "end_line": 2783,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -7269,8 +7528,8 @@
         {
           "name": "_update_cat_chips",
           "kind": "method",
-          "line": 2720,
-          "end_line": 2727,
+          "line": 2785,
+          "end_line": 2792,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -7292,8 +7551,8 @@
         {
           "name": "_toggle_ext",
           "kind": "method",
-          "line": 2729,
-          "end_line": 2736,
+          "line": 2794,
+          "end_line": 2801,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -7320,8 +7579,8 @@
         {
           "name": "_on_search",
           "kind": "method",
-          "line": 2738,
-          "end_line": 2741,
+          "line": 2803,
+          "end_line": 2806,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -7348,8 +7607,8 @@
         {
           "name": "_load_saved_projects",
           "kind": "method",
-          "line": 2745,
-          "end_line": 2754,
+          "line": 2810,
+          "end_line": 2819,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -7375,8 +7634,8 @@
         {
           "name": "_save_project_list",
           "kind": "method",
-          "line": 2756,
-          "end_line": 2762,
+          "line": 2821,
+          "end_line": 2827,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -7400,8 +7659,8 @@
         {
           "name": "_open_project_dialog",
           "kind": "method",
-          "line": 2764,
-          "end_line": 2767,
+          "line": 2829,
+          "end_line": 2832,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -7423,8 +7682,8 @@
         {
           "name": "_load_project",
           "kind": "method",
-          "line": 2769,
-          "end_line": 2799,
+          "line": 2834,
+          "end_line": 2864,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -7466,8 +7725,8 @@
         {
           "name": "_parse",
           "kind": "method",
-          "line": 2775,
-          "end_line": 2797,
+          "line": 2840,
+          "end_line": 2862,
           "indent": 8,
           "is_async": false,
           "decorators": [],
@@ -7495,8 +7754,8 @@
         {
           "name": "_apply_graph",
           "kind": "method",
-          "line": 2801,
-          "end_line": 2859,
+          "line": 2866,
+          "end_line": 2925,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -7544,8 +7803,8 @@
         {
           "name": "_on_parse_error",
           "kind": "method",
-          "line": 2861,
-          "end_line": 2863,
+          "line": 2927,
+          "end_line": 2929,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -7571,8 +7830,8 @@
         {
           "name": "_render_project_list",
           "kind": "method",
-          "line": 2865,
-          "end_line": 2898,
+          "line": 2931,
+          "end_line": 2964,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -7606,8 +7865,8 @@
         {
           "name": "_remove_project",
           "kind": "method",
-          "line": 2900,
-          "end_line": 2903,
+          "line": 2966,
+          "end_line": 2969,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -7633,8 +7892,8 @@
         {
           "name": "_open_inspector",
           "kind": "method",
-          "line": 2907,
-          "end_line": 2917,
+          "line": 2973,
+          "end_line": 2983,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -7662,8 +7921,8 @@
         {
           "name": "_close_inspector",
           "kind": "method",
-          "line": 2919,
-          "end_line": 2922,
+          "line": 2985,
+          "end_line": 2988,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -7684,8 +7943,8 @@
         {
           "name": "_insp_header",
           "kind": "method",
-          "line": 2924,
-          "end_line": 2940,
+          "line": 2990,
+          "end_line": 3006,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -7731,8 +7990,8 @@
         {
           "name": "_insp_section",
           "kind": "method",
-          "line": 2942,
-          "end_line": 2945,
+          "line": 3008,
+          "end_line": 3011,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -7762,8 +8021,8 @@
         {
           "name": "_insp_row",
           "kind": "method",
-          "line": 2947,
-          "end_line": 2957,
+          "line": 3013,
+          "end_line": 3023,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -7810,8 +8069,8 @@
         {
           "name": "_inspect_node",
           "kind": "method",
-          "line": 2959,
-          "end_line": 3126,
+          "line": 3025,
+          "end_line": 3199,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -7850,13 +8109,13 @@
             "canvas_scroll.configure"
           ],
           "raises": [],
-          "complexity": 24
+          "complexity": 25
         },
         {
           "name": "build",
           "kind": "method",
-          "line": 2967,
-          "end_line": 3124,
+          "line": 3033,
+          "end_line": 3197,
           "indent": 8,
           "is_async": false,
           "decorators": [],
@@ -7891,13 +8150,13 @@
             "self._insp_section"
           ],
           "raises": [],
-          "complexity": 21
+          "complexity": 22
         },
         {
           "name": "on_configure",
           "kind": "method",
-          "line": 2981,
-          "end_line": 2982,
+          "line": 3047,
+          "end_line": 3048,
           "indent": 12,
           "is_async": false,
           "decorators": [],
@@ -7919,8 +8178,8 @@
         {
           "name": "_inspect_edge",
           "kind": "method",
-          "line": 3128,
-          "end_line": 3165,
+          "line": 3201,
+          "end_line": 3238,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -7962,8 +8221,8 @@
         {
           "name": "build",
           "kind": "method",
-          "line": 3134,
-          "end_line": 3163,
+          "line": 3207,
+          "end_line": 3236,
           "indent": 8,
           "is_async": false,
           "decorators": [],
@@ -7997,8 +8256,8 @@
         {
           "name": "_inspect_doc_health",
           "kind": "method",
-          "line": 3167,
-          "end_line": 3208,
+          "line": 3240,
+          "end_line": 3281,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -8038,8 +8297,8 @@
         {
           "name": "build",
           "kind": "method",
-          "line": 3174,
-          "end_line": 3206,
+          "line": 3247,
+          "end_line": 3279,
           "indent": 8,
           "is_async": false,
           "decorators": [],
@@ -8075,8 +8334,8 @@
         {
           "name": "_node_warnings",
           "kind": "method",
-          "line": 3210,
-          "end_line": 3212,
+          "line": 3283,
+          "end_line": 3285,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -8102,8 +8361,8 @@
         {
           "name": "_update_status_bar",
           "kind": "method",
-          "line": 3216,
-          "end_line": 3240,
+          "line": 3289,
+          "end_line": 3313,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -8141,8 +8400,8 @@
         {
           "name": "_update_doc_badge",
           "kind": "method",
-          "line": 3242,
-          "end_line": 3250,
+          "line": 3315,
+          "end_line": 3323,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -8169,8 +8428,8 @@
         {
           "name": "_show_loading",
           "kind": "method",
-          "line": 3254,
-          "end_line": 3302,
+          "line": 3327,
+          "end_line": 3375,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -8214,8 +8473,8 @@
         {
           "name": "_start_loading_animation",
           "kind": "method",
-          "line": 3304,
-          "end_line": 3308,
+          "line": 3377,
+          "end_line": 3381,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -8238,8 +8497,8 @@
         {
           "name": "_tick_loading",
           "kind": "method",
-          "line": 3310,
-          "end_line": 3321,
+          "line": 3383,
+          "end_line": 3394,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -8264,8 +8523,8 @@
         {
           "name": "_stop_loading_animation",
           "kind": "method",
-          "line": 3323,
-          "end_line": 3331,
+          "line": 3396,
+          "end_line": 3404,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -8287,8 +8546,8 @@
         {
           "name": "_hide_loading",
           "kind": "method",
-          "line": 3333,
-          "end_line": 3337,
+          "line": 3406,
+          "end_line": 3410,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -8310,8 +8569,8 @@
         {
           "name": "_destroy_loading_win",
           "kind": "method",
-          "line": 3339,
-          "end_line": 3346,
+          "line": 3412,
+          "end_line": 3419,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -8334,8 +8593,8 @@
         {
           "name": "_archive_version",
           "kind": "method",
-          "line": 3350,
-          "end_line": 3360,
+          "line": 3423,
+          "end_line": 3433,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -8361,8 +8620,8 @@
         {
           "name": "_compress_versions",
           "kind": "method",
-          "line": 3362,
-          "end_line": 3372,
+          "line": 3435,
+          "end_line": 3445,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -8388,8 +8647,8 @@
         {
           "name": "_apply_update_dialog",
           "kind": "method",
-          "line": 3374,
-          "end_line": 3391,
+          "line": 3447,
+          "end_line": 3464,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -8417,8 +8676,8 @@
         {
           "name": "_run_self_update",
           "kind": "method",
-          "line": 3393,
-          "end_line": 3432,
+          "line": 3466,
+          "end_line": 3505,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -8453,8 +8712,8 @@
         {
           "name": "_on_line",
           "kind": "method",
-          "line": 3407,
-          "end_line": 3409,
+          "line": 3480,
+          "end_line": 3482,
           "indent": 8,
           "is_async": false,
           "decorators": [],
@@ -8481,8 +8740,8 @@
         {
           "name": "_on_err",
           "kind": "method",
-          "line": 3410,
-          "end_line": 3412,
+          "line": 3483,
+          "end_line": 3485,
           "indent": 8,
           "is_async": false,
           "decorators": [],
@@ -8509,8 +8768,8 @@
         {
           "name": "_on_exit",
           "kind": "method",
-          "line": 3413,
-          "end_line": 3424,
+          "line": 3486,
+          "end_line": 3497,
           "indent": 8,
           "is_async": false,
           "decorators": [],
@@ -8539,8 +8798,8 @@
         {
           "name": "_refresh_version_list",
           "kind": "method",
-          "line": 3435,
-          "end_line": 3462,
+          "line": 3508,
+          "end_line": 3537,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -8560,18 +8819,19 @@
             "tk.Frame",
             "row.pack",
             "_mono_xs).pack",
-            "_ver_list_frame, bg=P['line'], height=1).pack",
             "tk.Label",
+            "lb.pack",
+            "_ver_list_frame, bg=P['line'], height=1).pack",
             "fmt_size"
           ],
           "raises": [],
-          "complexity": 6
+          "complexity": 7
         },
         {
           "name": "_toggle_proc_panel",
           "kind": "method",
-          "line": 3466,
-          "end_line": 3470,
+          "line": 3541,
+          "end_line": 3546,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -8585,7 +8845,7 @@
           "return_type": "",
           "calls": [
             "self._build_proc_panel",
-            "_proc_win.winfo_exists",
+            "pw.winfo_exists",
             "_proc_win.destroy"
           ],
           "raises": [],
@@ -8594,8 +8854,8 @@
         {
           "name": "_build_proc_panel",
           "kind": "method",
-          "line": 3472,
-          "end_line": 3555,
+          "line": 3548,
+          "end_line": 3635,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -8630,14 +8890,14 @@
             "tk.Canvas"
           ],
           "raises": [],
-          "complexity": 1
+          "complexity": 4
         },
         {
           "name": "_on_canvas_resize",
           "kind": "method",
-          "line": 3515,
-          "end_line": 3516,
-          "indent": 8,
+          "line": 3593,
+          "end_line": 3595,
+          "indent": 12,
           "is_async": false,
           "decorators": [],
           "bases": [],
@@ -8652,13 +8912,13 @@
             "_proc_list_canvas.itemconfig"
           ],
           "raises": [],
-          "complexity": 1
+          "complexity": 2
         },
         {
           "name": "_clear_stopped_procs",
           "kind": "method",
-          "line": 3557,
-          "end_line": 3567,
+          "line": 3637,
+          "end_line": 3647,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -8683,8 +8943,8 @@
         {
           "name": "_start_process",
           "kind": "method",
-          "line": 3569,
-          "end_line": 3598,
+          "line": 3649,
+          "end_line": 3678,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -8719,8 +8979,8 @@
         {
           "name": "_on_line",
           "kind": "method",
-          "line": 3589,
-          "end_line": 3590,
+          "line": 3669,
+          "end_line": 3670,
           "indent": 8,
           "is_async": false,
           "decorators": [],
@@ -8746,8 +9006,8 @@
         {
           "name": "_on_err",
           "kind": "method",
-          "line": 3591,
-          "end_line": 3592,
+          "line": 3671,
+          "end_line": 3672,
           "indent": 8,
           "is_async": false,
           "decorators": [],
@@ -8773,8 +9033,8 @@
         {
           "name": "_on_exit",
           "kind": "method",
-          "line": 3593,
-          "end_line": 3594,
+          "line": 3673,
+          "end_line": 3674,
           "indent": 8,
           "is_async": false,
           "decorators": [],
@@ -8800,8 +9060,8 @@
         {
           "name": "_render_proc_list",
           "kind": "method",
-          "line": 3600,
-          "end_line": 3689,
+          "line": 3680,
+          "end_line": 3769,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -8841,8 +9101,8 @@
         {
           "name": "_mk_btn",
           "kind": "method",
-          "line": 3649,
-          "end_line": 3661,
+          "line": 3729,
+          "end_line": 3741,
           "indent": 12,
           "is_async": false,
           "decorators": [],
@@ -8875,8 +9135,8 @@
         {
           "name": "_ensure_proc_monitor",
           "kind": "method",
-          "line": 3691,
-          "end_line": 3700,
+          "line": 3771,
+          "end_line": 3780,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -8901,8 +9161,8 @@
         {
           "name": "_schedule_proc_refresh",
           "kind": "method",
-          "line": 3702,
-          "end_line": 3710,
+          "line": 3782,
+          "end_line": 3790,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -8928,8 +9188,8 @@
         {
           "name": "_append_proc_log",
           "kind": "method",
-          "line": 3712,
-          "end_line": 3720,
+          "line": 3792,
+          "end_line": 3800,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -8967,8 +9227,8 @@
         {
           "name": "_toggle_log_panel",
           "kind": "method",
-          "line": 3723,
-          "end_line": 3728,
+          "line": 3803,
+          "end_line": 3808,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -8991,8 +9251,8 @@
         {
           "name": "_build_log_panel",
           "kind": "method",
-          "line": 3730,
-          "end_line": 3812,
+          "line": 3810,
+          "end_line": 3892,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -9032,8 +9292,8 @@
         {
           "name": "_refresh",
           "kind": "method",
-          "line": 3787,
-          "end_line": 3794,
+          "line": 3867,
+          "end_line": 3874,
           "indent": 8,
           "is_async": false,
           "decorators": [],
@@ -9053,8 +9313,8 @@
         {
           "name": "_clear",
           "kind": "method",
-          "line": 3796,
-          "end_line": 3800,
+          "line": 3876,
+          "end_line": 3880,
           "indent": 8,
           "is_async": false,
           "decorators": [],
@@ -9072,8 +9332,8 @@
         {
           "name": "_auto_refresh",
           "kind": "method",
-          "line": 3804,
-          "end_line": 3807,
+          "line": 3884,
+          "end_line": 3887,
           "indent": 8,
           "is_async": false,
           "decorators": [],
@@ -9091,8 +9351,8 @@
         {
           "name": "_toggle_build_panel",
           "kind": "method",
-          "line": 3817,
-          "end_line": 3822,
+          "line": 3897,
+          "end_line": 3902,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -9115,8 +9375,8 @@
         {
           "name": "_open_build_panel",
           "kind": "method",
-          "line": 3824,
-          "end_line": 3976,
+          "line": 3904,
+          "end_line": 4056,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -9156,8 +9416,8 @@
         {
           "name": "_row",
           "kind": "method",
-          "line": 3846,
-          "end_line": 3851,
+          "line": 3926,
+          "end_line": 3931,
           "indent": 8,
           "is_async": false,
           "decorators": [],
@@ -9186,8 +9446,8 @@
         {
           "name": "_combo",
           "kind": "method",
-          "line": 3860,
-          "end_line": 3864,
+          "line": 3940,
+          "end_line": 3944,
           "indent": 8,
           "is_async": false,
           "decorators": [],
@@ -9221,8 +9481,8 @@
         {
           "name": "_check",
           "kind": "method",
-          "line": 3866,
-          "end_line": 3871,
+          "line": 3946,
+          "end_line": 3951,
           "indent": 8,
           "is_async": false,
           "decorators": [],
@@ -9252,8 +9512,8 @@
         {
           "name": "_action_btn",
           "kind": "method",
-          "line": 3894,
-          "end_line": 3902,
+          "line": 3974,
+          "end_line": 3982,
           "indent": 8,
           "is_async": false,
           "decorators": [],
@@ -9285,8 +9545,8 @@
         {
           "name": "_toggle_live_timing",
           "kind": "method",
-          "line": 3938,
-          "end_line": 3948,
+          "line": 4018,
+          "end_line": 4028,
           "indent": 8,
           "is_async": false,
           "decorators": [],
@@ -9304,8 +9564,8 @@
         {
           "name": "_build_log",
           "kind": "method",
-          "line": 3978,
-          "end_line": 3988,
+          "line": 4058,
+          "end_line": 4068,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -9339,8 +9599,8 @@
         {
           "name": "_refresh_perf_display",
           "kind": "method",
-          "line": 3990,
-          "end_line": 4041,
+          "line": 4070,
+          "end_line": 4121,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -9378,8 +9638,8 @@
         {
           "name": "_update_render_timing",
           "kind": "method",
-          "line": 4043,
-          "end_line": 4129,
+          "line": 4123,
+          "end_line": 4209,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -9419,8 +9679,8 @@
         {
           "name": "_run_build",
           "kind": "method",
-          "line": 4131,
-          "end_line": 4183,
+          "line": 4211,
+          "end_line": 4263,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -9460,8 +9720,8 @@
         {
           "name": "_do_build",
           "kind": "method",
-          "line": 4147,
-          "end_line": 4181,
+          "line": 4227,
+          "end_line": 4261,
           "indent": 8,
           "is_async": false,
           "decorators": [],
@@ -9490,8 +9750,8 @@
         {
           "name": "_run_clean_only",
           "kind": "method",
-          "line": 4185,
-          "end_line": 4210,
+          "line": 4265,
+          "end_line": 4290,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -9520,8 +9780,8 @@
         {
           "name": "_do_clean",
           "kind": "method",
-          "line": 4193,
-          "end_line": 4208,
+          "line": 4273,
+          "end_line": 4288,
           "indent": 8,
           "is_async": false,
           "decorators": [],
@@ -9543,8 +9803,8 @@
         {
           "name": "_show_build_history",
           "kind": "method",
-          "line": 4212,
-          "end_line": 4240,
+          "line": 4292,
+          "end_line": 4320,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -9573,8 +9833,8 @@
         {
           "name": "_build_plan_panel",
           "kind": "method",
-          "line": 4242,
-          "end_line": 4251,
+          "line": 4322,
+          "end_line": 4331,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -9601,8 +9861,8 @@
         {
           "name": "_refresh_plan",
           "kind": "method",
-          "line": 4253,
-          "end_line": 4281,
+          "line": 4333,
+          "end_line": 4361,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -9635,8 +9895,8 @@
         {
           "name": "_build_playground_panel",
           "kind": "method",
-          "line": 4283,
-          "end_line": 4302,
+          "line": 4363,
+          "end_line": 4382,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -9671,8 +9931,8 @@
         {
           "name": "_playground_run",
           "kind": "method",
-          "line": 4304,
-          "end_line": 4324,
+          "line": 4384,
+          "end_line": 4404,
           "indent": 4,
           "is_async": false,
           "decorators": [],
@@ -9703,8 +9963,8 @@
         {
           "name": "main",
           "kind": "function",
-          "line": 4327,
-          "end_line": 4333,
+          "line": 4407,
+          "end_line": 4413,
           "indent": 0,
           "is_async": false,
           "decorators": [],
@@ -9725,7 +9985,11 @@
       "tags": [
         "entrypoint"
       ],
-      "errors": [],
+      "errors": [
+        "Unresolved import: '..build.sandbox'",
+        "Unresolved import: '..build.packager'",
+        "Unresolved import: '..build.cleaner'"
+      ],
       "position": {
         "x": 340.0,
         "y": -315.0
@@ -9735,12 +9999,12 @@
       "id": "gui_editor_py",
       "label": "editor.py",
       "path": "gui/editor.py",
-      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/gui/editor.py",
+      "fullPath": "/home/n0v4p4x/DevOps/S-IDE/s-ide-py/gui/editor.py",
       "category": "python",
       "ext": ".py",
       "lines": 563,
       "size": 23640,
-      "modified": "2026-03-18T19:25:27.174850+00:00",
+      "modified": "2026-03-18T21:09:26.229970+00:00",
       "imports": [
         {
           "type": "from-import",
@@ -10750,12 +11014,12 @@
       "id": "gui_log_py",
       "label": "log.py",
       "path": "gui/log.py",
-      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/gui/log.py",
+      "fullPath": "/home/n0v4p4x/DevOps/S-IDE/s-ide-py/gui/log.py",
       "category": "python",
       "ext": ".py",
       "lines": 124,
       "size": 4172,
-      "modified": "2026-03-18T18:55:01.868027+00:00",
+      "modified": "2026-03-18T21:09:26.229970+00:00",
       "imports": [
         {
           "type": "from-import",
@@ -10994,12 +11258,12 @@
       "id": "gui_server_py",
       "label": "server.py",
       "path": "gui/server.py",
-      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/gui/server.py",
+      "fullPath": "/home/n0v4p4x/DevOps/S-IDE/s-ide-py/gui/server.py",
       "category": "python",
       "ext": ".py",
       "lines": 393,
       "size": 16278,
-      "modified": "2026-03-18T18:55:01.860027+00:00",
+      "modified": "2026-03-18T21:09:26.229970+00:00",
       "imports": [
         {
           "type": "from-import",
@@ -11822,19 +12086,19 @@
       "errors": [],
       "position": {
         "x": 0.0,
-        "y": -1785.0
+        "y": -1890.0
       }
     },
     {
       "id": "gui_server_README_md",
       "label": "server_README.md",
       "path": "gui/server_README.md",
-      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/gui/server_README.md",
+      "fullPath": "/home/n0v4p4x/DevOps/S-IDE/s-ide-py/gui/server_README.md",
       "category": "docs",
       "ext": ".md",
       "lines": 13,
       "size": 431,
-      "modified": "2026-03-18T18:55:01.860027+00:00",
+      "modified": "2026-03-18T21:09:26.233970+00:00",
       "imports": [],
       "exports": [],
       "definitions": [],
@@ -11842,19 +12106,19 @@
       "errors": [],
       "position": {
         "x": 0.0,
-        "y": 735.0
+        "y": 840.0
       }
     },
     {
       "id": "monitor_README_md",
       "label": "README.md",
       "path": "monitor/README.md",
-      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/monitor/README.md",
+      "fullPath": "/home/n0v4p4x/DevOps/S-IDE/s-ide-py/monitor/README.md",
       "category": "docs",
       "ext": ".md",
       "lines": 113,
       "size": 3406,
-      "modified": "2026-03-18T18:55:01.856027+00:00",
+      "modified": "2026-03-18T21:09:26.233970+00:00",
       "imports": [],
       "exports": [],
       "definitions": [],
@@ -11862,19 +12126,19 @@
       "errors": [],
       "position": {
         "x": 0.0,
-        "y": 945.0
+        "y": 1050.0
       }
     },
     {
       "id": "monitor___init___py",
       "label": "__init__.py",
       "path": "monitor/__init__.py",
-      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/monitor/__init__.py",
+      "fullPath": "/home/n0v4p4x/DevOps/S-IDE/s-ide-py/monitor/__init__.py",
       "category": "python",
       "ext": ".py",
       "lines": 3,
       "size": 167,
-      "modified": "2026-03-18T18:55:01.856027+00:00",
+      "modified": "2026-03-18T21:09:26.233970+00:00",
       "imports": [
         {
           "type": "from-import",
@@ -11914,12 +12178,12 @@
       "id": "monitor_instrument_py",
       "label": "instrument.py",
       "path": "monitor/instrument.py",
-      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/monitor/instrument.py",
+      "fullPath": "/home/n0v4p4x/DevOps/S-IDE/s-ide-py/monitor/instrument.py",
       "category": "python",
       "ext": ".py",
       "lines": 253,
       "size": 7508,
-      "modified": "2026-03-18T18:55:01.856027+00:00",
+      "modified": "2026-03-18T21:09:26.233970+00:00",
       "imports": [
         {
           "type": "from-import",
@@ -12366,12 +12630,12 @@
       "id": "monitor_instrumenter_py",
       "label": "instrumenter.py",
       "path": "monitor/instrumenter.py",
-      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/monitor/instrumenter.py",
+      "fullPath": "/home/n0v4p4x/DevOps/S-IDE/s-ide-py/monitor/instrumenter.py",
       "category": "python",
       "ext": ".py",
       "lines": 504,
       "size": 18742,
-      "modified": "2026-03-18T18:55:01.856027+00:00",
+      "modified": "2026-03-18T21:09:26.233970+00:00",
       "imports": [
         {
           "type": "from-import",
@@ -13128,12 +13392,12 @@
       "id": "monitor_perf_py",
       "label": "perf.py",
       "path": "monitor/perf.py",
-      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/monitor/perf.py",
+      "fullPath": "/home/n0v4p4x/DevOps/S-IDE/s-ide-py/monitor/perf.py",
       "category": "python",
       "ext": ".py",
       "lines": 330,
       "size": 10679,
-      "modified": "2026-03-18T18:55:01.856027+00:00",
+      "modified": "2026-03-18T21:09:26.233970+00:00",
       "imports": [
         {
           "type": "from-import",
@@ -13885,12 +14149,12 @@
       "id": "parser_README_md",
       "label": "README.md",
       "path": "parser/README.md",
-      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/parser/README.md",
+      "fullPath": "/home/n0v4p4x/DevOps/S-IDE/s-ide-py/parser/README.md",
       "category": "docs",
       "ext": ".md",
       "lines": 46,
       "size": 1431,
-      "modified": "2026-03-18T18:55:01.844027+00:00",
+      "modified": "2026-03-18T21:09:26.233970+00:00",
       "imports": [],
       "exports": [],
       "definitions": [],
@@ -13898,19 +14162,19 @@
       "errors": [],
       "position": {
         "x": 0.0,
-        "y": 1155.0
+        "y": 1260.0
       }
     },
     {
       "id": "parser___init___py",
       "label": "__init__.py",
       "path": "parser/__init__.py",
-      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/parser/__init__.py",
+      "fullPath": "/home/n0v4p4x/DevOps/S-IDE/s-ide-py/parser/__init__.py",
       "category": "python",
       "ext": ".py",
       "lines": 3,
       "size": 146,
-      "modified": "2026-03-18T18:55:01.840027+00:00",
+      "modified": "2026-03-18T21:09:26.233970+00:00",
       "imports": [
         {
           "type": "from-import",
@@ -13940,19 +14204,19 @@
       "errors": [],
       "position": {
         "x": 0.0,
-        "y": -735.0
+        "y": -840.0
       }
     },
     {
       "id": "parser_doc_check_py",
       "label": "doc_check.py",
       "path": "parser/doc_check.py",
-      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/parser/doc_check.py",
+      "fullPath": "/home/n0v4p4x/DevOps/S-IDE/s-ide-py/parser/doc_check.py",
       "category": "python",
       "ext": ".py",
       "lines": 131,
       "size": 5075,
-      "modified": "2026-03-18T18:55:01.844027+00:00",
+      "modified": "2026-03-18T21:09:26.233970+00:00",
       "imports": [
         {
           "type": "from-import",
@@ -14078,12 +14342,12 @@
       "id": "parser_layout_py",
       "label": "layout.py",
       "path": "parser/layout.py",
-      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/parser/layout.py",
+      "fullPath": "/home/n0v4p4x/DevOps/S-IDE/s-ide-py/parser/layout.py",
       "category": "python",
       "ext": ".py",
       "lines": 111,
       "size": 4029,
-      "modified": "2026-03-18T18:55:01.840027+00:00",
+      "modified": "2026-03-18T21:09:26.233970+00:00",
       "imports": [
         {
           "type": "from-import",
@@ -14205,12 +14469,12 @@
       "id": "parser_project_config_py",
       "label": "project_config.py",
       "path": "parser/project_config.py",
-      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/parser/project_config.py",
+      "fullPath": "/home/n0v4p4x/DevOps/S-IDE/s-ide-py/parser/project_config.py",
       "category": "python",
       "ext": ".py",
       "lines": 169,
       "size": 4867,
-      "modified": "2026-03-18T18:55:01.840027+00:00",
+      "modified": "2026-03-18T21:09:26.233970+00:00",
       "imports": [
         {
           "type": "from-import",
@@ -14433,12 +14697,12 @@
       "id": "parser_project_parser_py",
       "label": "project_parser.py",
       "path": "parser/project_parser.py",
-      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/parser/project_parser.py",
+      "fullPath": "/home/n0v4p4x/DevOps/S-IDE/s-ide-py/parser/project_parser.py",
       "category": "python",
       "ext": ".py",
       "lines": 214,
       "size": 7533,
-      "modified": "2026-03-18T18:55:01.840027+00:00",
+      "modified": "2026-03-18T21:09:26.233970+00:00",
       "imports": [
         {
           "type": "from-import",
@@ -14814,12 +15078,12 @@
       "id": "parser_resolve_edges_py",
       "label": "resolve_edges.py",
       "path": "parser/resolve_edges.py",
-      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/parser/resolve_edges.py",
+      "fullPath": "/home/n0v4p4x/DevOps/S-IDE/s-ide-py/parser/resolve_edges.py",
       "category": "python",
       "ext": ".py",
       "lines": 263,
       "size": 10176,
-      "modified": "2026-03-18T18:55:01.840027+00:00",
+      "modified": "2026-03-18T21:09:26.233970+00:00",
       "imports": [
         {
           "type": "from-import",
@@ -15070,12 +15334,12 @@
       "id": "parser_walker_py",
       "label": "walker.py",
       "path": "parser/walker.py",
-      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/parser/walker.py",
+      "fullPath": "/home/n0v4p4x/DevOps/S-IDE/s-ide-py/parser/walker.py",
       "category": "python",
       "ext": ".py",
       "lines": 166,
       "size": 5306,
-      "modified": "2026-03-18T18:55:01.844027+00:00",
+      "modified": "2026-03-18T21:09:26.241970+00:00",
       "imports": [
         {
           "type": "from-import",
@@ -15261,12 +15525,12 @@
       "id": "parser_parsers_README_md",
       "label": "README.md",
       "path": "parser/parsers/README.md",
-      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/parser/parsers/README.md",
+      "fullPath": "/home/n0v4p4x/DevOps/S-IDE/s-ide-py/parser/parsers/README.md",
       "category": "docs",
       "ext": ".md",
       "lines": 24,
       "size": 1018,
-      "modified": "2026-03-18T18:55:01.840027+00:00",
+      "modified": "2026-03-18T21:09:26.233970+00:00",
       "imports": [],
       "exports": [],
       "definitions": [],
@@ -15274,19 +15538,19 @@
       "errors": [],
       "position": {
         "x": 0.0,
-        "y": 1365.0
+        "y": 1470.0
       }
     },
     {
       "id": "parser_parsers___init___py",
       "label": "__init__.py",
       "path": "parser/parsers/__init__.py",
-      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/parser/parsers/__init__.py",
+      "fullPath": "/home/n0v4p4x/DevOps/S-IDE/s-ide-py/parser/parsers/__init__.py",
       "category": "python",
       "ext": ".py",
       "lines": 32,
       "size": 894,
-      "modified": "2026-03-18T18:55:01.840027+00:00",
+      "modified": "2026-03-18T21:09:26.233970+00:00",
       "imports": [
         {
           "type": "from-import",
@@ -15348,12 +15612,12 @@
       "id": "parser_parsers_js_parser_py",
       "label": "js_parser.py",
       "path": "parser/parsers/js_parser.py",
-      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/parser/parsers/js_parser.py",
+      "fullPath": "/home/n0v4p4x/DevOps/S-IDE/s-ide-py/parser/parsers/js_parser.py",
       "category": "python",
       "ext": ".py",
       "lines": 252,
       "size": 10047,
-      "modified": "2026-03-18T18:55:01.836027+00:00",
+      "modified": "2026-03-18T21:09:26.233970+00:00",
       "imports": [
         {
           "type": "from-import",
@@ -15657,12 +15921,12 @@
       "id": "parser_parsers_json_parser_py",
       "label": "json_parser.py",
       "path": "parser/parsers/json_parser.py",
-      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/parser/parsers/json_parser.py",
+      "fullPath": "/home/n0v4p4x/DevOps/S-IDE/s-ide-py/parser/parsers/json_parser.py",
       "category": "python",
       "ext": ".py",
       "lines": 87,
       "size": 3792,
-      "modified": "2026-03-18T18:55:01.840027+00:00",
+      "modified": "2026-03-18T21:09:26.233970+00:00",
       "imports": [
         {
           "type": "from-import",
@@ -15766,12 +16030,12 @@
       "id": "parser_parsers_python_parser_py",
       "label": "python_parser.py",
       "path": "parser/parsers/python_parser.py",
-      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/parser/parsers/python_parser.py",
+      "fullPath": "/home/n0v4p4x/DevOps/S-IDE/s-ide-py/parser/parsers/python_parser.py",
       "category": "python",
       "ext": ".py",
       "lines": 421,
       "size": 15652,
-      "modified": "2026-03-18T18:55:01.836027+00:00",
+      "modified": "2026-03-18T21:09:26.233970+00:00",
       "imports": [
         {
           "type": "from-import",
@@ -16355,12 +16619,12 @@
       "id": "parser_parsers_shell_parser_py",
       "label": "shell_parser.py",
       "path": "parser/parsers/shell_parser.py",
-      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/parser/parsers/shell_parser.py",
+      "fullPath": "/home/n0v4p4x/DevOps/S-IDE/s-ide-py/parser/parsers/shell_parser.py",
       "category": "python",
       "ext": ".py",
       "lines": 88,
       "size": 3069,
-      "modified": "2026-03-18T18:55:01.840027+00:00",
+      "modified": "2026-03-18T21:09:26.233970+00:00",
       "imports": [
         {
           "type": "from-import",
@@ -16480,12 +16744,12 @@
       "id": "parser_parsers_toml_yaml_parser_py",
       "label": "toml_yaml_parser.py",
       "path": "parser/parsers/toml_yaml_parser.py",
-      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/parser/parsers/toml_yaml_parser.py",
+      "fullPath": "/home/n0v4p4x/DevOps/S-IDE/s-ide-py/parser/parsers/toml_yaml_parser.py",
       "category": "python",
       "ext": ".py",
       "lines": 269,
       "size": 10044,
-      "modified": "2026-03-18T18:55:01.840027+00:00",
+      "modified": "2026-03-18T21:09:26.233970+00:00",
       "imports": [
         {
           "type": "from-import",
@@ -16919,12 +17183,12 @@
       "id": "process_README_md",
       "label": "README.md",
       "path": "process/README.md",
-      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/process/README.md",
+      "fullPath": "/home/n0v4p4x/DevOps/S-IDE/s-ide-py/process/README.md",
       "category": "docs",
       "ext": ".md",
       "lines": 38,
       "size": 1257,
-      "modified": "2026-03-18T18:55:01.856027+00:00",
+      "modified": "2026-03-18T21:09:26.241970+00:00",
       "imports": [],
       "exports": [],
       "definitions": [],
@@ -16932,19 +17196,19 @@
       "errors": [],
       "position": {
         "x": 0.0,
-        "y": 1575.0
+        "y": 1680.0
       }
     },
     {
       "id": "process___init___py",
       "label": "__init__.py",
       "path": "process/__init__.py",
-      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/process/__init__.py",
+      "fullPath": "/home/n0v4p4x/DevOps/S-IDE/s-ide-py/process/__init__.py",
       "category": "python",
       "ext": ".py",
       "lines": 2,
       "size": 60,
-      "modified": "2026-03-18T18:55:01.852027+00:00",
+      "modified": "2026-03-18T21:09:26.241970+00:00",
       "imports": [
         {
           "type": "from-import",
@@ -16963,19 +17227,19 @@
       "errors": [],
       "position": {
         "x": 0.0,
-        "y": -525.0
+        "y": -630.0
       }
     },
     {
       "id": "process_process_manager_py",
       "label": "process_manager.py",
       "path": "process/process_manager.py",
-      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/process/process_manager.py",
+      "fullPath": "/home/n0v4p4x/DevOps/S-IDE/s-ide-py/process/process_manager.py",
       "category": "python",
       "ext": ".py",
       "lines": 342,
       "size": 12748,
-      "modified": "2026-03-18T18:55:01.852027+00:00",
+      "modified": "2026-03-18T21:09:26.241970+00:00",
       "imports": [
         {
           "type": "from-import",
@@ -17834,12 +18098,12 @@
       "id": "test_README_md",
       "label": "README.md",
       "path": "test/README.md",
-      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/test/README.md",
+      "fullPath": "/home/n0v4p4x/DevOps/S-IDE/s-ide-py/test/README.md",
       "category": "docs",
       "ext": ".md",
       "lines": 84,
       "size": 2992,
-      "modified": "2026-03-18T18:55:01.852027+00:00",
+      "modified": "2026-03-18T21:09:26.241970+00:00",
       "imports": [],
       "exports": [],
       "definitions": [],
@@ -17847,19 +18111,19 @@
       "errors": [],
       "position": {
         "x": 0.0,
-        "y": 1785.0
+        "y": 1890.0
       }
     },
     {
       "id": "test_test_suite_py",
       "label": "test_suite.py",
       "path": "test/test_suite.py",
-      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/test/test_suite.py",
+      "fullPath": "/home/n0v4p4x/DevOps/S-IDE/s-ide-py/test/test_suite.py",
       "category": "python",
       "ext": ".py",
-      "lines": 1778,
-      "size": 79566,
-      "modified": "2026-03-18T19:25:27.174850+00:00",
+      "lines": 1860,
+      "size": 82072,
+      "modified": "2026-03-18T21:12:29.157294+00:00",
       "imports": [
         {
           "type": "from-import",
@@ -19193,6 +19457,20 @@
             "build_system_message"
           ],
           "alias": null
+        },
+        {
+          "type": "import",
+          "source": "gui.app",
+          "line": 1782,
+          "names": [],
+          "alias": "app"
+        },
+        {
+          "type": "import",
+          "source": "subprocess",
+          "line": 1842,
+          "names": [],
+          "alias": null
         }
       ],
       "exports": [
@@ -19399,6 +19677,22 @@
         {
           "type": "implicit",
           "name": "TestAITools",
+          "names": [],
+          "source": null,
+          "kind": null,
+          "line": null
+        },
+        {
+          "type": "implicit",
+          "name": "TestGuiRunPanel",
+          "names": [],
+          "source": null,
+          "kind": null,
+          "line": null
+        },
+        {
+          "type": "implicit",
+          "name": "TestCliSmoke",
           "names": [],
           "source": null,
           "kind": null,
@@ -24209,6 +24503,347 @@
           ],
           "raises": [],
           "complexity": 2
+        },
+        {
+          "name": "TestGuiRunPanel",
+          "kind": "class",
+          "line": 1776,
+          "end_line": 1837,
+          "indent": 0,
+          "is_async": false,
+          "decorators": [],
+          "bases": [
+            "unittest.TestCase"
+          ],
+          "args": [],
+          "return_type": "",
+          "calls": [],
+          "raises": [],
+          "complexity": 0
+        },
+        {
+          "name": "test_run_panel_creates_chevron_and_binds",
+          "kind": "method",
+          "line": 1777,
+          "end_line": 1837,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "_Self",
+            "SIDE_App._build_run_panel",
+            "self.assertIsNotNone",
+            "self.assertIn",
+            "kwargs.update",
+            "list",
+            "getattr",
+            "hasattr",
+            "_children.append",
+            "_W"
+          ],
+          "raises": [],
+          "complexity": 2
+        },
+        {
+          "name": "_W",
+          "kind": "class",
+          "line": 1784,
+          "end_line": 1808,
+          "indent": 8,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [],
+          "return_type": "",
+          "calls": [],
+          "raises": [],
+          "complexity": 0
+        },
+        {
+          "name": "__init__",
+          "kind": "dunder",
+          "line": 1785,
+          "end_line": 1791,
+          "indent": 12,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ],
+            [
+              "parent",
+              ""
+            ],
+            [
+              "**kwargs",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "hasattr",
+            "_children.append"
+          ],
+          "raises": [],
+          "complexity": 2
+        },
+        {
+          "name": "pack",
+          "kind": "method",
+          "line": 1793,
+          "end_line": 1794,
+          "indent": 12,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ],
+            [
+              "*args",
+              ""
+            ],
+            [
+              "**kwargs",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "pack_forget",
+          "kind": "method",
+          "line": 1796,
+          "end_line": 1797,
+          "indent": 12,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ],
+            [
+              "*args",
+              ""
+            ],
+            [
+              "**kwargs",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "bind",
+          "kind": "method",
+          "line": 1799,
+          "end_line": 1801,
+          "indent": 12,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ],
+            [
+              "event",
+              ""
+            ],
+            [
+              "fn",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "config",
+          "kind": "method",
+          "line": 1803,
+          "end_line": 1805,
+          "indent": 12,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ],
+            [
+              "**kwargs",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "kwargs.update"
+          ],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "winfo_children",
+          "kind": "method",
+          "line": 1807,
+          "end_line": 1808,
+          "indent": 12,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "list"
+          ],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "_TkStub",
+          "kind": "class",
+          "line": 1810,
+          "end_line": 1812,
+          "indent": 8,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [],
+          "return_type": "",
+          "calls": [],
+          "raises": [],
+          "complexity": 0
+        },
+        {
+          "name": "_Self",
+          "kind": "class",
+          "line": 1818,
+          "end_line": 1828,
+          "indent": 12,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [],
+          "return_type": "",
+          "calls": [],
+          "raises": [],
+          "complexity": 0
+        },
+        {
+          "name": "__init__",
+          "kind": "dunder",
+          "line": 1819,
+          "end_line": 1825,
+          "indent": 16,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "_W"
+          ],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "_refresh_run_scripts",
+          "kind": "method",
+          "line": 1827,
+          "end_line": 1828,
+          "indent": 16,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "TestCliSmoke",
+          "kind": "class",
+          "line": 1840,
+          "end_line": 1855,
+          "indent": 0,
+          "is_async": false,
+          "decorators": [],
+          "bases": [
+            "unittest.TestCase"
+          ],
+          "args": [],
+          "return_type": "",
+          "calls": [],
+          "raises": [],
+          "complexity": 0
+        },
+        {
+          "name": "test_main_help_exits_cleanly",
+          "kind": "method",
+          "line": 1841,
+          "end_line": 1855,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "path.join",
+            "subprocess.run",
+            "self.assertEqual",
+            "self.assertTrue",
+            "len"
+          ],
+          "raises": [],
+          "complexity": 1
         }
       ],
       "tags": [
@@ -24220,19 +24855,19 @@
       "errors": [],
       "position": {
         "x": 0.0,
-        "y": -1575.0
+        "y": -1680.0
       }
     },
     {
       "id": "version_README_md",
       "label": "README.md",
       "path": "version/README.md",
-      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/version/README.md",
+      "fullPath": "/home/n0v4p4x/DevOps/S-IDE/s-ide-py/version/README.md",
       "category": "docs",
       "ext": ".md",
       "lines": 29,
       "size": 1013,
-      "modified": "2026-03-18T18:55:01.844027+00:00",
+      "modified": "2026-03-18T21:09:26.245970+00:00",
       "imports": [],
       "exports": [],
       "definitions": [],
@@ -24240,19 +24875,19 @@
       "errors": [],
       "position": {
         "x": 0.0,
-        "y": 1995.0
+        "y": 2100.0
       }
     },
     {
       "id": "version___init___py",
       "label": "__init__.py",
       "path": "version/__init__.py",
-      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/version/__init__.py",
+      "fullPath": "/home/n0v4p4x/DevOps/S-IDE/s-ide-py/version/__init__.py",
       "category": "python",
       "ext": ".py",
       "lines": 2,
       "size": 90,
-      "modified": "2026-03-18T18:55:01.844027+00:00",
+      "modified": "2026-03-18T21:09:26.245970+00:00",
       "imports": [
         {
           "type": "from-import",
@@ -24273,19 +24908,19 @@
       "errors": [],
       "position": {
         "x": 0.0,
-        "y": -315.0
+        "y": -420.0
       }
     },
     {
       "id": "version_version_manager_py",
       "label": "version_manager.py",
       "path": "version/version_manager.py",
-      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/version/version_manager.py",
+      "fullPath": "/home/n0v4p4x/DevOps/S-IDE/s-ide-py/version/version_manager.py",
       "category": "python",
       "ext": ".py",
       "lines": 298,
       "size": 10636,
-      "modified": "2026-03-18T18:55:01.844027+00:00",
+      "modified": "2026-03-18T21:09:26.245970+00:00",
       "imports": [
         {
           "type": "from-import",
@@ -24759,51 +25394,61 @@
     {
       "id": "e_5",
       "source": "main_py",
+      "target": "ext_time",
+      "type": "external",
+      "symbols": [],
+      "line": 45,
+      "isExternal": true,
+      "externalPackage": "time"
+    },
+    {
+      "id": "e_6",
+      "source": "main_py",
       "target": "parser_project_parser_py",
       "type": "import",
       "symbols": [
         "parse_project"
       ],
-      "line": 69,
-      "isExternal": false,
-      "externalPackage": null
-    },
-    {
-      "id": "e_6",
-      "source": "main_py",
-      "target": "version_version_manager_py",
-      "type": "import",
-      "symbols": [
-        "list_versions"
-      ],
-      "line": 93,
+      "line": 70,
       "isExternal": false,
       "externalPackage": null
     },
     {
       "id": "e_7",
       "source": "main_py",
+      "target": "version_version_manager_py",
+      "type": "import",
+      "symbols": [
+        "list_versions"
+      ],
+      "line": 94,
+      "isExternal": false,
+      "externalPackage": null
+    },
+    {
+      "id": "e_8",
+      "source": "main_py",
       "target": "ext_subprocess",
       "type": "external",
       "symbols": [],
-      "line": 137,
+      "line": 138,
       "isExternal": true,
       "externalPackage": "subprocess"
     },
     {
-      "id": "e_8",
+      "id": "e_9",
       "source": "main_py",
       "target": "parser_project_config_py",
       "type": "import",
       "symbols": [
         "load_project_config"
       ],
-      "line": 138,
+      "line": 139,
       "isExternal": false,
       "externalPackage": null
     },
     {
-      "id": "e_9",
+      "id": "e_10",
       "source": "main_py",
       "target": "ext_build",
       "type": "external",
@@ -24811,12 +25456,12 @@
         "package_project",
         "PackageOptions"
       ],
-      "line": 182,
+      "line": 183,
       "isExternal": true,
       "externalPackage": "build"
     },
     {
-      "id": "e_10",
+      "id": "e_11",
       "source": "update_py",
       "target": "ext___future__",
       "type": "external",
@@ -24828,7 +25473,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_11",
+      "id": "e_12",
       "source": "update_py",
       "target": "ext_argparse",
       "type": "external",
@@ -24838,7 +25483,7 @@
       "externalPackage": "argparse"
     },
     {
-      "id": "e_12",
+      "id": "e_13",
       "source": "update_py",
       "target": "ext_fnmatch",
       "type": "external",
@@ -24848,7 +25493,7 @@
       "externalPackage": "fnmatch"
     },
     {
-      "id": "e_13",
+      "id": "e_14",
       "source": "update_py",
       "target": "ext_glob",
       "type": "external",
@@ -24858,7 +25503,7 @@
       "externalPackage": "glob"
     },
     {
-      "id": "e_14",
+      "id": "e_15",
       "source": "update_py",
       "target": "ext_os",
       "type": "external",
@@ -24868,7 +25513,7 @@
       "externalPackage": "os"
     },
     {
-      "id": "e_15",
+      "id": "e_16",
       "source": "update_py",
       "target": "ext_sys",
       "type": "external",
@@ -24878,7 +25523,7 @@
       "externalPackage": "sys"
     },
     {
-      "id": "e_16",
+      "id": "e_17",
       "source": "update_py",
       "target": "ext_time",
       "type": "external",
@@ -24888,31 +25533,51 @@
       "externalPackage": "time"
     },
     {
-      "id": "e_17",
+      "id": "e_18",
+      "source": "update_py",
+      "target": "ext_tarfile",
+      "type": "external",
+      "symbols": [],
+      "line": 55,
+      "isExternal": true,
+      "externalPackage": "tarfile"
+    },
+    {
+      "id": "e_19",
       "source": "update_py",
       "target": "parser_project_config_py",
       "type": "import",
       "symbols": [
         "load_project_config"
       ],
-      "line": 120,
+      "line": 121,
       "isExternal": false,
       "externalPackage": null
     },
     {
-      "id": "e_18",
+      "id": "e_20",
       "source": "update_py",
       "target": "version_version_manager_py",
       "type": "import",
       "symbols": [
         "archive_version"
       ],
-      "line": 185,
+      "line": 201,
       "isExternal": false,
       "externalPackage": null
     },
     {
-      "id": "e_19",
+      "id": "e_21",
+      "source": "update_py",
+      "target": "ext_subprocess",
+      "type": "external",
+      "symbols": [],
+      "line": 243,
+      "isExternal": true,
+      "externalPackage": "subprocess"
+    },
+    {
+      "id": "e_22",
       "source": "ai___init___py",
       "target": "ai_client_py",
       "type": "import",
@@ -24927,7 +25592,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_20",
+      "id": "e_23",
       "source": "ai___init___py",
       "target": "ai_tools_py",
       "type": "import",
@@ -24940,7 +25605,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_21",
+      "id": "e_24",
       "source": "ai___init___py",
       "target": "ai_context_py",
       "type": "import",
@@ -24954,7 +25619,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_22",
+      "id": "e_25",
       "source": "ai___init___py",
       "target": "ai_standards_py",
       "type": "import",
@@ -24966,7 +25631,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_23",
+      "id": "e_26",
       "source": "ai_client_py",
       "target": "ext___future__",
       "type": "external",
@@ -24978,7 +25643,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_24",
+      "id": "e_27",
       "source": "ai_client_py",
       "target": "ext_json",
       "type": "external",
@@ -24988,7 +25653,7 @@
       "externalPackage": "json"
     },
     {
-      "id": "e_25",
+      "id": "e_28",
       "source": "ai_client_py",
       "target": "ext_threading",
       "type": "external",
@@ -24998,7 +25663,7 @@
       "externalPackage": "threading"
     },
     {
-      "id": "e_26",
+      "id": "e_29",
       "source": "ai_client_py",
       "target": "ext_urllib",
       "type": "external",
@@ -25008,7 +25673,7 @@
       "externalPackage": "urllib"
     },
     {
-      "id": "e_27",
+      "id": "e_30",
       "source": "ai_client_py",
       "target": "ext_dataclasses",
       "type": "external",
@@ -25021,7 +25686,7 @@
       "externalPackage": "dataclasses"
     },
     {
-      "id": "e_28",
+      "id": "e_31",
       "source": "ai_client_py",
       "target": "ext_typing",
       "type": "external",
@@ -25034,7 +25699,7 @@
       "externalPackage": "typing"
     },
     {
-      "id": "e_29",
+      "id": "e_32",
       "source": "ai_client_py",
       "target": "ext_re",
       "type": "external",
@@ -25044,7 +25709,7 @@
       "externalPackage": "re"
     },
     {
-      "id": "e_30",
+      "id": "e_33",
       "source": "ai_context_py",
       "target": "ext___future__",
       "type": "external",
@@ -25056,7 +25721,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_31",
+      "id": "e_34",
       "source": "ai_context_py",
       "target": "ext_json",
       "type": "external",
@@ -25066,7 +25731,7 @@
       "externalPackage": "json"
     },
     {
-      "id": "e_32",
+      "id": "e_35",
       "source": "ai_context_py",
       "target": "ext_os",
       "type": "external",
@@ -25076,7 +25741,7 @@
       "externalPackage": "os"
     },
     {
-      "id": "e_33",
+      "id": "e_36",
       "source": "ai_context_py",
       "target": "ext_dataclasses",
       "type": "external",
@@ -25089,7 +25754,7 @@
       "externalPackage": "dataclasses"
     },
     {
-      "id": "e_34",
+      "id": "e_37",
       "source": "ai_context_py",
       "target": "ext_typing",
       "type": "external",
@@ -25101,7 +25766,7 @@
       "externalPackage": "typing"
     },
     {
-      "id": "e_35",
+      "id": "e_38",
       "source": "ai_context_py",
       "target": "ai_client_py",
       "type": "import",
@@ -25113,7 +25778,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_36",
+      "id": "e_39",
       "source": "ai_context_py",
       "target": "ai_standards_py",
       "type": "import",
@@ -25125,7 +25790,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_37",
+      "id": "e_40",
       "source": "ai_tools_py",
       "target": "ext___future__",
       "type": "external",
@@ -25137,7 +25802,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_38",
+      "id": "e_41",
       "source": "ai_tools_py",
       "target": "ext_json",
       "type": "external",
@@ -25147,7 +25812,7 @@
       "externalPackage": "json"
     },
     {
-      "id": "e_39",
+      "id": "e_42",
       "source": "ai_tools_py",
       "target": "ext_os",
       "type": "external",
@@ -25157,7 +25822,7 @@
       "externalPackage": "os"
     },
     {
-      "id": "e_40",
+      "id": "e_43",
       "source": "ai_tools_py",
       "target": "ext_subprocess",
       "type": "external",
@@ -25167,7 +25832,7 @@
       "externalPackage": "subprocess"
     },
     {
-      "id": "e_41",
+      "id": "e_44",
       "source": "ai_tools_py",
       "target": "ext_sys",
       "type": "external",
@@ -25177,7 +25842,7 @@
       "externalPackage": "sys"
     },
     {
-      "id": "e_42",
+      "id": "e_45",
       "source": "ai_tools_py",
       "target": "ext_typing",
       "type": "external",
@@ -25189,7 +25854,7 @@
       "externalPackage": "typing"
     },
     {
-      "id": "e_43",
+      "id": "e_46",
       "source": "ai_tools_py",
       "target": "ai_client_py",
       "type": "import",
@@ -25201,7 +25866,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_44",
+      "id": "e_47",
       "source": "ai_tools_py",
       "target": "ext_re",
       "type": "external",
@@ -25213,7 +25878,7 @@
       "externalPackage": "re"
     },
     {
-      "id": "e_45",
+      "id": "e_48",
       "source": "ai_tools_py",
       "target": "ext_datetime",
       "type": "external",
@@ -25223,7 +25888,7 @@
       "externalPackage": "datetime"
     },
     {
-      "id": "e_46",
+      "id": "e_49",
       "source": "graph___init___py",
       "target": "graph_types_py",
       "type": "import",
@@ -25244,7 +25909,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_47",
+      "id": "e_50",
       "source": "graph_types_py",
       "target": "ext___future__",
       "type": "external",
@@ -25256,7 +25921,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_48",
+      "id": "e_51",
       "source": "graph_types_py",
       "target": "ext_dataclasses",
       "type": "external",
@@ -25269,7 +25934,7 @@
       "externalPackage": "dataclasses"
     },
     {
-      "id": "e_49",
+      "id": "e_52",
       "source": "graph_types_py",
       "target": "ext_typing",
       "type": "external",
@@ -25282,7 +25947,7 @@
       "externalPackage": "typing"
     },
     {
-      "id": "e_50",
+      "id": "e_53",
       "source": "gui___init___py",
       "target": "gui_app_py",
       "type": "import",
@@ -25295,7 +25960,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_51",
+      "id": "e_54",
       "source": "gui_app_py",
       "target": "ext___future__",
       "type": "external",
@@ -25307,7 +25972,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_52",
+      "id": "e_55",
       "source": "gui_app_py",
       "target": "ext_os",
       "type": "external",
@@ -25317,7 +25982,7 @@
       "externalPackage": "os"
     },
     {
-      "id": "e_53",
+      "id": "e_56",
       "source": "gui_app_py",
       "target": "ext_sys",
       "type": "external",
@@ -25327,7 +25992,7 @@
       "externalPackage": "sys"
     },
     {
-      "id": "e_54",
+      "id": "e_57",
       "source": "gui_app_py",
       "target": "ext_re",
       "type": "external",
@@ -25337,7 +26002,7 @@
       "externalPackage": "re"
     },
     {
-      "id": "e_55",
+      "id": "e_58",
       "source": "gui_app_py",
       "target": "ext_json",
       "type": "external",
@@ -25347,7 +26012,7 @@
       "externalPackage": "json"
     },
     {
-      "id": "e_56",
+      "id": "e_59",
       "source": "gui_app_py",
       "target": "ext_subprocess",
       "type": "external",
@@ -25357,7 +26022,7 @@
       "externalPackage": "subprocess"
     },
     {
-      "id": "e_57",
+      "id": "e_60",
       "source": "gui_app_py",
       "target": "ext_math",
       "type": "external",
@@ -25367,7 +26032,7 @@
       "externalPackage": "math"
     },
     {
-      "id": "e_58",
+      "id": "e_61",
       "source": "gui_app_py",
       "target": "ext_threading",
       "type": "external",
@@ -25377,7 +26042,7 @@
       "externalPackage": "threading"
     },
     {
-      "id": "e_59",
+      "id": "e_62",
       "source": "gui_app_py",
       "target": "ext_datetime",
       "type": "external",
@@ -25387,7 +26052,7 @@
       "externalPackage": "datetime"
     },
     {
-      "id": "e_60",
+      "id": "e_63",
       "source": "gui_app_py",
       "target": "ext_time",
       "type": "external",
@@ -25397,7 +26062,7 @@
       "externalPackage": "time"
     },
     {
-      "id": "e_61",
+      "id": "e_64",
       "source": "gui_app_py",
       "target": "ext_tkinter",
       "type": "external",
@@ -25409,20 +26074,25 @@
       "externalPackage": "tkinter"
     },
     {
-      "id": "e_62",
+      "id": "e_65",
       "source": "gui_app_py",
       "target": "ext_typing",
       "type": "external",
       "symbols": [
         "Optional",
-        "Any"
+        "Any",
+        "Union",
+        "List",
+        "Dict",
+        "Set",
+        "Tuple"
       ],
       "line": 39,
       "isExternal": true,
       "externalPackage": "typing"
     },
     {
-      "id": "e_63",
+      "id": "e_66",
       "source": "gui_app_py",
       "target": "ext_dataclasses",
       "type": "external",
@@ -25435,7 +26105,7 @@
       "externalPackage": "dataclasses"
     },
     {
-      "id": "e_64",
+      "id": "e_67",
       "source": "gui_app_py",
       "target": "gui_log_py",
       "type": "import",
@@ -25445,24 +26115,24 @@
         "recent_lines",
         "clear_ring"
       ],
-      "line": 54,
+      "line": 56,
       "isExternal": false,
       "externalPackage": null
     },
     {
-      "id": "e_65",
+      "id": "e_68",
       "source": "gui_app_py",
       "target": "gui_editor_py",
       "type": "import",
       "symbols": [
         "EditorWindow"
       ],
-      "line": 55,
+      "line": 57,
       "isExternal": false,
       "externalPackage": null
     },
     {
-      "id": "e_66",
+      "id": "e_69",
       "source": "gui_app_py",
       "target": "monitor_perf_py",
       "type": "import",
@@ -25471,12 +26141,12 @@
         "ParseTimer",
         "ProcessMonitor"
       ],
-      "line": 56,
+      "line": 63,
       "isExternal": false,
       "externalPackage": null
     },
     {
-      "id": "e_67",
+      "id": "e_70",
       "source": "gui_app_py",
       "target": "monitor_instrumenter_py",
       "type": "import",
@@ -25486,12 +26156,12 @@
         "Instrumenter",
         "InstrumentOptions"
       ],
-      "line": 57,
+      "line": 64,
       "isExternal": false,
       "externalPackage": null
     },
     {
-      "id": "e_68",
+      "id": "e_71",
       "source": "gui_app_py",
       "target": "ai_client_py",
       "type": "import",
@@ -25499,12 +26169,12 @@
         "OllamaClient",
         "ChatMessage"
       ],
-      "line": 58,
+      "line": 65,
       "isExternal": false,
       "externalPackage": null
     },
     {
-      "id": "e_69",
+      "id": "e_72",
       "source": "gui_app_py",
       "target": "ai_tools_py",
       "type": "import",
@@ -25512,12 +26182,12 @@
         "TOOLS",
         "dispatch_tool"
       ],
-      "line": 59,
+      "line": 66,
       "isExternal": false,
       "externalPackage": null
     },
     {
-      "id": "e_70",
+      "id": "e_73",
       "source": "gui_app_py",
       "target": "ai_context_py",
       "type": "import",
@@ -25525,49 +26195,36 @@
         "build_context",
         "build_system_message"
       ],
-      "line": 60,
+      "line": 67,
       "isExternal": false,
       "externalPackage": null
     },
     {
-      "id": "e_71",
+      "id": "e_74",
       "source": "gui_app_py",
       "target": "process_process_manager_py",
       "type": "import",
       "symbols": [
         "ProcessManager"
       ],
-      "line": 61,
+      "line": 68,
       "isExternal": false,
       "externalPackage": null
     },
     {
-      "id": "e_72",
-      "source": "gui_app_py",
-      "target": "ext_build",
-      "type": "external",
-      "symbols": [
-        "SandboxRun",
-        "SandboxOptions"
-      ],
-      "line": 62,
-      "isExternal": true,
-      "externalPackage": "build"
-    },
-    {
-      "id": "e_73",
+      "id": "e_75",
       "source": "gui_app_py",
       "target": "parser_project_parser_py",
       "type": "import",
       "symbols": [
         "parse_project"
       ],
-      "line": 63,
+      "line": 70,
       "isExternal": false,
       "externalPackage": null
     },
     {
-      "id": "e_74",
+      "id": "e_76",
       "source": "gui_app_py",
       "target": "version_version_manager_py",
       "type": "import",
@@ -25577,12 +26234,12 @@
         "list_versions",
         "compress_loose"
       ],
-      "line": 64,
+      "line": 71,
       "isExternal": false,
       "externalPackage": null
     },
     {
-      "id": "e_75",
+      "id": "e_77",
       "source": "gui_app_py",
       "target": "parser_project_config_py",
       "type": "import",
@@ -25591,22 +26248,35 @@
         "save_project_config",
         "bump_version"
       ],
-      "line": 68,
+      "line": 75,
       "isExternal": false,
       "externalPackage": null
     },
     {
-      "id": "e_76",
+      "id": "e_78",
+      "source": "gui_app_py",
+      "target": "ext_build",
+      "type": "external",
+      "symbols": [
+        "SandboxRun",
+        "SandboxOptions"
+      ],
+      "line": 84,
+      "isExternal": true,
+      "externalPackage": "build"
+    },
+    {
+      "id": "e_79",
       "source": "gui_app_py",
       "target": "ext_traceback",
       "type": "external",
       "symbols": [],
-      "line": 2795,
+      "line": 2860,
       "isExternal": true,
       "externalPackage": "traceback"
     },
     {
-      "id": "e_77",
+      "id": "e_80",
       "source": "gui_editor_py",
       "target": "ext___future__",
       "type": "external",
@@ -25618,7 +26288,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_78",
+      "id": "e_81",
       "source": "gui_editor_py",
       "target": "ext_os",
       "type": "external",
@@ -25628,7 +26298,7 @@
       "externalPackage": "os"
     },
     {
-      "id": "e_79",
+      "id": "e_82",
       "source": "gui_editor_py",
       "target": "ext_re",
       "type": "external",
@@ -25638,7 +26308,7 @@
       "externalPackage": "re"
     },
     {
-      "id": "e_80",
+      "id": "e_83",
       "source": "gui_editor_py",
       "target": "ext_tkinter",
       "type": "external",
@@ -25650,7 +26320,7 @@
       "externalPackage": "tkinter"
     },
     {
-      "id": "e_81",
+      "id": "e_84",
       "source": "gui_editor_py",
       "target": "ext_typing",
       "type": "external",
@@ -25662,7 +26332,7 @@
       "externalPackage": "typing"
     },
     {
-      "id": "e_82",
+      "id": "e_85",
       "source": "gui_log_py",
       "target": "ext___future__",
       "type": "external",
@@ -25674,7 +26344,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_83",
+      "id": "e_86",
       "source": "gui_log_py",
       "target": "ext_logging",
       "type": "external",
@@ -25684,7 +26354,7 @@
       "externalPackage": "logging"
     },
     {
-      "id": "e_84",
+      "id": "e_87",
       "source": "gui_log_py",
       "target": "ext_os",
       "type": "external",
@@ -25694,7 +26364,7 @@
       "externalPackage": "os"
     },
     {
-      "id": "e_85",
+      "id": "e_88",
       "source": "gui_log_py",
       "target": "ext_sys",
       "type": "external",
@@ -25704,7 +26374,7 @@
       "externalPackage": "sys"
     },
     {
-      "id": "e_86",
+      "id": "e_89",
       "source": "gui_log_py",
       "target": "ext_collections",
       "type": "external",
@@ -25716,7 +26386,7 @@
       "externalPackage": "collections"
     },
     {
-      "id": "e_87",
+      "id": "e_90",
       "source": "gui_server_py",
       "target": "ext___future__",
       "type": "external",
@@ -25728,7 +26398,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_88",
+      "id": "e_91",
       "source": "gui_server_py",
       "target": "ext_json",
       "type": "external",
@@ -25738,7 +26408,7 @@
       "externalPackage": "json"
     },
     {
-      "id": "e_89",
+      "id": "e_92",
       "source": "gui_server_py",
       "target": "ext_os",
       "type": "external",
@@ -25748,7 +26418,7 @@
       "externalPackage": "os"
     },
     {
-      "id": "e_90",
+      "id": "e_93",
       "source": "gui_server_py",
       "target": "ext_sys",
       "type": "external",
@@ -25758,7 +26428,7 @@
       "externalPackage": "sys"
     },
     {
-      "id": "e_91",
+      "id": "e_94",
       "source": "gui_server_py",
       "target": "ext_time",
       "type": "external",
@@ -25768,7 +26438,7 @@
       "externalPackage": "time"
     },
     {
-      "id": "e_92",
+      "id": "e_95",
       "source": "gui_server_py",
       "target": "ext_threading",
       "type": "external",
@@ -25778,7 +26448,7 @@
       "externalPackage": "threading"
     },
     {
-      "id": "e_93",
+      "id": "e_96",
       "source": "gui_server_py",
       "target": "ext_queue",
       "type": "external",
@@ -25788,7 +26458,7 @@
       "externalPackage": "queue"
     },
     {
-      "id": "e_94",
+      "id": "e_97",
       "source": "gui_server_py",
       "target": "ext_http",
       "type": "external",
@@ -25801,7 +26471,7 @@
       "externalPackage": "http"
     },
     {
-      "id": "e_95",
+      "id": "e_98",
       "source": "gui_server_py",
       "target": "ext_urllib",
       "type": "external",
@@ -25814,7 +26484,7 @@
       "externalPackage": "urllib"
     },
     {
-      "id": "e_96",
+      "id": "e_99",
       "source": "gui_server_py",
       "target": "ext_typing",
       "type": "external",
@@ -25826,7 +26496,7 @@
       "externalPackage": "typing"
     },
     {
-      "id": "e_97",
+      "id": "e_100",
       "source": "gui_server_py",
       "target": "parser_project_parser_py",
       "type": "import",
@@ -25838,7 +26508,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_98",
+      "id": "e_101",
       "source": "gui_server_py",
       "target": "parser_project_config_py",
       "type": "import",
@@ -25850,7 +26520,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_99",
+      "id": "e_102",
       "source": "gui_server_py",
       "target": "process_process_manager_py",
       "type": "import",
@@ -25862,7 +26532,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_100",
+      "id": "e_103",
       "source": "gui_server_py",
       "target": "version_version_manager_py",
       "type": "import",
@@ -25876,7 +26546,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_101",
+      "id": "e_104",
       "source": "gui_server_py",
       "target": "ext_build",
       "type": "external",
@@ -25889,7 +26559,7 @@
       "externalPackage": "build"
     },
     {
-      "id": "e_102",
+      "id": "e_105",
       "source": "monitor___init___py",
       "target": "monitor_perf_py",
       "type": "import",
@@ -25903,7 +26573,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_103",
+      "id": "e_106",
       "source": "monitor___init___py",
       "target": "monitor_instrumenter_py",
       "type": "import",
@@ -25919,7 +26589,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_104",
+      "id": "e_107",
       "source": "monitor_instrument_py",
       "target": "ext___future__",
       "type": "external",
@@ -25931,7 +26601,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_105",
+      "id": "e_108",
       "source": "monitor_instrument_py",
       "target": "ext_functools",
       "type": "external",
@@ -25941,7 +26611,7 @@
       "externalPackage": "functools"
     },
     {
-      "id": "e_106",
+      "id": "e_109",
       "source": "monitor_instrument_py",
       "target": "ext_json",
       "type": "external",
@@ -25951,7 +26621,7 @@
       "externalPackage": "json"
     },
     {
-      "id": "e_107",
+      "id": "e_110",
       "source": "monitor_instrument_py",
       "target": "ext_os",
       "type": "external",
@@ -25961,7 +26631,7 @@
       "externalPackage": "os"
     },
     {
-      "id": "e_108",
+      "id": "e_111",
       "source": "monitor_instrument_py",
       "target": "ext_sys",
       "type": "external",
@@ -25971,7 +26641,7 @@
       "externalPackage": "sys"
     },
     {
-      "id": "e_109",
+      "id": "e_112",
       "source": "monitor_instrument_py",
       "target": "ext_threading",
       "type": "external",
@@ -25981,7 +26651,7 @@
       "externalPackage": "threading"
     },
     {
-      "id": "e_110",
+      "id": "e_113",
       "source": "monitor_instrument_py",
       "target": "ext_time",
       "type": "external",
@@ -25991,7 +26661,7 @@
       "externalPackage": "time"
     },
     {
-      "id": "e_111",
+      "id": "e_114",
       "source": "monitor_instrument_py",
       "target": "ext_contextlib",
       "type": "external",
@@ -26003,7 +26673,7 @@
       "externalPackage": "contextlib"
     },
     {
-      "id": "e_112",
+      "id": "e_115",
       "source": "monitor_instrument_py",
       "target": "ext_typing",
       "type": "external",
@@ -26015,7 +26685,7 @@
       "externalPackage": "typing"
     },
     {
-      "id": "e_113",
+      "id": "e_116",
       "source": "monitor_instrument_py",
       "target": "ext_inspect",
       "type": "external",
@@ -26025,7 +26695,7 @@
       "externalPackage": "inspect"
     },
     {
-      "id": "e_114",
+      "id": "e_117",
       "source": "monitor_instrumenter_py",
       "target": "ext___future__",
       "type": "external",
@@ -26037,7 +26707,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_115",
+      "id": "e_118",
       "source": "monitor_instrumenter_py",
       "target": "ext_ast",
       "type": "external",
@@ -26047,7 +26717,7 @@
       "externalPackage": "ast"
     },
     {
-      "id": "e_116",
+      "id": "e_119",
       "source": "monitor_instrumenter_py",
       "target": "ext_os",
       "type": "external",
@@ -26057,7 +26727,7 @@
       "externalPackage": "os"
     },
     {
-      "id": "e_117",
+      "id": "e_120",
       "source": "monitor_instrumenter_py",
       "target": "ext_re",
       "type": "external",
@@ -26067,7 +26737,7 @@
       "externalPackage": "re"
     },
     {
-      "id": "e_118",
+      "id": "e_121",
       "source": "monitor_instrumenter_py",
       "target": "ext_shutil",
       "type": "external",
@@ -26077,7 +26747,7 @@
       "externalPackage": "shutil"
     },
     {
-      "id": "e_119",
+      "id": "e_122",
       "source": "monitor_instrumenter_py",
       "target": "ext_json",
       "type": "external",
@@ -26087,7 +26757,7 @@
       "externalPackage": "json"
     },
     {
-      "id": "e_120",
+      "id": "e_123",
       "source": "monitor_instrumenter_py",
       "target": "ext_dataclasses",
       "type": "external",
@@ -26100,7 +26770,7 @@
       "externalPackage": "dataclasses"
     },
     {
-      "id": "e_121",
+      "id": "e_124",
       "source": "monitor_instrumenter_py",
       "target": "ext_datetime",
       "type": "external",
@@ -26113,7 +26783,7 @@
       "externalPackage": "datetime"
     },
     {
-      "id": "e_122",
+      "id": "e_125",
       "source": "monitor_instrumenter_py",
       "target": "ext_fnmatch",
       "type": "external",
@@ -26123,7 +26793,7 @@
       "externalPackage": "fnmatch"
     },
     {
-      "id": "e_123",
+      "id": "e_126",
       "source": "monitor_perf_py",
       "target": "ext___future__",
       "type": "external",
@@ -26135,7 +26805,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_124",
+      "id": "e_127",
       "source": "monitor_perf_py",
       "target": "ext_os",
       "type": "external",
@@ -26145,7 +26815,7 @@
       "externalPackage": "os"
     },
     {
-      "id": "e_125",
+      "id": "e_128",
       "source": "monitor_perf_py",
       "target": "ext_sys",
       "type": "external",
@@ -26155,7 +26825,7 @@
       "externalPackage": "sys"
     },
     {
-      "id": "e_126",
+      "id": "e_129",
       "source": "monitor_perf_py",
       "target": "ext_time",
       "type": "external",
@@ -26165,7 +26835,7 @@
       "externalPackage": "time"
     },
     {
-      "id": "e_127",
+      "id": "e_130",
       "source": "monitor_perf_py",
       "target": "ext_threading",
       "type": "external",
@@ -26175,7 +26845,7 @@
       "externalPackage": "threading"
     },
     {
-      "id": "e_128",
+      "id": "e_131",
       "source": "monitor_perf_py",
       "target": "ext_collections",
       "type": "external",
@@ -26187,7 +26857,7 @@
       "externalPackage": "collections"
     },
     {
-      "id": "e_129",
+      "id": "e_132",
       "source": "monitor_perf_py",
       "target": "ext_contextlib",
       "type": "external",
@@ -26199,7 +26869,7 @@
       "externalPackage": "contextlib"
     },
     {
-      "id": "e_130",
+      "id": "e_133",
       "source": "monitor_perf_py",
       "target": "ext_typing",
       "type": "external",
@@ -26211,7 +26881,7 @@
       "externalPackage": "typing"
     },
     {
-      "id": "e_131",
+      "id": "e_134",
       "source": "monitor_perf_py",
       "target": "ext_psutil",
       "type": "external",
@@ -26221,7 +26891,7 @@
       "externalPackage": "psutil"
     },
     {
-      "id": "e_132",
+      "id": "e_135",
       "source": "monitor_perf_py",
       "target": "ext_json",
       "type": "external",
@@ -26231,7 +26901,7 @@
       "externalPackage": "json"
     },
     {
-      "id": "e_133",
+      "id": "e_136",
       "source": "parser___init___py",
       "target": "parser_project_parser_py",
       "type": "import",
@@ -26243,7 +26913,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_134",
+      "id": "e_137",
       "source": "parser___init___py",
       "target": "parser_project_config_py",
       "type": "import",
@@ -26258,7 +26928,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_135",
+      "id": "e_138",
       "source": "parser_doc_check_py",
       "target": "ext___future__",
       "type": "external",
@@ -26270,7 +26940,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_136",
+      "id": "e_139",
       "source": "parser_doc_check_py",
       "target": "ext_os",
       "type": "external",
@@ -26280,7 +26950,7 @@
       "externalPackage": "os"
     },
     {
-      "id": "e_137",
+      "id": "e_140",
       "source": "parser_doc_check_py",
       "target": "ext_datetime",
       "type": "external",
@@ -26292,7 +26962,7 @@
       "externalPackage": "datetime"
     },
     {
-      "id": "e_138",
+      "id": "e_141",
       "source": "parser_doc_check_py",
       "target": "graph_types_py",
       "type": "import",
@@ -26306,7 +26976,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_139",
+      "id": "e_142",
       "source": "parser_layout_py",
       "target": "ext___future__",
       "type": "external",
@@ -26318,7 +26988,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_140",
+      "id": "e_143",
       "source": "parser_layout_py",
       "target": "ext_collections",
       "type": "external",
@@ -26330,7 +27000,7 @@
       "externalPackage": "collections"
     },
     {
-      "id": "e_141",
+      "id": "e_144",
       "source": "parser_layout_py",
       "target": "graph_types_py",
       "type": "import",
@@ -26344,7 +27014,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_142",
+      "id": "e_145",
       "source": "parser_project_config_py",
       "target": "ext___future__",
       "type": "external",
@@ -26356,7 +27026,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_143",
+      "id": "e_146",
       "source": "parser_project_config_py",
       "target": "ext_json",
       "type": "external",
@@ -26366,7 +27036,7 @@
       "externalPackage": "json"
     },
     {
-      "id": "e_144",
+      "id": "e_147",
       "source": "parser_project_config_py",
       "target": "ext_os",
       "type": "external",
@@ -26376,7 +27046,7 @@
       "externalPackage": "os"
     },
     {
-      "id": "e_145",
+      "id": "e_148",
       "source": "parser_project_config_py",
       "target": "ext_copy",
       "type": "external",
@@ -26388,7 +27058,7 @@
       "externalPackage": "copy"
     },
     {
-      "id": "e_146",
+      "id": "e_149",
       "source": "parser_project_config_py",
       "target": "ext_typing",
       "type": "external",
@@ -26400,7 +27070,7 @@
       "externalPackage": "typing"
     },
     {
-      "id": "e_147",
+      "id": "e_150",
       "source": "parser_project_config_py",
       "target": "ext_re",
       "type": "external",
@@ -26410,7 +27080,7 @@
       "externalPackage": "re"
     },
     {
-      "id": "e_148",
+      "id": "e_151",
       "source": "parser_project_parser_py",
       "target": "ext___future__",
       "type": "external",
@@ -26422,7 +27092,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_149",
+      "id": "e_152",
       "source": "parser_project_parser_py",
       "target": "ext_json",
       "type": "external",
@@ -26432,7 +27102,7 @@
       "externalPackage": "json"
     },
     {
-      "id": "e_150",
+      "id": "e_153",
       "source": "parser_project_parser_py",
       "target": "ext_os",
       "type": "external",
@@ -26442,7 +27112,7 @@
       "externalPackage": "os"
     },
     {
-      "id": "e_151",
+      "id": "e_154",
       "source": "parser_project_parser_py",
       "target": "ext_datetime",
       "type": "external",
@@ -26455,7 +27125,7 @@
       "externalPackage": "datetime"
     },
     {
-      "id": "e_152",
+      "id": "e_155",
       "source": "parser_project_parser_py",
       "target": "parser_walker_py",
       "type": "import",
@@ -26468,7 +27138,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_153",
+      "id": "e_156",
       "source": "parser_project_parser_py",
       "target": "parser_parsers___init___py",
       "type": "import",
@@ -26480,7 +27150,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_154",
+      "id": "e_157",
       "source": "parser_project_parser_py",
       "target": "parser_resolve_edges_py",
       "type": "import",
@@ -26492,7 +27162,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_155",
+      "id": "e_158",
       "source": "parser_project_parser_py",
       "target": "parser_layout_py",
       "type": "import",
@@ -26504,7 +27174,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_156",
+      "id": "e_159",
       "source": "parser_project_parser_py",
       "target": "parser_doc_check_py",
       "type": "import",
@@ -26516,7 +27186,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_157",
+      "id": "e_160",
       "source": "parser_project_parser_py",
       "target": "parser_project_config_py",
       "type": "import",
@@ -26528,7 +27198,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_158",
+      "id": "e_161",
       "source": "parser_project_parser_py",
       "target": "monitor_perf_py",
       "type": "import",
@@ -26540,7 +27210,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_159",
+      "id": "e_162",
       "source": "parser_project_parser_py",
       "target": "graph_types_py",
       "type": "import",
@@ -26557,7 +27227,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_160",
+      "id": "e_163",
       "source": "parser_resolve_edges_py",
       "target": "ext___future__",
       "type": "external",
@@ -26569,7 +27239,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_161",
+      "id": "e_164",
       "source": "parser_resolve_edges_py",
       "target": "ext_os",
       "type": "external",
@@ -26579,7 +27249,7 @@
       "externalPackage": "os"
     },
     {
-      "id": "e_162",
+      "id": "e_165",
       "source": "parser_resolve_edges_py",
       "target": "graph_types_py",
       "type": "import",
@@ -26592,7 +27262,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_163",
+      "id": "e_166",
       "source": "parser_walker_py",
       "target": "ext___future__",
       "type": "external",
@@ -26604,7 +27274,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_164",
+      "id": "e_167",
       "source": "parser_walker_py",
       "target": "ext_os",
       "type": "external",
@@ -26614,7 +27284,7 @@
       "externalPackage": "os"
     },
     {
-      "id": "e_165",
+      "id": "e_168",
       "source": "parser_walker_py",
       "target": "ext_re",
       "type": "external",
@@ -26624,7 +27294,7 @@
       "externalPackage": "re"
     },
     {
-      "id": "e_166",
+      "id": "e_169",
       "source": "parser_walker_py",
       "target": "ext_dataclasses",
       "type": "external",
@@ -26636,7 +27306,7 @@
       "externalPackage": "dataclasses"
     },
     {
-      "id": "e_167",
+      "id": "e_170",
       "source": "parser_walker_py",
       "target": "ext_fnmatch",
       "type": "external",
@@ -26648,7 +27318,7 @@
       "externalPackage": "fnmatch"
     },
     {
-      "id": "e_168",
+      "id": "e_171",
       "source": "parser_parsers___init___py",
       "target": "parser_parsers_python_parser_py",
       "type": "import",
@@ -26660,7 +27330,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_169",
+      "id": "e_172",
       "source": "parser_parsers___init___py",
       "target": "parser_parsers_js_parser_py",
       "type": "import",
@@ -26672,7 +27342,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_170",
+      "id": "e_173",
       "source": "parser_parsers___init___py",
       "target": "parser_parsers_json_parser_py",
       "type": "import",
@@ -26684,7 +27354,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_171",
+      "id": "e_174",
       "source": "parser_parsers___init___py",
       "target": "parser_parsers_shell_parser_py",
       "type": "import",
@@ -26696,7 +27366,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_172",
+      "id": "e_175",
       "source": "parser_parsers___init___py",
       "target": "parser_parsers_toml_yaml_parser_py",
       "type": "import",
@@ -26709,7 +27379,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_173",
+      "id": "e_176",
       "source": "parser_parsers_js_parser_py",
       "target": "ext___future__",
       "type": "external",
@@ -26721,7 +27391,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_174",
+      "id": "e_177",
       "source": "parser_parsers_js_parser_py",
       "target": "ext_re",
       "type": "external",
@@ -26731,7 +27401,7 @@
       "externalPackage": "re"
     },
     {
-      "id": "e_175",
+      "id": "e_178",
       "source": "parser_parsers_js_parser_py",
       "target": "graph_types_py",
       "type": "import",
@@ -26745,7 +27415,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_176",
+      "id": "e_179",
       "source": "parser_parsers_json_parser_py",
       "target": "ext___future__",
       "type": "external",
@@ -26757,7 +27427,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_177",
+      "id": "e_180",
       "source": "parser_parsers_json_parser_py",
       "target": "ext_json",
       "type": "external",
@@ -26767,7 +27437,7 @@
       "externalPackage": "json"
     },
     {
-      "id": "e_178",
+      "id": "e_181",
       "source": "parser_parsers_json_parser_py",
       "target": "ext_os",
       "type": "external",
@@ -26777,7 +27447,7 @@
       "externalPackage": "os"
     },
     {
-      "id": "e_179",
+      "id": "e_182",
       "source": "parser_parsers_json_parser_py",
       "target": "graph_types_py",
       "type": "import",
@@ -26791,7 +27461,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_180",
+      "id": "e_183",
       "source": "parser_parsers_python_parser_py",
       "target": "ext___future__",
       "type": "external",
@@ -26803,7 +27473,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_181",
+      "id": "e_184",
       "source": "parser_parsers_python_parser_py",
       "target": "ext_ast",
       "type": "external",
@@ -26813,7 +27483,7 @@
       "externalPackage": "ast"
     },
     {
-      "id": "e_182",
+      "id": "e_185",
       "source": "parser_parsers_python_parser_py",
       "target": "ext_re",
       "type": "external",
@@ -26823,7 +27493,7 @@
       "externalPackage": "re"
     },
     {
-      "id": "e_183",
+      "id": "e_186",
       "source": "parser_parsers_python_parser_py",
       "target": "ext_typing",
       "type": "external",
@@ -26835,7 +27505,7 @@
       "externalPackage": "typing"
     },
     {
-      "id": "e_184",
+      "id": "e_187",
       "source": "parser_parsers_python_parser_py",
       "target": "graph_types_py",
       "type": "import",
@@ -26849,7 +27519,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_185",
+      "id": "e_188",
       "source": "parser_parsers_shell_parser_py",
       "target": "ext___future__",
       "type": "external",
@@ -26861,7 +27531,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_186",
+      "id": "e_189",
       "source": "parser_parsers_shell_parser_py",
       "target": "ext_re",
       "type": "external",
@@ -26871,7 +27541,7 @@
       "externalPackage": "re"
     },
     {
-      "id": "e_187",
+      "id": "e_190",
       "source": "parser_parsers_shell_parser_py",
       "target": "graph_types_py",
       "type": "import",
@@ -26885,7 +27555,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_188",
+      "id": "e_191",
       "source": "parser_parsers_toml_yaml_parser_py",
       "target": "ext___future__",
       "type": "external",
@@ -26897,7 +27567,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_189",
+      "id": "e_192",
       "source": "parser_parsers_toml_yaml_parser_py",
       "target": "ext_os",
       "type": "external",
@@ -26907,7 +27577,7 @@
       "externalPackage": "os"
     },
     {
-      "id": "e_190",
+      "id": "e_193",
       "source": "parser_parsers_toml_yaml_parser_py",
       "target": "ext_re",
       "type": "external",
@@ -26917,7 +27587,7 @@
       "externalPackage": "re"
     },
     {
-      "id": "e_191",
+      "id": "e_194",
       "source": "parser_parsers_toml_yaml_parser_py",
       "target": "graph_types_py",
       "type": "import",
@@ -26931,7 +27601,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_192",
+      "id": "e_195",
       "source": "parser_parsers_toml_yaml_parser_py",
       "target": "ext_tomllib",
       "type": "external",
@@ -26941,7 +27611,7 @@
       "externalPackage": "tomllib"
     },
     {
-      "id": "e_193",
+      "id": "e_196",
       "source": "process___init___py",
       "target": "process_process_manager_py",
       "type": "import",
@@ -26954,7 +27624,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_194",
+      "id": "e_197",
       "source": "process_process_manager_py",
       "target": "ext___future__",
       "type": "external",
@@ -26966,7 +27636,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_195",
+      "id": "e_198",
       "source": "process_process_manager_py",
       "target": "ext_os",
       "type": "external",
@@ -26976,7 +27646,7 @@
       "externalPackage": "os"
     },
     {
-      "id": "e_196",
+      "id": "e_199",
       "source": "process_process_manager_py",
       "target": "ext_sys",
       "type": "external",
@@ -26986,7 +27656,7 @@
       "externalPackage": "sys"
     },
     {
-      "id": "e_197",
+      "id": "e_200",
       "source": "process_process_manager_py",
       "target": "ext_signal",
       "type": "external",
@@ -26996,7 +27666,7 @@
       "externalPackage": "signal"
     },
     {
-      "id": "e_198",
+      "id": "e_201",
       "source": "process_process_manager_py",
       "target": "ext_shlex",
       "type": "external",
@@ -27006,7 +27676,7 @@
       "externalPackage": "shlex"
     },
     {
-      "id": "e_199",
+      "id": "e_202",
       "source": "process_process_manager_py",
       "target": "ext_threading",
       "type": "external",
@@ -27016,7 +27686,7 @@
       "externalPackage": "threading"
     },
     {
-      "id": "e_200",
+      "id": "e_203",
       "source": "process_process_manager_py",
       "target": "ext_secrets",
       "type": "external",
@@ -27026,7 +27696,7 @@
       "externalPackage": "secrets"
     },
     {
-      "id": "e_201",
+      "id": "e_204",
       "source": "process_process_manager_py",
       "target": "ext_collections",
       "type": "external",
@@ -27038,7 +27708,7 @@
       "externalPackage": "collections"
     },
     {
-      "id": "e_202",
+      "id": "e_205",
       "source": "process_process_manager_py",
       "target": "ext_datetime",
       "type": "external",
@@ -27051,7 +27721,7 @@
       "externalPackage": "datetime"
     },
     {
-      "id": "e_203",
+      "id": "e_206",
       "source": "process_process_manager_py",
       "target": "ext_subprocess",
       "type": "external",
@@ -27064,7 +27734,7 @@
       "externalPackage": "subprocess"
     },
     {
-      "id": "e_204",
+      "id": "e_207",
       "source": "process_process_manager_py",
       "target": "ext_typing",
       "type": "external",
@@ -27076,7 +27746,7 @@
       "externalPackage": "typing"
     },
     {
-      "id": "e_205",
+      "id": "e_208",
       "source": "process_process_manager_py",
       "target": "ext_time",
       "type": "external",
@@ -27086,7 +27756,7 @@
       "externalPackage": "time"
     },
     {
-      "id": "e_206",
+      "id": "e_209",
       "source": "process_process_manager_py",
       "target": "ext_ctypes",
       "type": "external",
@@ -27096,7 +27766,7 @@
       "externalPackage": "ctypes"
     },
     {
-      "id": "e_207",
+      "id": "e_210",
       "source": "test_test_suite_py",
       "target": "ext___future__",
       "type": "external",
@@ -27108,7 +27778,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_208",
+      "id": "e_211",
       "source": "test_test_suite_py",
       "target": "ext_json",
       "type": "external",
@@ -27118,7 +27788,7 @@
       "externalPackage": "json"
     },
     {
-      "id": "e_209",
+      "id": "e_212",
       "source": "test_test_suite_py",
       "target": "ext_os",
       "type": "external",
@@ -27128,7 +27798,7 @@
       "externalPackage": "os"
     },
     {
-      "id": "e_210",
+      "id": "e_213",
       "source": "test_test_suite_py",
       "target": "ext_sys",
       "type": "external",
@@ -27138,7 +27808,7 @@
       "externalPackage": "sys"
     },
     {
-      "id": "e_211",
+      "id": "e_214",
       "source": "test_test_suite_py",
       "target": "ext_tarfile",
       "type": "external",
@@ -27148,7 +27818,7 @@
       "externalPackage": "tarfile"
     },
     {
-      "id": "e_212",
+      "id": "e_215",
       "source": "test_test_suite_py",
       "target": "ext_tempfile",
       "type": "external",
@@ -27158,7 +27828,7 @@
       "externalPackage": "tempfile"
     },
     {
-      "id": "e_213",
+      "id": "e_216",
       "source": "test_test_suite_py",
       "target": "ext_time",
       "type": "external",
@@ -27168,7 +27838,7 @@
       "externalPackage": "time"
     },
     {
-      "id": "e_214",
+      "id": "e_217",
       "source": "test_test_suite_py",
       "target": "ext_unittest",
       "type": "external",
@@ -27178,7 +27848,7 @@
       "externalPackage": "unittest"
     },
     {
-      "id": "e_215",
+      "id": "e_218",
       "source": "test_test_suite_py",
       "target": "parser_parsers_python_parser_py",
       "type": "import",
@@ -27190,7 +27860,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_216",
+      "id": "e_219",
       "source": "test_test_suite_py",
       "target": "parser_parsers_js_parser_py",
       "type": "import",
@@ -27202,7 +27872,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_217",
+      "id": "e_220",
       "source": "test_test_suite_py",
       "target": "parser_parsers_json_parser_py",
       "type": "import",
@@ -27214,7 +27884,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_218",
+      "id": "e_221",
       "source": "test_test_suite_py",
       "target": "parser_parsers_shell_parser_py",
       "type": "import",
@@ -27226,7 +27896,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_219",
+      "id": "e_222",
       "source": "test_test_suite_py",
       "target": "parser_walker_py",
       "type": "import",
@@ -27240,7 +27910,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_220",
+      "id": "e_223",
       "source": "test_test_suite_py",
       "target": "parser_project_config_py",
       "type": "import",
@@ -27255,7 +27925,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_221",
+      "id": "e_224",
       "source": "test_test_suite_py",
       "target": "parser_resolve_edges_py",
       "type": "import",
@@ -27268,7 +27938,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_222",
+      "id": "e_225",
       "source": "test_test_suite_py",
       "target": "parser_layout_py",
       "type": "import",
@@ -27280,7 +27950,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_223",
+      "id": "e_226",
       "source": "test_test_suite_py",
       "target": "parser_doc_check_py",
       "type": "import",
@@ -27292,7 +27962,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_224",
+      "id": "e_227",
       "source": "test_test_suite_py",
       "target": "parser_project_parser_py",
       "type": "import",
@@ -27304,7 +27974,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_225",
+      "id": "e_228",
       "source": "test_test_suite_py",
       "target": "version_version_manager_py",
       "type": "import",
@@ -27319,7 +27989,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_226",
+      "id": "e_229",
       "source": "test_test_suite_py",
       "target": "process_process_manager_py",
       "type": "import",
@@ -27331,7 +28001,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_227",
+      "id": "e_230",
       "source": "test_test_suite_py",
       "target": "graph_types_py",
       "type": "import",
@@ -27346,7 +28016,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_228",
+      "id": "e_231",
       "source": "test_test_suite_py",
       "target": "monitor_perf_py",
       "type": "import",
@@ -27358,7 +28028,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_229",
+      "id": "e_232",
       "source": "test_test_suite_py",
       "target": "ext_build",
       "type": "external",
@@ -27371,7 +28041,7 @@
       "externalPackage": "build"
     },
     {
-      "id": "e_230",
+      "id": "e_233",
       "source": "test_test_suite_py",
       "target": "parser_parsers_toml_yaml_parser_py",
       "type": "import",
@@ -27383,7 +28053,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_231",
+      "id": "e_234",
       "source": "test_test_suite_py",
       "target": "parser_parsers___init___py",
       "type": "import",
@@ -27395,7 +28065,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_232",
+      "id": "e_235",
       "source": "test_test_suite_py",
       "target": "monitor___init___py",
       "type": "import",
@@ -27407,7 +28077,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_233",
+      "id": "e_236",
       "source": "test_test_suite_py",
       "target": "monitor_instrument_py",
       "type": "import",
@@ -27420,7 +28090,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_234",
+      "id": "e_237",
       "source": "test_test_suite_py",
       "target": "monitor_instrumenter_py",
       "type": "import",
@@ -27433,7 +28103,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_235",
+      "id": "e_238",
       "source": "test_test_suite_py",
       "target": "ext_ast",
       "type": "external",
@@ -27443,7 +28113,7 @@
       "externalPackage": "ast"
     },
     {
-      "id": "e_236",
+      "id": "e_239",
       "source": "test_test_suite_py",
       "target": "ai_client_py",
       "type": "import",
@@ -27455,7 +28125,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_237",
+      "id": "e_240",
       "source": "test_test_suite_py",
       "target": "ai_context_py",
       "type": "import",
@@ -27467,7 +28137,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_238",
+      "id": "e_241",
       "source": "test_test_suite_py",
       "target": "ai_tools_py",
       "type": "import",
@@ -27479,7 +28149,29 @@
       "externalPackage": null
     },
     {
-      "id": "e_239",
+      "id": "e_242",
+      "source": "test_test_suite_py",
+      "target": "gui_app_py",
+      "type": "import",
+      "symbols": [
+        "app"
+      ],
+      "line": 1782,
+      "isExternal": false,
+      "externalPackage": null
+    },
+    {
+      "id": "e_243",
+      "source": "test_test_suite_py",
+      "target": "ext_subprocess",
+      "type": "external",
+      "symbols": [],
+      "line": 1842,
+      "isExternal": true,
+      "externalPackage": "subprocess"
+    },
+    {
+      "id": "e_244",
       "source": "version___init___py",
       "target": "version_version_manager_py",
       "type": "import",
@@ -27494,7 +28186,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_240",
+      "id": "e_245",
       "source": "version_version_manager_py",
       "target": "ext___future__",
       "type": "external",
@@ -27506,7 +28198,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_241",
+      "id": "e_246",
       "source": "version_version_manager_py",
       "target": "ext_os",
       "type": "external",
@@ -27516,7 +28208,7 @@
       "externalPackage": "os"
     },
     {
-      "id": "e_242",
+      "id": "e_247",
       "source": "version_version_manager_py",
       "target": "ext_tarfile",
       "type": "external",
@@ -27526,7 +28218,7 @@
       "externalPackage": "tarfile"
     },
     {
-      "id": "e_243",
+      "id": "e_248",
       "source": "version_version_manager_py",
       "target": "ext_fnmatch",
       "type": "external",
@@ -27536,7 +28228,7 @@
       "externalPackage": "fnmatch"
     },
     {
-      "id": "e_244",
+      "id": "e_249",
       "source": "version_version_manager_py",
       "target": "ext_datetime",
       "type": "external",
@@ -27549,7 +28241,7 @@
       "externalPackage": "datetime"
     },
     {
-      "id": "e_245",
+      "id": "e_250",
       "source": "version_version_manager_py",
       "target": "ext_pathlib",
       "type": "external",
@@ -27561,7 +28253,7 @@
       "externalPackage": "pathlib"
     },
     {
-      "id": "e_246",
+      "id": "e_251",
       "source": "version_version_manager_py",
       "target": "parser_project_config_py",
       "type": "import",
@@ -27576,7 +28268,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_247",
+      "id": "e_252",
       "source": "version_version_manager_py",
       "target": "ext_shutil",
       "type": "external",

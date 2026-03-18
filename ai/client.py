@@ -198,8 +198,8 @@ class OllamaClient:
         else:
             return self._blocking(req)
 
-    def _stream(self, req) -> Iterator[str]:
-        """Generator that yields text chunks from a streaming response."""
+    def _stream_raw(self, req) -> Iterator[dict]:
+        """Generator that yields raw JSON dictionaries from a streaming response."""
         try:
             with urllib.request.urlopen(req, timeout=self.TIMEOUT) as resp:
                 for raw_line in resp:
@@ -207,17 +207,21 @@ class OllamaClient:
                     if not line:
                         continue
                     try:
-                        d = json.loads(line)
-                        if d.get("error"):
-                            yield f"\n[error: {d['error']}]"
-                            return
-                        chunk = d.get("message", {}).get("content", "")
-                        if chunk:
-                            yield chunk
+                        yield json.loads(line)
                     except json.JSONDecodeError:
                         pass
         except urllib.error.URLError as e:
-            yield f"\n[connection error: {e}]"
+            yield {"error": str(e), "done": True}
+
+    def _stream(self, req) -> Iterator[str]:
+        """Generator that yields text chunks from a streaming response."""
+        for d in self._stream_raw(req):
+            if d.get("error"):
+                yield f"\n[error: {d['error']}]"
+                return
+            chunk = d.get("message", {}).get("content", "")
+            if chunk:
+                yield chunk
 
     def _blocking(self, req) -> ChatResponse:
         """Blocking request — returns full ChatResponse."""
@@ -236,40 +240,103 @@ class OllamaClient:
         messages:   list[ChatMessage],
         tools:      list[dict],
         dispatch_fn: Callable[[str, dict], ToolResult],
-        max_rounds: int = 6,
+        max_rounds: int = 10,  # Increased for better troubleshooting
         on_text:    Callable[[str], None] | None = None,
     ) -> ChatResponse:
         """
-        Agentic loop: chat → tool calls → results → chat again.
-        Calls dispatch_fn(tool_name, arguments) for each tool call.
-        Calls on_text(chunk) for streaming text chunks.
-        Returns the final ChatResponse.
+        Agentic loop with real-time streaming and troubleshooting support.
         """
         msgs = list(messages)
+        final_content = ""
+        
         for _ in range(max_rounds):
-            response = self.chat(model, msgs, tools=tools, stream=False)
-            if on_text and response.content:
-                on_text(response.content)
+            payload: dict = {
+                "model":    model,
+                "messages": [m.to_dict() for m in msgs],
+                "stream":   True,
+                "tools":    tools,
+            }
+            url  = f"{self.host}/api/chat"
+            body = json.dumps(payload).encode()
+            req  = urllib.request.Request(url, data=body,
+                                           headers={"Content-Type": "application/json"})
+            
+            curr_content = ""
+            curr_tool_calls = []
+            
+            try:
+                for d in self._stream_raw(req):
+                    if d.get("error"):
+                        if on_text: on_text(f"\n[error: {d['error']}]")
+                        break
+                    
+                    msg = d.get("message", {})
+                    content = msg.get("content", "")
+                    if content:
+                        curr_content += content
+                        if on_text: on_text(content)
+                    
+                    tcs = msg.get("tool_calls", [])
+                    if tcs:
+                        for tc in tcs:
+                            fn = tc.get("function", {})
+                            curr_tool_calls.append(ToolCall(
+                                name=fn.get("name", ""),
+                                arguments=fn.get("arguments", {}),
+                                id=tc.get("id", "")
+                            ))
+            except Exception as e:
+                if on_text: on_text(f"\n[HTTP Error: {e}]")
+                break
 
-            if not response.tool_calls:
-                return response
-
-            # Append assistant message with tool calls
+            # --- SIMULATION INTERCEPTOR ---
+            # If the model didn't use formal tools, but wrote something like `create_plan(steps=["X"])`
+            if not curr_tool_calls and "```python" in curr_content:
+                import re
+                # Look for calls like name(arg="val", arg2=["list"])
+                sim_matches = re.finditer(r'([a-z_]+)\(([^)]+)\)', curr_content)
+                for m in sim_matches:
+                    fn_name = m.group(1)
+                    raw_args = m.group(2)
+                    # Check if this name is in our tool list
+                    if any(t['function']['name'] == fn_name for t in tools):
+                        # Attempt to parse args (very loose)
+                        try:
+                            # Try to extract key-value pairs
+                            args = {}
+                            arg_parts = re.split(r',\s*(?=[a-z_]+=)', raw_args)
+                            for part in arg_parts:
+                                if '=' in part:
+                                    k, v = part.split('=', 1)
+                                    # Basic json-ification of the value
+                                    v = v.strip().strip("'").strip('"')
+                                    if v.startswith('[') and v.endswith(']'):
+                                        try: v = json.loads(v.replace("'", '"'))
+                                        except: pass
+                                    args[k.strip()] = v
+                            curr_tool_calls.append(ToolCall(name=fn_name, arguments=args, id=f"sim_{m.start()}"))
+                        except: pass
+            
+            # Save the message from this round
             msgs.append(ChatMessage(
                 role="assistant",
-                content=response.content,
+                content=curr_content,
                 tool_calls=[{
                     "id": tc.id or f"call_{i}",
                     "type": "function",
                     "function": {"name": tc.name, "arguments": tc.arguments},
-                } for i, tc in enumerate(response.tool_calls)],
+                } for i, tc in enumerate(curr_tool_calls)],
             ))
-
+            final_content = curr_content
+            
+            if not curr_tool_calls:
+                return ChatResponse(content=final_content, done=True)
+            
             # Execute tool calls and append results
-            for tc in response.tool_calls:
+            for tc in curr_tool_calls:
+                if on_text: on_text(f"\n[executing tool: {tc.name}...]\n")
                 result = dispatch_fn(tc.name, tc.arguments)
-                if on_text:
-                    on_text(f"\n[tool: {tc.name}]\n")
+                if on_text: on_text(f"[tool result: {result.name}]\n")
                 msgs.append(result.to_message())
-
-        return ChatResponse(content="[max tool rounds reached]", done=True)
+        
+        return ChatResponse(content=final_content or "[max rounds reached]", done=True)

@@ -134,7 +134,9 @@ class EditorWindow:
         on_save:     Callable[[str, str], None] | None = None,
         on_ask_ai:   Callable[[str, str], None] | None = None,
         theme:       dict | None = None,
+        standalone:  bool = True,
     ):
+        self.standalone   = standalone
         self.filepath     = os.path.abspath(filepath)
         self.project_root = project_root or os.path.dirname(filepath)
         self.rel_path     = os.path.relpath(filepath, self.project_root)
@@ -144,6 +146,20 @@ class EditorWindow:
         self._modified    = False
         self._patterns: list[tuple[str, re.Pattern]] = []
         self._rehighlight_after: str | None = None
+
+        # UI elements (initialized to None for type checker)
+        self.win          = None
+        self._title_var   = None
+        self._modified_lbl= None
+        self._save_btn    = None
+        self._edit_btn    = None
+        self._find_bar    = None
+        self._find_var    = None
+        self._find_entry  = None
+        self._replace_var = None
+        self._find_count_var = None
+        self._lnum_canvas = None
+        self._text        = None
 
         T = theme or {}
         self.bg0   = T.get("bg0",   "#060608")
@@ -165,12 +181,16 @@ class EditorWindow:
     # ── Build UI ───────────────────────────────────────────────────────────────
 
     def _build(self, master):
-        self.win = tk.Toplevel(master)
-        self.win.title(f"{self.rel_path}")
-        self.win.configure(bg=self.bg0)
-        self.win.geometry("900x680")
-        self.win.resizable(True, True)
-        self.win.transient(master)
+        if self.standalone:
+            self.win = tk.Toplevel(master)
+            self.win.title(f"{self.rel_path}")
+            self.win.configure(bg=self.bg0)
+            self.win.geometry("900x680")
+            self.win.resizable(True, True)
+            self.win.transient(master)
+        else:
+            self.win = tk.Frame(master, bg=self.bg0)
+            self.win.pack(fill="both", expand=True)
 
         self._build_toolbar()
         self._build_find_bar()

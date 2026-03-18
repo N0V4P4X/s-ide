@@ -29,6 +29,7 @@ import sys
 import json
 import math
 import threading
+import datetime
 import time
 import tkinter as tk
 import tkinter.font as tkfont
@@ -194,6 +195,7 @@ class SIDE_App(tk.Tk):
         mono_families = ["IBM Plex Mono", "JetBrains Mono", "Fira Code",
                          "Cascadia Code", "Consolas", "Courier New"]
         self._mono = self._best_font(mono_families, 11)
+        self._mono_m  = self._best_font(mono_families, 10)
         self._mono_s  = self._best_font(mono_families, 9)
         self._mono_xs = self._best_font(mono_families, 8)
         self._mono_l  = self._best_font(mono_families, 12, bold=True)
@@ -253,6 +255,81 @@ class SIDE_App(tk.Tk):
         self._metrics_watcher = None
         # Cache: rel_path → file metrics dict (refreshed from watcher)
         self._file_metrics: dict = {}
+
+        # ── UI attributes (formalized for linting) ───────────────────────────
+        self._main_pw = None
+        self._main_paned  = None
+        self._bottom_notebook = None
+        self._bottom_wrapper = None
+        self._bottom_body = None
+        self._bottom_expanded = True
+        self._saved_bottom_height = 250
+        
+        self._proj_tab    = None
+        self._plan_tab    = None
+        self._play_tab    = None
+        self._editor_tab  = None
+        self._ai_tab      = None
+        self._terminal_tab= None
+        
+        self._sidebar     = None
+        self._inspector   = None
+        self._canvas      = None
+        self._proj_list_frame = None
+        
+        self._inspector_width = 300
+        
+        # AI/Plan/Playground vars
+        self._ai_input_var = tk.StringVar()
+        self._ai_status_var= tk.StringVar()
+        self._ai_model_var = tk.StringVar()
+        self._ai_model     = 'llama3.2'
+        self._ai_messages  = []
+        self._ai_available = False
+        self._ai_state     = {'in_thought': False, 'in_code': False, 'in_bold': False, 'buffer': ""}
+        self._ai_conv      = None
+        self._plan_text    = None
+        self._play_text    = None
+        self._play_out     = None
+        
+        # Terminal
+        self._term_output  = None
+        self._term_input   = None
+        self._ai_input     = None
+        self._term_input_var = tk.StringVar()
+        self._term_input_widget = None
+        self._term_history = []
+        self._term_history_idx = -1
+        
+        # UI Elements
+        self._lbl_project    = None
+        self._doc_badge_var  = tk.StringVar()
+        self._ai_btn         = None
+        self._metrics_btn    = None
+        self._help_btn       = None
+        self._settings_btn   = None
+        self._run_btn        = None
+        self._build_btn      = None
+        self._clean_btn      = None
+        self._package_btn    = None
+        self._history_btn    = None
+        self._versions_btn   = None
+        
+        # Timers/IDs
+        self._redraw_after_id = None
+        self._resize_after_id = None
+        self._side_metrics_after_id = None
+        self._poll_watcher_id = None
+        self._search_var = tk.StringVar()
+        
+        # Properties/State helpers
+        self.project_root = os.getcwd() # Fallback
+        
+        self._sidebar_scroll = None
+        self._sidebar_canvas = None
+        self._sidebar_inner  = None
+        
+        self._load_terminal_history()
 
         # ── Build UI ──────────────────────────────────────────────────────────
         self._build_ui()
@@ -397,21 +474,12 @@ class SIDE_App(tk.Tk):
     # ── AI panel ─────────────────────────────────────────────────────────────
 
     def _toggle_ai_panel(self):
-        if hasattr(self, '_ai_win') and self._ai_win.winfo_exists():
-            self._ai_win.lift()
-            return
-        self._open_ai_panel()
+        self._select_bottom_tab("ai")
 
-    def _open_ai_panel(self):
-        self._ai_win = tk.Toplevel(self)
-        self._ai_win.title('S-IDE — AI Assistant')
-        self._ai_win.configure(bg=P['bg1'])
-        self._ai_win.geometry('700x580')
-        self._ai_win.resizable(True, True)
-        self._ai_win.transient(self)
+    def _build_ai_panel(self, parent):
         # Header
-        hdr = tk.Frame(self._ai_win, bg=P['bg2'])
-        hdr.pack(fill='x')
+        hdr = tk.Frame(parent, bg=P['bg2'])
+        hdr.pack(fill='x', side='top')
         tk.Frame(hdr, bg=P['line'], height=1).pack(fill='x')
         hi = tk.Frame(hdr, bg=P['bg2'])
         hi.pack(fill='x', padx=14, pady=8)
@@ -432,9 +500,27 @@ class SIDE_App(tk.Tk):
         clear_btn.pack(side='right', padx=4)
         clear_btn.bind('<Button-1>', lambda _: self._ai_clear())
         tk.Frame(hdr, bg=P['line'], height=1).pack(fill='x')
-        # Conversation
-        co = tk.Frame(self._ai_win, bg=P['bg0'])
-        co.pack(fill='both', expand=True)
+
+        # Input (pack at bottom first so it stays visible)
+        tk.Frame(parent, bg=P['line'], height=1).pack(fill='x', side='bottom')
+        inp_f = tk.Frame(parent, bg=P['bg2'])
+        inp_f.pack(fill='x', side='bottom', padx=10, pady=8)
+        self._ai_input_var = tk.StringVar()
+        self._ai_input = tk.Entry(inp_f, textvariable=self._ai_input_var,
+                        bg=P['bg3'], fg=P['t0'], insertbackground=P['green'],
+                        bd=0, font=(self._mono_xs.actual()['family'], 11), width=50)
+        self._ai_input.pack(side='left', fill='x', expand=True, ipady=5, padx=(0, 8))
+        self._ai_input.bind('<Return>', lambda _: self._ai_send())
+        self._ai_input.focus_set()
+        send_btn = tk.Label(inp_f, text='Send', bg=P['green2'], fg=P['green'],
+                             font=self._mono_s, padx=10, pady=5, cursor='hand2',
+                             highlightbackground=P['green'], highlightthickness=1)
+        send_btn.pack(side='left')
+        send_btn.bind('<Button-1>', lambda _: self._ai_send())
+
+        # Conversation (takes remaining space in middle)
+        co = tk.Frame(parent, bg=P['bg0'])
+        co.pack(fill='both', expand=True, side='top')
         csb = tk.Scrollbar(co); csb.pack(side='right', fill='y')
         self._ai_conv = tk.Text(co, bg=P['bg0'], fg=P['t1'],
                                 font=(self._mono_xs.actual()['family'], 10),
@@ -442,27 +528,16 @@ class SIDE_App(tk.Tk):
                                 state='disabled', padx=14, pady=8)
         self._ai_conv.pack(fill='both', expand=True)
         csb.config(command=self._ai_conv.yview)
-        self._ai_conv.tag_config('user',  foreground=P['cyan'])
-        self._ai_conv.tag_config('ai',    foreground=P['t0'])
-        self._ai_conv.tag_config('tool',  foreground=P['amber'])
-        self._ai_conv.tag_config('error', foreground=P['red'])
-        self._ai_conv.tag_config('dim',   foreground=P['t2'])
-        # Input
-        tk.Frame(self._ai_win, bg=P['line'], height=1).pack(fill='x')
-        inp_f = tk.Frame(self._ai_win, bg=P['bg2'])
-        inp_f.pack(fill='x', padx=10, pady=8)
-        self._ai_input_var = tk.StringVar()
-        inp = tk.Entry(inp_f, textvariable=self._ai_input_var,
-                        bg=P['bg3'], fg=P['t0'], insertbackground=P['green'],
-                        bd=0, font=(self._mono_xs.actual()['family'], 11), width=50)
-        inp.pack(side='left', fill='x', expand=True, ipady=5, padx=(0, 8))
-        inp.bind('<Return>', lambda _: self._ai_send())
-        inp.focus_set()
-        send_btn = tk.Label(inp_f, text='Send', bg=P['green2'], fg=P['green'],
-                             font=self._mono_s, padx=10, pady=5, cursor='hand2',
-                             highlightbackground=P['green'], highlightthickness=1)
-        send_btn.pack(side='left')
-        send_btn.bind('<Button-1>', lambda _: self._ai_send())
+        self._ai_conv.tag_config('user',    foreground=P['cyan'])
+        self._ai_conv.tag_config('ai',      foreground=P['t0'])
+        self._ai_conv.tag_config('tool',    foreground=P['amber'])
+        self._ai_conv.tag_config('error',   foreground=P['red'])
+        self._ai_conv.tag_config('dim',     foreground=P['t2'])
+        self._ai_conv.tag_config('thought', font=(self._mono_xs.actual()['family'], 9, 'italic'), foreground=P['t2'])
+        self._ai_conv.tag_config('bold',    font=(self._mono_xs.actual()['family'], 10, 'bold'))
+        self._ai_conv.tag_config('code',    font=(self._mono_xs.actual()['family'], 10), background=P['bg3'])
+        self._ai_conv.tag_config('block',   font=(self._mono_xs.actual()['family'], 10), background=P['bg1'])
+        self._ai_conv.tag_config('exec',    foreground=P['cyan'], font=(self._mono_xs.actual()['family'], 9, 'italic'))
         import threading
         threading.Thread(target=lambda: self._ai_check_ollama(model_combo),
                          daemon=True).start()
@@ -530,6 +605,8 @@ class SIDE_App(tk.Tk):
             return
         self._ai_input_var.set('')
         self._ai_append(f'\nYou: {prompt}\n', 'user')
+        self._ai_reset_stream_state()
+        
         from ai.client import OllamaClient, ChatMessage as CM
         from ai.tools import TOOLS, dispatch_tool
         from ai.context import build_context, build_system_message
@@ -543,34 +620,148 @@ class SIDE_App(tk.Tk):
             focused_node=focused,
             focused_file=focused.get('path', '') if focused else '',
         )
-        if not self._ai_messages:
-            self._ai_messages = [build_system_message(ctx)]
-        self._ai_messages.append(CM(role='user', content=prompt))
-        model = self._ai_model
-        msgs  = list(self._ai_messages)
-        self._ai_append('\nAssistant: ', 'dim')
-        import threading
-        def _run():
-            client   = OllamaClient()
-            acc_text = []
-            def _on_text(chunk):
-                acc_text.append(chunk)
-                self.after(0, lambda c=chunk: self._ai_append(c, 'ai'))
-            def _dispatch(name, args):
-                self.after(0, lambda n=name: self._ai_append(f'\n  [{n}]\n', 'tool'))
-                return dispatch_tool(name, args, ctx)
+
+        def _on_chunk(text):
+            self.after(0, lambda: self._ai_append_content(text))
+
+        def run_ai():
             try:
-                final = client.chat_with_tools(
-                    model=model, messages=msgs, tools=TOOLS,
-                    dispatch_fn=_dispatch, on_text=_on_text,
+                client = OllamaClient()
+                if not self._ai_messages:
+                    self._ai_messages.append(build_system_message(ctx))
+                self._ai_messages.append(CM(role='user', content=prompt))
+                
+                res = client.chat_with_tools(
+                    self._ai_model, 
+                    self._ai_messages, 
+                    TOOLS, 
+                    lambda n, a: dispatch_tool(n, a, ctx),
+                    on_text=_on_chunk
                 )
-                full = ''.join(acc_text) or final.content
-                self._ai_messages.append(CM(role='assistant', content=full))
-                self.after(0, lambda: self._ai_append('\n', ''))
+                self._ai_messages.append(CM(role='assistant', content=res.content))
+                # Auto-refresh plan if it changed
+                self.after(0, self._refresh_plan)
             except Exception as e:
-                self.after(0, lambda m=str(e):
-                           self._ai_append(f'\n[error: {m}]\n', 'error'))
-        threading.Thread(target=_run, daemon=True).start()
+                self.after(0, lambda: self._ai_append(f'\nError: {e}\n', 'error'))
+
+        threading.Thread(target=run_ai, daemon=True).start()
+
+    def _ai_append_content(self, text):
+        """Robust stateful streaming append with debug logging and regex."""
+        # Debug log raw chunk
+        try:
+            with open('/tmp/side_ai_raw.log', 'a') as f:
+                f.write(f"--- CHUNK ({len(text)}) ---\n{text}\n")
+        except: pass
+
+        self._ai_state['buffer'] += text
+        import re
+        
+        while True:
+            buf = str(self._ai_state['buffer'])
+            if not buf: break
+            
+            if not self._ai_state['in_thought'] and not self._ai_state['in_code']:
+                # Looking for start of thought or code
+                match_t = re.search(r'<thought>', buf, re.I)
+                match_c = re.search(r'```', buf)
+                
+                if match_t and (not match_c or match_t.start() < match_c.start()):
+                    pre = buf[:match_t.start()]
+                    if pre: self._ai_append_md_flat(pre)
+                    self._ai_append("\n[THOUGHT: ", 'thought')
+                    self._ai_state['in_thought'] = True
+                    self._ai_state['buffer'] = buf[match_t.end():]
+                    continue
+                elif match_c:
+                    pre = buf[:match_c.start()]
+                    if pre: self._ai_append_md_flat(pre)
+                    self._ai_state['in_code'] = True
+                    self._ai_append("\n", 'ai')
+                    self._ai_state['buffer'] = buf[match_c.end():]
+                    continue
+                
+                # NO MATCH FOUND in current buffer.
+                # BUT: if it ends with '<' or '`', it might be a partial tag.
+                if any(buf.lower().endswith(t) for t in ['<','<t','<th','<tho','<thou','<thoug','<thought', '`', '``']):
+                    # Keep the partial tag in buffer, print everything else
+                    idx = buf.rfind('<') if '<' in buf else buf.rfind('`')
+                    pre = buf[:idx]
+                    if pre: self._ai_append_md_flat(pre)
+                    self._ai_state['buffer'] = buf[idx:]
+                    break
+                else:
+                    self._ai_append_md_flat(buf)
+                    self._ai_state['buffer'] = ""
+                    break
+            
+            elif self._ai_state['in_thought']:
+                match_te = re.search(r'</thought>', buf, re.I)
+                if match_te:
+                    content = buf[:match_te.start()]
+                    if content: self._ai_append(content.strip(), 'thought')
+                    self._ai_append("]\n", 'thought')
+                    self._ai_state['in_thought'] = False
+                    self._ai_state['buffer'] = buf[match_te.end():]
+                    continue
+                else:
+                    # Partial tag check for </thought>
+                    if any(buf.lower().endswith(t) for t in ['<','</','</t','</th','</tho','</thou','</thoug','</thought']):
+                        # Print everything up to the potential start of the closing tag
+                        idx = buf.lower().rfind('<')
+                        pre = buf[:idx]
+                        if pre: self._ai_append(pre, 'thought')
+                        self._ai_state['buffer'] = buf[idx:]
+                        break
+                    self._ai_append(buf, 'thought')
+                    self._ai_state['buffer'] = ""
+                    break
+            
+            elif self._ai_state['in_code']:
+                match_ce = re.search(r'```', buf)
+                if match_ce:
+                    content = buf[:match_ce.start()]
+                    if content: self._ai_append(content, 'block')
+                    self._ai_state['in_code'] = False
+                    self._ai_state['buffer'] = buf[match_ce.end():]
+                    continue
+                else:
+                    if any(buf.endswith(t) for t in ['`', '``']):
+                        idx = buf.rfind('`')
+                        pre = buf[:idx]
+                        if pre: self._ai_append(pre, 'block')
+                        self._ai_state['buffer'] = buf[idx:]
+                        break
+                    self._ai_append(buf, 'block')
+                    self._ai_state['buffer'] = ""
+                    break
+
+    def _ai_append_md_flat(self, text):
+        """Append text while handling bold and inline code styling."""
+        # This is a basic regex-free parser for streaming-friendly growth
+        import re
+        parts = re.split(r'(\*\*|`)', text)
+        current_tag = 'ai'
+        
+        for part in parts:
+            if part == '**':
+                self._ai_state['in_bold'] = not self._ai_state['in_bold']
+            elif part == '`':
+                # Toggle code tag (nested is ignored for simplicity)
+                pass 
+            else:
+                tag = 'ai'
+                if self._ai_state.get('in_bold'): tag = 'bold'
+                # Note: inline code not fully stateful yet, just bold for now
+                self._ai_append(part, tag)
+
+    def _ai_reset_stream_state(self):
+        self._ai_state = {
+            'in_thought': False,
+            'in_code': False,
+            'in_bold': False,
+            'buffer': ""
+        }
 
 
     def _on_close(self) -> None:
@@ -587,6 +778,7 @@ class SIDE_App(tk.Tk):
         if self._proc_mgr:
             try: self._proc_mgr.stop_all()
             except Exception: pass
+        self._save_terminal_history()
         self.destroy()
 
     def _best_font(self, families, size, bold=False):
@@ -762,17 +954,228 @@ class SIDE_App(tk.Tk):
         main = tk.Frame(self, bg=P["bg0"])
         main.grid(row=1, column=0, sticky="nsew")
         main.rowconfigure(0, weight=1)
-        main.columnconfigure(1, weight=1)
+        main.columnconfigure(0, weight=1)
 
-        self._build_sidebar(main)
-        self._build_canvas(main)
-        self._build_inspector(main)
+        self._main_pw = tk.PanedWindow(main, orient="vertical", bg=P["line2"], bd=0, sashwidth=4, sashpad=0)
+        self._main_pw.grid(row=0, column=0, sticky="nsew")
+
+        # Top half (canvas and inspector)
+        top_frame = tk.Frame(self._main_pw, bg=P["bg0"])
+        top_frame.rowconfigure(0, weight=1)
+        top_frame.columnconfigure(0, weight=1)  # Canvas column
+        self._main_pw.add(top_frame, stretch="always")
+
+        self._build_canvas(top_frame)
+        self._build_inspector(top_frame)
+
+        # Bottom half (tabbed panel)
+        self._build_bottom_panel(self._main_pw)
+
+    def _build_bottom_panel(self, parent_pw):
+        self._bottom_wrapper = tk.Frame(parent_pw, bg=P["bg1"])
+        self._bottom_wrapper.rowconfigure(1, weight=1)
+        self._bottom_wrapper.columnconfigure(0, weight=1)
+        
+        # Add to panedwindow
+        parent_pw.add(self._bottom_wrapper, height=250, stretch="never")
+
+        # Tab bar header + collapse button
+        tb = tk.Frame(self._bottom_wrapper, bg=P["bg2"])
+        tb.grid(row=0, column=0, sticky="ew")
+
+        self._bottom_expanded = True
+        self._saved_bottom_height = 250
+        
+        def _toggle_bottom():
+            self._bottom_expanded = not self._bottom_expanded
+            if self._bottom_expanded:
+                self._bottom_body.grid()
+                parent_pw.paneconfigure(self._bottom_wrapper, height=self._saved_bottom_height)
+                col_btn.config(text="▼")
+            else:
+                self._saved_bottom_height = self._bottom_wrapper.winfo_height()
+                self._bottom_body.grid_remove()
+                parent_pw.paneconfigure(self._bottom_wrapper, height=28)
+                col_btn.config(text="▲")
+        
+        col_btn = tk.Label(tb, text="▼", bg=P["bg2"], fg=P["t2"], font=self._mono_s, padx=12, pady=4, cursor="hand2")
+        col_btn.pack(side="right")
+        col_btn.bind("<Button-1>", lambda _: _toggle_bottom())
+
+        self._bottom_body = tk.Frame(self._bottom_wrapper, bg=P["bg1"])
+        self._bottom_body.grid(row=1, column=0, sticky="nsew")
+
+        # Tabs dict
+        self._tabs = {}
+        self._current_tab = None
+
+        def add_tab(name, title):
+            btn = tk.Label(tb, text=title, bg=P["bg2"], fg=P["t2"], font=self._mono_s, padx=16, pady=4, cursor="hand2")
+            btn.pack(side="left")
+            btn.bind("<Button-1>", lambda _: self._select_bottom_tab(name))
+            frm = tk.Frame(self._bottom_body, bg=P["bg1"])
+            self._tabs[name] = {"btn": btn, "frame": frm}
+            return frm
+
+        # Create panels
+        self._proj_tab   = add_tab("projects", "Projects")
+        self._ai_tab     = add_tab("ai", "AI Chat")
+        self._plan_tab   = add_tab("plan", "Plan")
+        self._play_tab   = add_tab("playground", "Playground")
+        self._editor_tab = add_tab("editor", "Editor")
+        self._term_tab   = add_tab("terminal", "Terminal")
+
+        # Build inside the panels
+        self._build_sidebar(self._proj_tab)
+        self._build_ai_panel(self._ai_tab)
+        self._build_plan_panel(self._plan_tab)
+        self._build_playground_panel(self._play_tab)
+        self._build_terminal_panel(self._term_tab)
+
+        # Select first tab
+        self._select_bottom_tab("projects")
+
+    def _select_bottom_tab(self, name):
+        if self._current_tab:
+            prev = self._tabs[self._current_tab]
+            prev["btn"].config(bg=P["bg2"], fg=P["t2"])
+            prev["frame"].pack_forget()
+        
+        self._current_tab = name
+        cur = self._tabs[name]
+        cur["btn"].config(bg=P["bg3"], fg=P["t0"])
+        cur["frame"].pack(fill="both", expand=True)
+
+        if not self._bottom_expanded:
+            # Force expand if user clicks a tab while collapsed
+            self._bottom_expanded = True
+            self._bottom_body.grid()
+            self._main_pw.paneconfigure(self._bottom_wrapper, height=self._saved_bottom_height)
+            # Find the toggle button and update its text (it is the last child in tb frame)
+            # Since we just need the visual update, it's ok. Using a global ref in method is cleaner.
+            for widget in self._bottom_wrapper.winfo_children()[0].winfo_children():
+                if widget.cget("text") == "▲":
+                    widget.config(text="▼")
+        
+        # Ensure focus after visibility change
+        self.update_idletasks()
+        if name == "ai" and hasattr(self, "_ai_input"):
+            self._ai_input.focus_set()
+        elif name == "terminal" and hasattr(self, "_term_input"):
+            self._term_input.focus_set()
+        elif name == "playground" and hasattr(self, "_play_text"):
+            self._play_text.focus_set()
+
+    # ── Terminal panel ────────────────────────────────────────────────────────
+
+    def _build_terminal_panel(self, parent):
+        import subprocess, threading
+
+        # Input (pack bottom first)
+        tk.Frame(parent, bg=P['line'], height=1).pack(fill='x', side='bottom')
+        inp_f = tk.Frame(parent, bg=P['bg2'])
+        inp_f.pack(fill='x', side='bottom', padx=10, pady=8)
+
+        # Prompt label
+        tk.Label(inp_f, text="$", bg=P['bg2'], fg=P['t2'], font=self._mono_xs).pack(side='left', padx=(0, 5))
+
+        self._term_input_var = tk.StringVar()
+        self._term_input = tk.Entry(inp_f, textvariable=self._term_input_var,
+                       bg=P['bg3'], fg=P['t0'], insertbackground=P['green'],
+                       bd=0, font=(self._mono_xs.actual()['family'], 11), width=50)
+        self._term_input.pack(side='left', fill='x', expand=True, ipady=5, padx=(0, 8))
+
+        # Output area (takes middle space)
+        co = tk.Frame(parent, bg=P['bg0'])
+        co.pack(fill='both', expand=True, side='top')
+
+        def _show_term_res(out, err):
+            if not self._term_out or not self._term_out.winfo_exists(): return
+            self._term_out.config(state='normal')
+            if out:
+                self._term_out.insert('end', out + ('\n' if not out.endswith('\n') else ''))
+            if err:
+                self._term_out.insert('end', err + ('\n' if not err.endswith('\n') else ''), 'err')
+            self._term_out.config(state='disabled')
+            self._term_out.see('end')
+
+        def _run_term(event=None):
+            cmd = self._term_input_var.get().strip()
+            if not cmd: return
+            
+            # History
+            if not self._term_history or self._term_history[-1] != cmd:
+                self._term_history.append(cmd)
+                self._save_terminal_history()
+            self._term_history_idx = -1
+
+            self._term_input_var.set('')
+            self._term_out.config(state='normal')
+            self._term_out.insert('end', f'$ {cmd}\n', 'cmd')
+            self._term_out.config(state='disabled')
+            self._term_out.see('end')
+
+            def run_proc():
+                root = self.graph['meta']['root'] if self.graph else os.getcwd()
+                try:
+                    proc = subprocess.Popen(cmd, shell=True, cwd=root, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                    out, err = proc.communicate()
+                    self.after(0, _show_term_res, out, err)
+                except Exception as e:
+                    self.after(0, _show_term_res, '', str(e))
+
+            threading.Thread(target=run_proc, daemon=True).start()
+
+        self._term_input.bind("<Return>", _run_term)
+        self._term_input.bind("<Up>", lambda _: self._term_cycle_history(-1))
+        self._term_input.bind("<Down>", lambda _: self._term_cycle_history(1))
+        
+        btn = tk.Label(inp_f, text='Run', bg=P['green2'], fg=P['green'],
+                       font=self._mono_s, padx=10, pady=5, cursor='hand2',
+                       highlightbackground=P['green'], highlightthickness=1)
+        btn.pack(side='left')
+        btn.bind('<Button-1>', _run_term)
+
+    def _term_cycle_history(self, delta):
+        if not self._term_history: return
+        if self._term_history_idx == -1:
+             self._term_current_draft = self._term_input_var.get()
+        
+        self._term_history_idx -= delta
+        if self._term_history_idx < 0:
+            self._term_history_idx = -1
+            self._term_input_var.set(getattr(self, "_term_current_draft", ""))
+            return
+        
+        if self._term_history_idx >= len(self._term_history):
+            self._term_history_idx = len(self._term_history) - 1
+            
+        cmd = self._term_history[len(self._term_history) - 1 - self._term_history_idx]
+        self._term_input_var.set(cmd)
+
+    def _save_terminal_history(self):
+        try:
+            path = os.path.expanduser("~/.s_ide_terminal_history.json")
+            with open(path, "w") as f:
+                json.dump(self._term_history[-100:], f)
+        except Exception: pass
+
+    def _load_terminal_history(self):
+        import json, os
+        try:
+            path = os.path.expanduser("~/.s_ide_terminal_history.json")
+            if os.path.exists(path):
+                with open(path, "r") as f:
+                    self._term_history = json.load(f)
+            else:
+                self._term_history = []
+        except Exception:
+            self._term_history = []
+
 
     def _build_sidebar(self, parent):
-        self._sidebar = tk.Frame(parent, bg=P["bg1"], width=220)
-        self._sidebar.grid(row=0, column=0, sticky="ns")
-        self._sidebar.pack_propagate(False)
-        self._sidebar.grid_propagate(False)
+        self._sidebar = tk.Frame(parent, bg=P["bg1"])
+        self._sidebar.pack(fill="both", expand=True)
 
         # Header
         hdr = tk.Frame(self._sidebar, bg=P["bg1"])
@@ -1269,7 +1672,7 @@ class SIDE_App(tk.Tk):
 
     def _build_canvas(self, parent):
         canvas_frame = tk.Frame(parent, bg=P["bg0"])
-        canvas_frame.grid(row=0, column=1, sticky="nsew")
+        canvas_frame.grid(row=0, column=0, sticky="nsew")
         canvas_frame.rowconfigure(0, weight=1)
         canvas_frame.columnconfigure(0, weight=1)
 
@@ -1325,7 +1728,7 @@ class SIDE_App(tk.Tk):
 
     def _build_inspector(self, parent):
         self._inspector = tk.Frame(parent, bg=P["bg1"], width=0)
-        self._inspector.grid(row=0, column=2, sticky="ns")
+        self._inspector.grid(row=0, column=1, sticky="ns")
         self._inspector.pack_propagate(False)
         self._inspector.grid_propagate(False)
         self._inspector_open = False
@@ -3356,8 +3759,6 @@ class SIDE_App(tk.Tk):
             self._log_text.config(state="disabled")
 
         clear_btn.bind("<Button-1>", lambda _: _clear())
-        refresh_btn.bind("<Button-1>", lambda _: _refresh())
-
         # Auto-refresh every 2s while panel is open
         def _auto_refresh():
             if self._log_win.winfo_exists():
@@ -3797,11 +4198,98 @@ class SIDE_App(tk.Tk):
         except Exception as exc:
             self._build_log(f"Could not read build history: {exc}", "warn")
 
+    def _build_plan_panel(self, parent):
+        """Build the plan panel UI."""
+        self._plan_text = tk.Text(parent, bg=P["bg1"], fg=P["t1"], font=self._mono_s,
+                                 padx=15, pady=15, borderwidth=0, highlightthickness=0)
+        self._plan_text.pack(fill="both", expand=True)
+        # Configure tags for plan status
+        self._plan_text.tag_config("done", foreground=P["green"])
+        self._plan_text.tag_config("doing", foreground=P["amber"])
+        self._plan_text.tag_config("todo", foreground=P["t2"])
+        self._plan_text.tag_config("header", font=self._mono_m, foreground=P["t0"])
+
+    def _refresh_plan(self):
+        """Reload plan from .side/task.md and render it."""
+        if not self._plan_text: return
+        path = os.path.join(self.project_root, ".side", "task.md")
+        if not os.path.isfile(path): path = os.path.join(self.project_root, "task.md")
+        if not os.path.isfile(path):
+            self._plan_text.config(state="normal")
+            self._plan_text.delete("1.0", "end")
+            self._plan_text.insert("end", "No task.md found.\nAI can create one using 'create_plan'.")
+            self._plan_text.config(state="disabled")
+            return
+            
+        try:
+            with open(path, "r") as f: content = f.read()
+            self._plan_text.config(state="normal")
+            self._plan_text.delete("1.0", "end")
+            for line in content.splitlines():
+                if line.startswith("#"):
+                    self._plan_text.insert("end", line + "\n", "header")
+                elif "[x]" in line:
+                    self._plan_text.insert("end", " ✓ " + line.replace("[x]", "").strip() + "\n", "done")
+                elif "[/]" in line:
+                    self._plan_text.insert("end", " ◉ " + line.replace("[/]", "").strip() + "\n", "doing")
+                elif "[ ]" in line:
+                    self._plan_text.insert("end", " ○ " + line.replace("[ ]", "").strip() + "\n", "todo")
+                else:
+                    self._plan_text.insert("end", line + "\n")
+            self._plan_text.config(state="disabled")
+        except Exception: pass
+
+    def _build_playground_panel(self, parent):
+        """Build the playground panel UI."""
+        top = tk.Frame(parent, bg=P["bg2"], height=40)
+        top.pack(fill="x")
+        btn = tk.Label(top, text=" RUN CODE ", bg=P["green"], fg="#000", font=self._mono_s, 
+                       padx=10, pady=4, cursor="hand2")
+        btn.pack(side="right", padx=10, pady=5)
+        btn.bind("<Button-1>", lambda _: self._playground_run())
+        
+        paned = tk.PanedWindow(parent, orient="vertical", bg=P["bg0"], borderwidth=0, sashwidth=2)
+        paned.pack(fill="both", expand=True)
+        
+        self._play_text = tk.Text(paned, bg=P["bg1"], fg=P["t1"], font=self._mono_s,
+                                 padx=10, pady=10, borderwidth=0, highlightthickness=0)
+        paned.add(self._play_text, height=300)
+        
+        self._play_out = tk.Text(paned, bg=P["bg0"], fg=P["t2"], font=self._mono_xs,
+                                padx=10, pady=10, borderwidth=0, highlightthickness=0)
+        self._play_out.tag_config("warn", foreground=P["red"])
+        paned.add(self._play_out)
+
+    def _playground_run(self):
+        """Execute the code in the playground."""
+        if not self._play_text or not self._play_out: return
+        code = self._play_text.get("1.0", "end-1c")
+        from datetime import datetime
+        ts = datetime.now().strftime("%H:%M:%S")
+        self._play_out.insert("end", f"\n-- [{ts}] Running --\n")
+        
+        # Save to temp file and run
+        tmp = os.path.join(self.project_root, ".side", "playground_scratch.py")
+        os.makedirs(os.path.dirname(tmp), exist_ok=True)
+        with open(tmp, "w") as f: f.write(code)
+        
+        try:
+            import subprocess
+            res = subprocess.run([sys.executable, tmp], capture_output=True, text=True, timeout=10)
+            if res.stdout: self._play_out.insert("end", res.stdout)
+            if res.stderr: self._play_out.insert("end", res.stderr, "warn")
+        except Exception as e:
+            self._play_out.insert("end", f"Error: {e}\n", "warn")
+        self._play_out.see("end")
+
 
 def main():
     app = SIDE_App()
+    if len(sys.argv) > 1:
+        app._load_project(sys.argv[1])
+    else:
+        app._load_project(os.getcwd())
     app.mainloop()
-
 
 if __name__ == "__main__":
     main()

@@ -172,6 +172,83 @@ TOOLS: list[dict] = [
             }
         }
     },
+    {
+        "type": "function",
+        "function": {
+            "name": "write_file",
+            "description": "Write or overwrite a file in the project. Use this for applying approved changes.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string", "description": "Relative path to file" },
+                    "content": { "type": "string", "description": "Full new content" }
+                },
+                "required": ["path", "content"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "create_plan",
+            "description": "Initialize a task.md with a list of steps for the current objective.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "steps": {
+                        "type": "array",
+                        "items": { "type": "string" },
+                        "description": "List of task descriptions"
+                    }
+                },
+                "required": ["steps"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "update_plan",
+            "description": "Mark a task as done, in-progress, or pending in task.md.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "step_idx": { "type": "integer", "description": "0-based index of the step" },
+                    "status": { "type": "string", "enum": ["todo", "doing", "done"], "description": "New status" }
+                },
+                "required": ["step_idx", "status"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "write_agent_note",
+            "description": "Leave a persistent note for future agents in README.md or AGENT_NOTES.md.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "note": { "type": "string", "description": "The note content" },
+                    "path": { "type": "string", "description": "Target file (e.g. 'README.md' or 'src/module/README.md'). Default: 'AGENT_NOTES.md'" }
+                },
+                "required": ["note"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "run_in_playground",
+            "description": "Send Python code to the IDE Playground for execution.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "code": { "type": "string", "description": "Python snippet" }
+                },
+                "required": ["code"]
+            }
+        }
+    },
 ]
 
 
@@ -417,6 +494,79 @@ def _get_definition_source(args: dict, ctx: Any) -> dict:
         return {"error": str(e)}
 
 
+def _write_file(args: dict, ctx: Any) -> str:
+    path = args.get("path", "").lstrip("/")
+    content = args.get("content", "")
+    full = os.path.join(ctx.project_root, path)
+    os.makedirs(os.path.dirname(full), exist_ok=True)
+    try:
+        with open(full, "w", encoding="utf-8") as f:
+            f.write(content)
+        return f"File written successfully: {path}"
+    except Exception as e:
+        return json.dumps({"error": str(e)})
+
+
+def _create_plan(args: dict, ctx: Any) -> str:
+    steps = args.get("steps", [])
+    path = os.path.join(ctx.project_root, ".side", "task.md")
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    lines = ["# Project Plan", ""]
+    for i, s in enumerate(steps):
+        lines.append(f"- [ ] {s}")
+    content = "\n".join(lines)
+    with open(path, "w") as f: f.write(content)
+    return "Plan created in .side/task.md"
+
+
+def _update_plan(args: dict, ctx: Any) -> str:
+    idx = args.get("step_idx", 0)
+    status = args.get("status", "done")
+    path = os.path.join(ctx.project_root, ".side", "task.md")
+    if not os.path.isfile(path): path = os.path.join(ctx.project_root, "task.md")
+    if not os.path.isfile(path): return "No task.md found to update."
+    
+    with open(path, "r") as f: lines = f.readlines()
+    
+    count = 0
+    for i, line in enumerate(lines):
+        if "[ ]" in line or "[x]" in line or "[/]" in line:
+            if count == idx:
+                s = "[x]" if status == "done" else "[/]" if status == "doing" else "[ ]"
+                lines[i] = line.replace("[ ]", s).replace("[x]", s).replace("[/]", s)
+                break
+            count += 1
+            
+    with open(path, "w") as f: f.writelines(lines)
+    return f"Step {idx} updated to {status}."
+
+
+def _write_agent_note(args: dict, ctx: Any) -> str:
+    note = args.get("note", "")
+    rel_path = args.get("path", "AGENT_NOTES.md").lstrip("/")
+    path = os.path.join(ctx.project_root, rel_path)
+    import datetime
+    ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    header = f"\n\n## ◈ Agent Note ({ts})\n"
+    # If file is a README, we might want to append to a specific section
+    try:
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(f"{header}{note}\n\n---\n")
+        return f"Note added to {rel_path}"
+    except Exception as e:
+        return f"Error writing note: {e}"
+
+
+def _run_in_playground(args: dict, ctx: Any) -> str:
+    # This requires reaching back to the GUI. 
+    # For now, we save to a scratch file that the GUI can check
+    path = os.path.join(ctx.project_root, ".side", "playground_queued.py")
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w") as f:
+        f.write(args.get("code", ""))
+    return "Code queued for playground. USER: Click RUN in Playground tab if not auto-triggered."
+
+
 _HANDLERS = {
     "read_file":             _read_file,
     "list_files":            _list_files,
@@ -426,4 +576,9 @@ _HANDLERS = {
     "get_metrics":           _get_metrics,
     "run_command":           _run_command,
     "get_definition_source": _get_definition_source,
+    "write_file":            _write_file,
+    "create_plan":           _create_plan,
+    "update_plan":           _update_plan,
+    "write_agent_note":      _write_agent_note,
+    "run_in_playground":     _run_in_playground,
 }

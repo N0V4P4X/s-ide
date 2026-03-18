@@ -1773,5 +1773,87 @@ class TestAITools(unittest.TestCase):
             self.assertGreater(len(msg.content), 100)
 
 
+class TestGuiRunPanel(unittest.TestCase):
+    def test_run_panel_creates_chevron_and_binds(self):
+        """
+        Regression for GitHub issue #1: _build_run_panel must not bind on None.
+        This test uses a tiny tkinter stub to avoid requiring a display.
+        """
+        import gui.app as app
+
+        class _W:
+            def __init__(self, parent=None, **kwargs):
+                self.parent = parent
+                self.kwargs = kwargs
+                self._children = []
+                self._bindings = {}
+                if parent is not None and hasattr(parent, "_children"):
+                    parent._children.append(self)
+
+            def pack(self, *args, **kwargs):
+                return None
+
+            def pack_forget(self, *args, **kwargs):
+                return None
+
+            def bind(self, event, fn):
+                self._bindings[event] = fn
+                return None
+
+            def config(self, **kwargs):
+                self.kwargs.update(kwargs)
+                return None
+
+            def winfo_children(self):
+                return list(self._children)
+
+        class _TkStub:
+            Frame = _W
+            Label = _W
+
+        real_tk = app.tk
+        try:
+            app.tk = _TkStub
+
+            class _Self:
+                def __init__(self):
+                    self._sidebar = _W()
+                    self._mono_xs = None
+                    self._run_chevron = None
+                    self._run_body = None
+                    self._run_scripts_frame = None
+                    self._run_open = False
+
+                def _refresh_run_scripts(self):
+                    return None
+
+            s = _Self()
+            app.SIDE_App._build_run_panel(s)
+
+            self.assertIsNotNone(s._run_chevron)
+            # Should have the click binding installed
+            self.assertIn("<Button-1>", getattr(s._run_chevron, "_bindings", {}))
+        finally:
+            app.tk = real_tk
+
+
+class TestCliSmoke(unittest.TestCase):
+    def test_main_help_exits_cleanly(self):
+        import subprocess
+        root = ROOT
+        main_py = os.path.join(root, "main.py")
+        p = subprocess.run(
+            [sys.executable, main_py, "--help"],
+            cwd=root,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            timeout=10,
+        )
+        # argparse uses 0 for --help
+        self.assertEqual(p.returncode, 0, msg=p.stderr[-500:])
+        self.assertTrue(len(p.stdout) > 0)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

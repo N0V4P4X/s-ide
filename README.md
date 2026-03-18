@@ -60,12 +60,19 @@ python gui/app.py
 # Parse a project (CLI)
 python main.py parse /path/to/project
 
+# Health check loop (tests + parse + doc audit)
+python main.py self-check .
+
 # Build a distributable tarball
 python main.py build . --kind tarball --bump patch
 
 # Self-update from ~/Downloads/
 python update.py
 ```
+
+## Self-improvement
+
+S-IDE can validate and analyze itself via `self-check`. See [`SELF_IMPROVEMENT.md`](SELF_IMPROVEMENT.md) for the full loop (CI, strict docs mode, and safer self-updates).
 
 ## GUI panels
 

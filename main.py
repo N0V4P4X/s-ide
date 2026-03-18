@@ -42,6 +42,7 @@ import argparse
 import json
 import os
 import sys
+import time
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -209,6 +210,91 @@ def cmd_build(args: argparse.Namespace) -> None:
         print(f"[s-ide] Version bumped to {new_ver}")
 
 
+def cmd_self_check(args: argparse.Namespace) -> None:
+    """
+    Run a basic health check loop:
+    - run unit tests
+    - parse the project (emits .nodegraph.json)
+    - report doc audit summary
+    """
+    import subprocess
+    from parser.project_parser import parse_project
+
+    root = _require_dir(args.project)
+
+    started = time.time()
+    result: dict = {"ok": True, "project": root, "checks": {}}
+
+    # 1) Tests
+    tests_path = os.path.join(os.path.dirname(__file__), "test", "test_suite.py")
+    t0 = time.time()
+    p = subprocess.run(
+        [sys.executable, tests_path, "-q"],
+        cwd=os.path.dirname(__file__),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        timeout=args.tests_timeout,
+    )
+    tests_ok = (p.returncode == 0)
+    result["checks"]["tests"] = {
+        "ok": tests_ok,
+        "ms": int((time.time() - t0) * 1000),
+        "returncode": p.returncode,
+        "stderr_tail": (p.stderr or "")[-2000:],
+    }
+    if not tests_ok:
+        result["ok"] = False
+
+    # 2) Parse + doc audit (doc audit is embedded in meta)
+    t1 = time.time()
+    graph = parse_project(root)
+    d = graph.to_dict()
+    docs = (d.get("meta") or {}).get("docs") or {}
+    docs_ok = bool(docs.get("healthy", True))
+    result["checks"]["parse"] = {
+        "ok": True,
+        "ms": int((time.time() - t1) * 1000),
+        "nodes": (d.get("meta") or {}).get("totalFiles"),
+        "edges": (d.get("meta") or {}).get("totalEdges"),
+        "nodegraph": os.path.join(root, ".nodegraph.json"),
+    }
+    result["checks"]["docs"] = {
+        "ok": docs_ok,
+        "summary": docs.get("summary") or {},
+    }
+    if args.strict_docs and not docs_ok:
+        result["ok"] = False
+
+    result["total_ms"] = int((time.time() - started) * 1000)
+
+    if args.json:
+        print(json.dumps(result, indent=2))
+    else:
+        ok = result["ok"]
+        print(f"[s-ide] self-check: {'OK' if ok else 'FAIL'}  ({result['total_ms']} ms)")
+
+        t = result["checks"]["tests"]
+        print(f"  - tests: {'OK' if t['ok'] else 'FAIL'}  ({t['ms']} ms)")
+        if not t["ok"] and t["stderr_tail"]:
+            print("    stderr (tail):")
+            for line in t["stderr_tail"].splitlines()[-20:]:
+                print(f"      {line}")
+
+        pchk = result["checks"]["parse"]
+        print(f"  - parse: OK  ({pchk['ms']} ms)  → {pchk['nodegraph']}")
+
+        dchk = result["checks"]["docs"]
+        if dchk["ok"]:
+            print("  - docs: OK")
+        else:
+            s = dchk.get("summary") or {}
+            print(f"  - docs: WARN{' (strict)' if args.strict_docs else ''}")
+            print(f"    missingReadmes={s.get('missingReadmes', 0)} staleReadmes={s.get('staleReadmes', 0)} emptyModules={s.get('emptyModules', 0)}")
+
+    sys.exit(0 if result["ok"] else 1)
+
+
 # ── Argument parser ───────────────────────────────────────────────────────────
 
 def build_parser() -> argparse.ArgumentParser:
@@ -264,6 +350,17 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--bump", choices=["major", "minor", "patch"], default=None,
                     help="Bump version after build")
 
+    # self-check
+    sp = sub.add_parser("self-check", help="Run tests + parse + doc audit")
+    sp.add_argument("project", nargs="?", default=".",
+                    help="Path to project directory (default: .)")
+    sp.add_argument("--json", action="store_true",
+                    help="Emit machine-readable JSON report")
+    sp.add_argument("--tests-timeout", dest="tests_timeout", type=int, default=180,
+                    help="Timeout (seconds) for running tests (default: 180)")
+    sp.add_argument("--strict-docs", action="store_true",
+                    help="Treat doc audit warnings as failures")
+
     return p
 
 
@@ -282,6 +379,7 @@ def main() -> None:
         "run":      cmd_run,
         "compress": cmd_compress,
         "build":    cmd_build,
+        "self-check": cmd_self_check,
     }
     handlers[args.command](args)
 

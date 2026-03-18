@@ -1338,8 +1338,11 @@ class SIDE_App(tk.Tk):
         hdr.pack(fill="x")
         tk.Label(hdr, text="RUN", bg=P["bg1"], fg=P["t3"],
                  font=self._mono_xs, padx=10, pady=6).pack(side="left")
-        if self._run_chevron:
-            self._run_chevron.pack(side="right")
+        # Always create chevron so bindings are safe.
+        self._run_chevron = tk.Label(
+            hdr, text="▸", bg=P["bg1"], fg=P["t3"], font=self._mono_xs, padx=8
+        )
+        self._run_chevron.pack(side="right")
 
         self._run_body = tk.Frame(run_frame, bg=P["bg1"])
         self._run_scripts_frame = tk.Frame(self._run_body, bg=P["bg1"])

@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test-and-self-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run unit tests
+        run: python test/test_suite.py -q
+
+      - name: Run self-check
+        run: python main.py self-check . --json
+
+      - name: Upload nodegraph artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nodegraph-and-logs
+          path: |
+            .nodegraph.json
+            logs/s-ide.log
+          if-no-files-found: ignore
+

@@ -178,7 +178,8 @@ def load_workspace(workspace_root: str) -> WorkspaceManifest:
             projects = find_projects_in_workspace(workspace_root),
         )
     try:
-        data = json.load(open(path, encoding="utf-8"))
+        with open(path, encoding="utf-8") as f:
+            data = json.load(f)
         return WorkspaceManifest.from_dict(data)
     except (json.JSONDecodeError, OSError):
         return WorkspaceManifest()
@@ -291,8 +292,9 @@ def _collect_external_imports(
             if not fname.endswith(".py"):
                 continue
             try:
-                text = open(os.path.join(dirpath, fname),
-                            encoding="utf-8", errors="ignore").read()
+                with open(os.path.join(dirpath, fname),
+                          encoding="utf-8", errors="ignore") as f:
+                    text = f.read()
                 for m in import_re.finditer(text):
                     name = (m.group(1) or m.group(2) or "").split(".")[0]
                     if name:

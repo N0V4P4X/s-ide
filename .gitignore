@@ -1,1 +1,23 @@
+# Python
 __pycache__/
+*.py[cod]
+*$py.class
+dist/
+build/
+*.egg-info/
+
+# S-IDE specific
+.side-workspace.json
+.nodegraph.json
+versions/
+archive/
+logs/
+
+# IDEs
+.vscode/
+.idea/
+
+# Environment
+.env
+venv/
+env/

@@ -2,52 +2,56 @@
   "version": "1.0.0",
   "meta": {
     "root": "/home/n0v4p4x/DevOps/s-ide-py",
-    "parsedAt": "2026-03-19T21:43:23.445923+00:00",
-    "parseTime": 774.88,
+    "parsedAt": "2026-03-19T22:09:47.252776+00:00",
+    "parseTime": 1239.58,
     "perf": {
-      "total_ms": 811.5,
+      "total_ms": 1277.12,
       "stages": [
         {
           "name": "config",
-          "ms": 0.23
+          "ms": 0.6
         },
         {
           "name": "walk",
-          "ms": 3.36
+          "ms": 3.76
         },
         {
           "name": "parse_files",
-          "ms": 767.34
+          "ms": 1229.54
         },
         {
           "name": "resolve_edges",
-          "ms": 3.25
+          "ms": 4.61
         },
         {
           "name": "layout",
-          "ms": 0.36
+          "ms": 0.58
         },
         {
           "name": "doc_audit",
-          "ms": 0.22
+          "ms": 0.29
         },
         {
           "name": "write_json",
-          "ms": 36.58
+          "ms": 37.44
         }
       ],
       "slowest": "parse_files"
     },
-    "totalFiles": 89,
-    "totalEdges": 467,
+    "totalFiles": 90,
+    "totalEdges": 469,
     "languages": {
       "docs": {
         "files": 23,
         "lines": 1912
       },
+      "config": {
+        "files": 1,
+        "lines": 25
+      },
       "python": {
         "files": 65,
-        "lines": 26369
+        "lines": 26436
       },
       "other": {
         "files": 1,
@@ -55,79 +59,14 @@
       }
     },
     "docs": {
-      "healthy": false,
+      "healthy": true,
       "summary": {
         "missingReadmes": 0,
-        "staleReadmes": 2,
-        "emptyModules": 3,
-        "total": 5
+        "staleReadmes": 0,
+        "emptyModules": 0,
+        "total": 0
       },
-      "warnings": [
-        {
-          "type": "stale-readme",
-          "severity": "info",
-          "message": "README.md in 'examples/calculator/src' is older than 4 file(s)",
-          "dir": "examples/calculator/src",
-          "node_id": null,
-          "readme_path": "examples/calculator/src/README.md",
-          "affected_files": [
-            "examples_calculator_src___init___py",
-            "examples_calculator_src_cli_py",
-            "examples_calculator_src_gui_app_py",
-            "examples_calculator_src_pemdas_py"
-          ],
-          "stale_since": "2026-03-19T17:43:21.195044"
-        },
-        {
-          "type": "stale-readme",
-          "severity": "info",
-          "message": "README.md in 'examples/calculator/test' is older than 2 file(s)",
-          "dir": "examples/calculator/test",
-          "node_id": null,
-          "readme_path": "examples/calculator/test/README.md",
-          "affected_files": [
-            "examples_calculator_test___init___py",
-            "examples_calculator_test_test_pemdas_py"
-          ],
-          "stale_since": "2026-03-19T17:43:21.195044"
-        },
-        {
-          "type": "empty-module",
-          "severity": "info",
-          "message": "'examples/calculator/src/__init__.py' has no imports, exports, or definitions",
-          "dir": null,
-          "node_id": "examples_calculator_src___init___py",
-          "readme_path": null,
-          "affected_files": [
-            "examples_calculator_src___init___py"
-          ],
-          "stale_since": null
-        },
-        {
-          "type": "empty-module",
-          "severity": "info",
-          "message": "'examples/calculator/test/__init__.py' has no imports, exports, or definitions",
-          "dir": null,
-          "node_id": "examples_calculator_test___init___py",
-          "readme_path": null,
-          "affected_files": [
-            "examples_calculator_test___init___py"
-          ],
-          "stale_since": null
-        },
-        {
-          "type": "empty-module",
-          "severity": "info",
-          "message": "'gui/__init__.py' has no imports, exports, or definitions",
-          "dir": null,
-          "node_id": "gui___init___py",
-          "readme_path": null,
-          "affected_files": [
-            "gui___init___py"
-          ],
-          "stale_since": null
-        }
-      ]
+      "warnings": []
     },
     "project": {
       "name": "s-ide-py",
@@ -214,7 +153,7 @@
       "ext": ".md",
       "lines": 153,
       "size": 6986,
-      "modified": "2026-03-19T21:43:21.203046+00:00",
+      "modified": "2026-03-19T22:09:31.958578+00:00",
       "imports": [],
       "exports": [],
       "definitions": [],
@@ -246,15 +185,37 @@
       }
     },
     {
+      "id": "check_json",
+      "label": "check.json",
+      "path": "check.json",
+      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/check.json",
+      "category": "config",
+      "ext": ".json",
+      "lines": 25,
+      "size": 710,
+      "modified": "2026-03-19T22:07:10.253237+00:00",
+      "imports": [],
+      "exports": [],
+      "definitions": [],
+      "tags": [],
+      "errors": [
+        "JSON parse error: Expecting value: line 2 column 1 (char 1)"
+      ],
+      "position": {
+        "x": 640.0,
+        "y": 4080.0
+      }
+    },
+    {
       "id": "main_py",
       "label": "main.py",
       "path": "main.py",
       "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/main.py",
       "category": "python",
       "ext": ".py",
-      "lines": 291,
-      "size": 10590,
-      "modified": "2026-03-19T21:43:21.183040+00:00",
+      "lines": 347,
+      "size": 12705,
+      "modified": "2026-03-19T22:05:52.086869+00:00",
       "imports": [
         {
           "type": "from-import",
@@ -355,9 +316,25 @@
           "alias": null
         },
         {
+          "type": "import",
+          "source": "subprocess",
+          "line": 182,
+          "names": [],
+          "alias": null
+        },
+        {
+          "type": "from-import",
+          "source": "parser.project_parser",
+          "line": 183,
+          "names": [
+            "parse_project"
+          ],
+          "alias": null
+        },
+        {
           "type": "from-import",
           "source": "build.packager",
-          "line": 182,
+          "line": 231,
           "names": [
             "package_project",
             "PackageOptions"
@@ -367,7 +344,7 @@
         {
           "type": "from-import",
           "source": "version.version_manager",
-          "line": 202,
+          "line": 251,
           "names": [
             "apply_update"
           ],
@@ -376,7 +353,7 @@
         {
           "type": "from-import",
           "source": "parser.project_config",
-          "line": 204,
+          "line": 253,
           "names": [
             "load_project_config",
             "save_project_config",
@@ -429,6 +406,14 @@
         {
           "type": "implicit",
           "name": "cmd_compress",
+          "names": [],
+          "source": null,
+          "kind": null,
+          "line": null
+        },
+        {
+          "type": "implicit",
+          "name": "cmd_self_check",
           "names": [],
           "source": null,
           "kind": null,
@@ -497,7 +482,7 @@
           "args": [
             [
               "n",
-              "int"
+              "float"
             ]
           ],
           "return_type": "str",
@@ -663,10 +648,40 @@
           "complexity": 4
         },
         {
-          "name": "cmd_build",
+          "name": "cmd_self_check",
           "kind": "function",
           "line": 180,
-          "end_line": 209,
+          "end_line": 226,
+          "indent": 0,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "args",
+              "argparse.Namespace"
+            ]
+          ],
+          "return_type": "None",
+          "calls": [
+            "_require_dir",
+            "print",
+            "subprocess.run",
+            "parse_project",
+            "graph.to_dict",
+            "path.join",
+            "sys.exit",
+            "open",
+            "json.dump"
+          ],
+          "raises": [],
+          "complexity": 5
+        },
+        {
+          "name": "cmd_build",
+          "kind": "function",
+          "line": 229,
+          "end_line": 258,
           "indent": 0,
           "is_async": false,
           "decorators": [],
@@ -696,8 +711,8 @@
         {
           "name": "build_parser",
           "kind": "function",
-          "line": 214,
-          "end_line": 267,
+          "line": 263,
+          "end_line": 322,
           "indent": 0,
           "is_async": false,
           "decorators": [],
@@ -716,8 +731,8 @@
         {
           "name": "main",
           "kind": "function",
-          "line": 272,
-          "end_line": 286,
+          "line": 327,
+          "end_line": 342,
           "indent": 0,
           "is_async": false,
           "decorators": [],
@@ -1358,7 +1373,7 @@
       "ext": ".md",
       "lines": 257,
       "size": 7819,
-      "modified": "2026-03-19T21:43:21.203046+00:00",
+      "modified": "2026-03-19T22:09:31.958578+00:00",
       "imports": [],
       "exports": [],
       "definitions": [],
@@ -6136,7 +6151,7 @@
       "ext": ".md",
       "lines": 51,
       "size": 1556,
-      "modified": "2026-03-19T21:43:21.203046+00:00",
+      "modified": "2026-03-19T22:09:31.958578+00:00",
       "imports": [],
       "exports": [],
       "definitions": [],
@@ -6317,7 +6332,7 @@
       "ext": ".md",
       "lines": 67,
       "size": 1732,
-      "modified": "2026-03-19T21:43:21.195044+00:00",
+      "modified": "2026-03-19T22:09:31.958578+00:00",
       "imports": [],
       "exports": [],
       "definitions": [],
@@ -6337,7 +6352,7 @@
       "ext": ".md",
       "lines": 7,
       "size": 206,
-      "modified": "2026-03-19T20:08:45.604783+00:00",
+      "modified": "2026-03-19T22:09:31.958578+00:00",
       "imports": [],
       "exports": [],
       "definitions": [],
@@ -6355,12 +6370,37 @@
       "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/examples/calculator/src/__init__.py",
       "category": "python",
       "ext": ".py",
-      "lines": 2,
-      "size": 25,
-      "modified": "2026-03-19T21:43:21.195044+00:00",
+      "lines": 6,
+      "size": 96,
+      "modified": "2026-03-19T22:08:53.757035+00:00",
       "imports": [],
-      "exports": [],
-      "definitions": [],
+      "exports": [
+        {
+          "type": "implicit",
+          "name": "get_version",
+          "names": [],
+          "source": null,
+          "kind": null,
+          "line": null
+        }
+      ],
+      "definitions": [
+        {
+          "name": "get_version",
+          "kind": "function",
+          "line": 4,
+          "end_line": 5,
+          "indent": 0,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [],
+          "return_type": "",
+          "calls": [],
+          "raises": [],
+          "complexity": 1
+        }
+      ],
       "tags": [],
       "errors": [],
       "position": {
@@ -7248,7 +7288,7 @@
       "ext": ".md",
       "lines": 5,
       "size": 144,
-      "modified": "2026-03-19T20:08:45.604783+00:00",
+      "modified": "2026-03-19T22:09:31.958578+00:00",
       "imports": [],
       "exports": [],
       "definitions": [],
@@ -7266,13 +7306,23 @@
       "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/examples/calculator/test/__init__.py",
       "category": "python",
       "ext": ".py",
-      "lines": 0,
-      "size": 0,
-      "modified": "2026-03-19T21:43:21.191042+00:00",
-      "imports": [],
+      "lines": 3,
+      "size": 48,
+      "modified": "2026-03-19T22:07:55.478818+00:00",
+      "imports": [
+        {
+          "type": "import",
+          "source": "unittest",
+          "line": 2,
+          "names": [],
+          "alias": null
+        }
+      ],
       "exports": [],
       "definitions": [],
-      "tags": [],
+      "tags": [
+        "pytest"
+      ],
       "errors": [],
       "position": {
         "x": 5500.0,
@@ -8763,7 +8813,7 @@
       "ext": ".md",
       "lines": 62,
       "size": 1962,
-      "modified": "2026-03-19T21:43:21.203046+00:00",
+      "modified": "2026-03-19T22:09:31.958578+00:00",
       "imports": [],
       "exports": [],
       "definitions": [],
@@ -9214,7 +9264,7 @@
       "ext": ".md",
       "lines": 146,
       "size": 5467,
-      "modified": "2026-03-19T21:43:21.179039+00:00",
+      "modified": "2026-03-19T22:09:31.958578+00:00",
       "imports": [],
       "exports": [],
       "definitions": [],
@@ -9232,10 +9282,20 @@
       "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/gui/__init__.py",
       "category": "python",
       "ext": ".py",
-      "lines": 2,
-      "size": 45,
-      "modified": "2026-03-19T21:43:21.179039+00:00",
-      "imports": [],
+      "lines": 3,
+      "size": 55,
+      "modified": "2026-03-19T22:07:59.234956+00:00",
+      "imports": [
+        {
+          "type": "from-import",
+          "source": "gui.app",
+          "line": 2,
+          "names": [
+            "SIDE_App"
+          ],
+          "alias": null
+        }
+      ],
       "exports": [],
       "definitions": [],
       "tags": [],
@@ -28508,7 +28568,7 @@
       "ext": ".md",
       "lines": 151,
       "size": 4242,
-      "modified": "2026-03-19T21:43:21.167036+00:00",
+      "modified": "2026-03-19T22:09:31.958578+00:00",
       "imports": [],
       "exports": [],
       "definitions": [],
@@ -31019,7 +31079,7 @@
       "ext": ".md",
       "lines": 66,
       "size": 2549,
-      "modified": "2026-03-19T21:43:21.191042+00:00",
+      "modified": "2026-03-19T22:09:31.958578+00:00",
       "imports": [],
       "exports": [],
       "definitions": [],
@@ -31509,9 +31569,9 @@
       "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/parser/project_config.py",
       "category": "python",
       "ext": ".py",
-      "lines": 169,
-      "size": 4867,
-      "modified": "2026-03-19T21:43:21.183040+00:00",
+      "lines": 171,
+      "size": 4965,
+      "modified": "2026-03-19T22:05:57.427014+00:00",
       "imports": [
         {
           "type": "from-import",
@@ -31662,7 +31722,7 @@
           "name": "init_project_config",
           "kind": "function",
           "line": 97,
-          "end_line": 150,
+          "end_line": 152,
           "indent": 0,
           "is_async": false,
           "decorators": [],
@@ -31679,22 +31739,23 @@
             "path.exists",
             "path.basename",
             "load_project_config",
+            "path.isfile",
             "open",
             "json.dump",
-            "open(pyproject).read",
             "re.search",
+            "f.read",
             "m.group",
-            "json.load",
-            "data.get"
+            "data.get",
+            "json.load"
           ],
           "raises": [],
-          "complexity": 10
+          "complexity": 12
         },
         {
           "name": "bump_version",
           "kind": "function",
-          "line": 153,
-          "end_line": 168,
+          "line": 155,
+          "end_line": 170,
           "indent": 0,
           "is_async": false,
           "decorators": [],
@@ -32565,9 +32626,9 @@
       "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/parser/workspace.py",
       "category": "python",
       "ext": ".py",
-      "lines": 346,
-      "size": 11688,
-      "modified": "2026-03-19T21:43:21.183040+00:00",
+      "lines": 347,
+      "size": 11713,
+      "modified": "2026-03-19T22:06:02.299148+00:00",
       "imports": [
         {
           "type": "from-import",
@@ -32614,7 +32675,7 @@
         {
           "type": "import",
           "source": "re",
-          "line": 284,
+          "line": 285,
           "names": [],
           "alias": null
         }
@@ -32900,7 +32961,7 @@
           "name": "load_workspace",
           "kind": "function",
           "line": 169,
-          "end_line": 184,
+          "end_line": 185,
           "indent": 0,
           "is_async": false,
           "decorators": [],
@@ -32916,20 +32977,20 @@
             "path.join",
             "path.isfile",
             "WorkspaceManifest",
-            "json.load",
             "WorkspaceManifest.from_dict",
             "open",
+            "json.load",
             "path.basename",
             "find_projects_in_workspace"
           ],
           "raises": [],
-          "complexity": 3
+          "complexity": 4
         },
         {
           "name": "save_workspace",
           "kind": "function",
-          "line": 187,
-          "end_line": 199,
+          "line": 188,
+          "end_line": 200,
           "indent": 0,
           "is_async": false,
           "decorators": [],
@@ -32958,8 +33019,8 @@
         {
           "name": "init_workspace",
           "kind": "function",
-          "line": 202,
-          "end_line": 215,
+          "line": 203,
+          "end_line": 216,
           "indent": 0,
           "is_async": false,
           "decorators": [],
@@ -32987,8 +33048,8 @@
         {
           "name": "resolve_project_deps",
           "kind": "function",
-          "line": 220,
-          "end_line": 255,
+          "line": 221,
+          "end_line": 256,
           "indent": 0,
           "is_async": false,
           "decorators": [],
@@ -33022,8 +33083,8 @@
         {
           "name": "_collect_external_imports",
           "kind": "function",
-          "line": 258,
-          "end_line": 302,
+          "line": 259,
+          "end_line": 303,
           "indent": 0,
           "is_async": false,
           "decorators": [],
@@ -33063,8 +33124,8 @@
         {
           "name": "add_package",
           "kind": "function",
-          "line": 307,
-          "end_line": 326,
+          "line": 308,
+          "end_line": 327,
           "indent": 0,
           "is_async": false,
           "decorators": [],
@@ -33095,8 +33156,8 @@
         {
           "name": "workspace_summary",
           "kind": "function",
-          "line": 329,
-          "end_line": 345,
+          "line": 330,
+          "end_line": 346,
           "indent": 0,
           "is_async": false,
           "decorators": [],
@@ -33136,7 +33197,7 @@
       "ext": ".md",
       "lines": 38,
       "size": 1193,
-      "modified": "2026-03-19T21:43:21.191042+00:00",
+      "modified": "2026-03-19T22:09:31.958578+00:00",
       "imports": [],
       "exports": [],
       "definitions": [],
@@ -34794,7 +34855,7 @@
       "ext": ".md",
       "lines": 25,
       "size": 808,
-      "modified": "2026-03-19T21:43:21.183040+00:00",
+      "modified": "2026-03-19T22:09:31.958578+00:00",
       "imports": [],
       "exports": [],
       "definitions": [],
@@ -35709,7 +35770,7 @@
       "ext": ".md",
       "lines": 67,
       "size": 1732,
-      "modified": "2026-03-19T20:08:45.600783+00:00",
+      "modified": "2026-03-19T22:09:31.958578+00:00",
       "imports": [],
       "exports": [],
       "definitions": [],
@@ -35729,7 +35790,7 @@
       "ext": ".md",
       "lines": 4,
       "size": 102,
-      "modified": "2026-03-19T20:08:45.604783+00:00",
+      "modified": "2026-03-19T22:09:31.958578+00:00",
       "imports": [],
       "exports": [],
       "definitions": [],
@@ -36650,7 +36711,7 @@
       "ext": ".md",
       "lines": 5,
       "size": 141,
-      "modified": "2026-03-19T20:08:45.604783+00:00",
+      "modified": "2026-03-19T22:09:31.958578+00:00",
       "imports": [],
       "exports": [],
       "definitions": [],
@@ -38175,7 +38236,7 @@
       "ext": ".md",
       "lines": 61,
       "size": 2854,
-      "modified": "2026-03-19T21:43:21.159034+00:00",
+      "modified": "2026-03-19T22:09:31.958578+00:00",
       "imports": [],
       "exports": [],
       "definitions": [],
@@ -38195,7 +38256,7 @@
       "ext": ".py",
       "lines": 3164,
       "size": 141033,
-      "modified": "2026-03-19T21:43:21.159034+00:00",
+      "modified": "2026-03-19T22:06:07.855304+00:00",
       "imports": [
         {
           "type": "from-import",
@@ -50982,7 +51043,7 @@
       "ext": ".md",
       "lines": 35,
       "size": 1323,
-      "modified": "2026-03-19T21:43:21.159034+00:00",
+      "modified": "2026-03-19T22:09:31.958578+00:00",
       "imports": [],
       "exports": [],
       "definitions": [],
@@ -51561,7 +51622,7 @@
         "package_project",
         "PackageOptions"
       ],
-      "line": 182,
+      "line": 231,
       "isExternal": true,
       "externalPackage": "build"
     },
@@ -52815,6 +52876,16 @@
     },
     {
       "id": "e_117",
+      "source": "examples_calculator_test___init___py",
+      "target": "ext_unittest",
+      "type": "external",
+      "symbols": [],
+      "line": 2,
+      "isExternal": true,
+      "externalPackage": "unittest"
+    },
+    {
+      "id": "e_118",
       "source": "examples_calculator_test_test_pemdas_py",
       "target": "ext_sys",
       "type": "external",
@@ -52824,7 +52895,7 @@
       "externalPackage": "sys"
     },
     {
-      "id": "e_118",
+      "id": "e_119",
       "source": "examples_calculator_test_test_pemdas_py",
       "target": "ext_os",
       "type": "external",
@@ -52834,7 +52905,7 @@
       "externalPackage": "os"
     },
     {
-      "id": "e_119",
+      "id": "e_120",
       "source": "examples_calculator_test_test_pemdas_py",
       "target": "ext_unittest",
       "type": "external",
@@ -52844,7 +52915,7 @@
       "externalPackage": "unittest"
     },
     {
-      "id": "e_120",
+      "id": "e_121",
       "source": "examples_calculator_test_test_pemdas_py",
       "target": "ext_src",
       "type": "external",
@@ -52859,7 +52930,7 @@
       "externalPackage": "src"
     },
     {
-      "id": "e_121",
+      "id": "e_122",
       "source": "graph___init___py",
       "target": "graph_types_py",
       "type": "import",
@@ -52880,7 +52951,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_122",
+      "id": "e_123",
       "source": "graph_types_py",
       "target": "ext___future__",
       "type": "external",
@@ -52892,7 +52963,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_123",
+      "id": "e_124",
       "source": "graph_types_py",
       "target": "ext_dataclasses",
       "type": "external",
@@ -52905,7 +52976,7 @@
       "externalPackage": "dataclasses"
     },
     {
-      "id": "e_124",
+      "id": "e_125",
       "source": "graph_types_py",
       "target": "ext_typing",
       "type": "external",
@@ -52918,7 +52989,19 @@
       "externalPackage": "typing"
     },
     {
-      "id": "e_125",
+      "id": "e_126",
+      "source": "gui___init___py",
+      "target": "gui_app_py",
+      "type": "import",
+      "symbols": [
+        "SIDE_App"
+      ],
+      "line": 2,
+      "isExternal": false,
+      "externalPackage": null
+    },
+    {
+      "id": "e_127",
       "source": "gui_ai_mixin_py",
       "target": "ext___future__",
       "type": "external",
@@ -52930,7 +53013,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_126",
+      "id": "e_128",
       "source": "gui_ai_mixin_py",
       "target": "ext_os",
       "type": "external",
@@ -52940,7 +53023,7 @@
       "externalPackage": "os"
     },
     {
-      "id": "e_127",
+      "id": "e_129",
       "source": "gui_ai_mixin_py",
       "target": "ext_sys",
       "type": "external",
@@ -52950,7 +53033,7 @@
       "externalPackage": "sys"
     },
     {
-      "id": "e_128",
+      "id": "e_130",
       "source": "gui_ai_mixin_py",
       "target": "ext_re",
       "type": "external",
@@ -52960,7 +53043,7 @@
       "externalPackage": "re"
     },
     {
-      "id": "e_129",
+      "id": "e_131",
       "source": "gui_ai_mixin_py",
       "target": "ext_json",
       "type": "external",
@@ -52970,7 +53053,7 @@
       "externalPackage": "json"
     },
     {
-      "id": "e_130",
+      "id": "e_132",
       "source": "gui_ai_mixin_py",
       "target": "ext_subprocess",
       "type": "external",
@@ -52980,7 +53063,7 @@
       "externalPackage": "subprocess"
     },
     {
-      "id": "e_131",
+      "id": "e_133",
       "source": "gui_ai_mixin_py",
       "target": "ext_math",
       "type": "external",
@@ -52990,7 +53073,7 @@
       "externalPackage": "math"
     },
     {
-      "id": "e_132",
+      "id": "e_134",
       "source": "gui_ai_mixin_py",
       "target": "ext_threading",
       "type": "external",
@@ -53000,7 +53083,7 @@
       "externalPackage": "threading"
     },
     {
-      "id": "e_133",
+      "id": "e_135",
       "source": "gui_ai_mixin_py",
       "target": "ext_datetime",
       "type": "external",
@@ -53010,7 +53093,7 @@
       "externalPackage": "datetime"
     },
     {
-      "id": "e_134",
+      "id": "e_136",
       "source": "gui_ai_mixin_py",
       "target": "ext_time",
       "type": "external",
@@ -53020,7 +53103,7 @@
       "externalPackage": "time"
     },
     {
-      "id": "e_135",
+      "id": "e_137",
       "source": "gui_ai_mixin_py",
       "target": "ext_tkinter",
       "type": "external",
@@ -53032,7 +53115,7 @@
       "externalPackage": "tkinter"
     },
     {
-      "id": "e_136",
+      "id": "e_138",
       "source": "gui_ai_mixin_py",
       "target": "ext_typing",
       "type": "external",
@@ -53050,7 +53133,7 @@
       "externalPackage": "typing"
     },
     {
-      "id": "e_137",
+      "id": "e_139",
       "source": "gui_ai_mixin_py",
       "target": "ext_dataclasses",
       "type": "external",
@@ -53063,7 +53146,7 @@
       "externalPackage": "dataclasses"
     },
     {
-      "id": "e_138",
+      "id": "e_140",
       "source": "gui_ai_mixin_py",
       "target": "gui_app_py",
       "type": "import",
@@ -53075,7 +53158,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_139",
+      "id": "e_141",
       "source": "gui_ai_mixin_py",
       "target": "ai_teams_py",
       "type": "import",
@@ -53087,7 +53170,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_140",
+      "id": "e_142",
       "source": "gui_ai_mixin_py",
       "target": "ai_tool_builder_py",
       "type": "import",
@@ -53099,7 +53182,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_141",
+      "id": "e_143",
       "source": "gui_ai_mixin_py",
       "target": "ai_manager_py",
       "type": "import",
@@ -53111,7 +53194,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_142",
+      "id": "e_144",
       "source": "gui_app_py",
       "target": "ext___future__",
       "type": "external",
@@ -53123,7 +53206,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_143",
+      "id": "e_145",
       "source": "gui_app_py",
       "target": "ext_os",
       "type": "external",
@@ -53133,7 +53216,7 @@
       "externalPackage": "os"
     },
     {
-      "id": "e_144",
+      "id": "e_146",
       "source": "gui_app_py",
       "target": "ext_sys",
       "type": "external",
@@ -53143,7 +53226,7 @@
       "externalPackage": "sys"
     },
     {
-      "id": "e_145",
+      "id": "e_147",
       "source": "gui_app_py",
       "target": "ext_re",
       "type": "external",
@@ -53153,7 +53236,7 @@
       "externalPackage": "re"
     },
     {
-      "id": "e_146",
+      "id": "e_148",
       "source": "gui_app_py",
       "target": "ext_json",
       "type": "external",
@@ -53163,7 +53246,7 @@
       "externalPackage": "json"
     },
     {
-      "id": "e_147",
+      "id": "e_149",
       "source": "gui_app_py",
       "target": "ext_subprocess",
       "type": "external",
@@ -53173,7 +53256,7 @@
       "externalPackage": "subprocess"
     },
     {
-      "id": "e_148",
+      "id": "e_150",
       "source": "gui_app_py",
       "target": "ext_math",
       "type": "external",
@@ -53183,7 +53266,7 @@
       "externalPackage": "math"
     },
     {
-      "id": "e_149",
+      "id": "e_151",
       "source": "gui_app_py",
       "target": "ext_threading",
       "type": "external",
@@ -53193,7 +53276,7 @@
       "externalPackage": "threading"
     },
     {
-      "id": "e_150",
+      "id": "e_152",
       "source": "gui_app_py",
       "target": "ext_datetime",
       "type": "external",
@@ -53203,7 +53286,7 @@
       "externalPackage": "datetime"
     },
     {
-      "id": "e_151",
+      "id": "e_153",
       "source": "gui_app_py",
       "target": "ext_time",
       "type": "external",
@@ -53213,7 +53296,7 @@
       "externalPackage": "time"
     },
     {
-      "id": "e_152",
+      "id": "e_154",
       "source": "gui_app_py",
       "target": "ext_tkinter",
       "type": "external",
@@ -53225,7 +53308,7 @@
       "externalPackage": "tkinter"
     },
     {
-      "id": "e_153",
+      "id": "e_155",
       "source": "gui_app_py",
       "target": "ext_typing",
       "type": "external",
@@ -53243,7 +53326,7 @@
       "externalPackage": "typing"
     },
     {
-      "id": "e_154",
+      "id": "e_156",
       "source": "gui_app_py",
       "target": "ext_dataclasses",
       "type": "external",
@@ -53256,7 +53339,7 @@
       "externalPackage": "dataclasses"
     },
     {
-      "id": "e_155",
+      "id": "e_157",
       "source": "gui_app_py",
       "target": "gui_log_py",
       "type": "import",
@@ -53271,7 +53354,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_156",
+      "id": "e_158",
       "source": "gui_app_py",
       "target": "gui_editor_py",
       "type": "import",
@@ -53283,7 +53366,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_157",
+      "id": "e_159",
       "source": "gui_app_py",
       "target": "gui_teams_canvas_py",
       "type": "import",
@@ -53295,7 +53378,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_158",
+      "id": "e_160",
       "source": "gui_app_py",
       "target": "monitor_perf_py",
       "type": "import",
@@ -53309,7 +53392,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_159",
+      "id": "e_161",
       "source": "gui_app_py",
       "target": "monitor_instrumenter_py",
       "type": "import",
@@ -53324,7 +53407,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_160",
+      "id": "e_162",
       "source": "gui_app_py",
       "target": "monitor_profiler_py",
       "type": "import",
@@ -53337,7 +53420,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_161",
+      "id": "e_163",
       "source": "gui_app_py",
       "target": "ai_client_py",
       "type": "import",
@@ -53350,7 +53433,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_162",
+      "id": "e_164",
       "source": "gui_app_py",
       "target": "ai_tools_py",
       "type": "import",
@@ -53363,7 +53446,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_163",
+      "id": "e_165",
       "source": "gui_app_py",
       "target": "ai_context_py",
       "type": "import",
@@ -53376,7 +53459,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_164",
+      "id": "e_166",
       "source": "gui_app_py",
       "target": "ai_manager_py",
       "type": "import",
@@ -53389,7 +53472,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_165",
+      "id": "e_167",
       "source": "gui_app_py",
       "target": "process_process_manager_py",
       "type": "import",
@@ -53401,7 +53484,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_166",
+      "id": "e_168",
       "source": "gui_app_py",
       "target": "parser_project_parser_py",
       "type": "import",
@@ -53413,7 +53496,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_167",
+      "id": "e_169",
       "source": "gui_app_py",
       "target": "version_version_manager_py",
       "type": "import",
@@ -53428,7 +53511,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_168",
+      "id": "e_170",
       "source": "gui_app_py",
       "target": "parser_project_config_py",
       "type": "import",
@@ -53442,7 +53525,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_169",
+      "id": "e_171",
       "source": "gui_app_py",
       "target": "ext_build",
       "type": "external",
@@ -53455,7 +53538,7 @@
       "externalPackage": "build"
     },
     {
-      "id": "e_170",
+      "id": "e_172",
       "source": "gui_app_py",
       "target": "graph_types_py",
       "type": "import",
@@ -53469,7 +53552,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_171",
+      "id": "e_173",
       "source": "gui_app_py",
       "target": "parser_layout_py",
       "type": "import",
@@ -53481,7 +53564,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_172",
+      "id": "e_174",
       "source": "gui_app_py",
       "target": "gui_app_py",
       "type": "import",
@@ -53493,7 +53576,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_173",
+      "id": "e_175",
       "source": "gui_app_py",
       "target": "ai_tool_builder_py",
       "type": "import",
@@ -53505,7 +53588,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_174",
+      "id": "e_176",
       "source": "gui_app_py",
       "target": "ext_traceback",
       "type": "external",
@@ -53515,7 +53598,7 @@
       "externalPackage": "traceback"
     },
     {
-      "id": "e_175",
+      "id": "e_177",
       "source": "gui_app_py",
       "target": "ai_teams_py",
       "type": "import",
@@ -53527,7 +53610,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_176",
+      "id": "e_178",
       "source": "gui_canvas_mixin_py",
       "target": "ext___future__",
       "type": "external",
@@ -53539,7 +53622,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_177",
+      "id": "e_179",
       "source": "gui_canvas_mixin_py",
       "target": "ext_os",
       "type": "external",
@@ -53549,7 +53632,7 @@
       "externalPackage": "os"
     },
     {
-      "id": "e_178",
+      "id": "e_180",
       "source": "gui_canvas_mixin_py",
       "target": "ext_sys",
       "type": "external",
@@ -53559,7 +53642,7 @@
       "externalPackage": "sys"
     },
     {
-      "id": "e_179",
+      "id": "e_181",
       "source": "gui_canvas_mixin_py",
       "target": "ext_re",
       "type": "external",
@@ -53569,7 +53652,7 @@
       "externalPackage": "re"
     },
     {
-      "id": "e_180",
+      "id": "e_182",
       "source": "gui_canvas_mixin_py",
       "target": "ext_json",
       "type": "external",
@@ -53579,7 +53662,7 @@
       "externalPackage": "json"
     },
     {
-      "id": "e_181",
+      "id": "e_183",
       "source": "gui_canvas_mixin_py",
       "target": "ext_subprocess",
       "type": "external",
@@ -53589,7 +53672,7 @@
       "externalPackage": "subprocess"
     },
     {
-      "id": "e_182",
+      "id": "e_184",
       "source": "gui_canvas_mixin_py",
       "target": "ext_math",
       "type": "external",
@@ -53599,7 +53682,7 @@
       "externalPackage": "math"
     },
     {
-      "id": "e_183",
+      "id": "e_185",
       "source": "gui_canvas_mixin_py",
       "target": "ext_threading",
       "type": "external",
@@ -53609,7 +53692,7 @@
       "externalPackage": "threading"
     },
     {
-      "id": "e_184",
+      "id": "e_186",
       "source": "gui_canvas_mixin_py",
       "target": "ext_datetime",
       "type": "external",
@@ -53619,7 +53702,7 @@
       "externalPackage": "datetime"
     },
     {
-      "id": "e_185",
+      "id": "e_187",
       "source": "gui_canvas_mixin_py",
       "target": "ext_time",
       "type": "external",
@@ -53629,7 +53712,7 @@
       "externalPackage": "time"
     },
     {
-      "id": "e_186",
+      "id": "e_188",
       "source": "gui_canvas_mixin_py",
       "target": "ext_traceback",
       "type": "external",
@@ -53639,7 +53722,7 @@
       "externalPackage": "traceback"
     },
     {
-      "id": "e_187",
+      "id": "e_189",
       "source": "gui_canvas_mixin_py",
       "target": "ext_tkinter",
       "type": "external",
@@ -53651,7 +53734,7 @@
       "externalPackage": "tkinter"
     },
     {
-      "id": "e_188",
+      "id": "e_190",
       "source": "gui_canvas_mixin_py",
       "target": "ext_typing",
       "type": "external",
@@ -53669,7 +53752,7 @@
       "externalPackage": "typing"
     },
     {
-      "id": "e_189",
+      "id": "e_191",
       "source": "gui_canvas_mixin_py",
       "target": "ext_dataclasses",
       "type": "external",
@@ -53682,7 +53765,7 @@
       "externalPackage": "dataclasses"
     },
     {
-      "id": "e_190",
+      "id": "e_192",
       "source": "gui_canvas_mixin_py",
       "target": "parser_project_parser_py",
       "type": "import",
@@ -53694,7 +53777,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_191",
+      "id": "e_193",
       "source": "gui_canvas_mixin_py",
       "target": "gui_app_py",
       "type": "import",
@@ -53722,7 +53805,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_192",
+      "id": "e_194",
       "source": "gui_dialogs_mixin_py",
       "target": "ext___future__",
       "type": "external",
@@ -53734,7 +53817,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_193",
+      "id": "e_195",
       "source": "gui_dialogs_mixin_py",
       "target": "ext_traceback",
       "type": "external",
@@ -53744,7 +53827,7 @@
       "externalPackage": "traceback"
     },
     {
-      "id": "e_194",
+      "id": "e_196",
       "source": "gui_dialogs_mixin_py",
       "target": "ext_tkinter",
       "type": "external",
@@ -53756,7 +53839,7 @@
       "externalPackage": "tkinter"
     },
     {
-      "id": "e_195",
+      "id": "e_197",
       "source": "gui_dialogs_mixin_py",
       "target": "ext_os",
       "type": "external",
@@ -53766,7 +53849,7 @@
       "externalPackage": "os"
     },
     {
-      "id": "e_196",
+      "id": "e_198",
       "source": "gui_dialogs_mixin_py",
       "target": "ext_threading",
       "type": "external",
@@ -53776,7 +53859,7 @@
       "externalPackage": "threading"
     },
     {
-      "id": "e_197",
+      "id": "e_199",
       "source": "gui_dialogs_mixin_py",
       "target": "ext_json",
       "type": "external",
@@ -53786,7 +53869,7 @@
       "externalPackage": "json"
     },
     {
-      "id": "e_198",
+      "id": "e_200",
       "source": "gui_dialogs_mixin_py",
       "target": "gui_app_py",
       "type": "import",
@@ -53801,7 +53884,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_199",
+      "id": "e_201",
       "source": "gui_dialogs_mixin_py",
       "target": "process_process_manager_py",
       "type": "import",
@@ -53813,7 +53896,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_200",
+      "id": "e_202",
       "source": "gui_dialogs_mixin_py",
       "target": "monitor_perf_py",
       "type": "import",
@@ -53825,7 +53908,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_201",
+      "id": "e_203",
       "source": "gui_dialogs_mixin_py",
       "target": "version_version_manager_py",
       "type": "import",
@@ -53840,7 +53923,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_202",
+      "id": "e_204",
       "source": "gui_dialogs_mixin_py",
       "target": "parser_project_config_py",
       "type": "import",
@@ -53854,7 +53937,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_203",
+      "id": "e_205",
       "source": "gui_dialogs_mixin_py",
       "target": "ext_build",
       "type": "external",
@@ -53867,7 +53950,7 @@
       "externalPackage": "build"
     },
     {
-      "id": "e_204",
+      "id": "e_206",
       "source": "gui_dialogs_mixin_py",
       "target": "gui_log_py",
       "type": "import",
@@ -53881,7 +53964,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_205",
+      "id": "e_207",
       "source": "gui_dialogs_mixin_py",
       "target": "ext_sys",
       "type": "external",
@@ -53891,7 +53974,7 @@
       "externalPackage": "sys"
     },
     {
-      "id": "e_206",
+      "id": "e_208",
       "source": "gui_editor_py",
       "target": "ext___future__",
       "type": "external",
@@ -53903,7 +53986,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_207",
+      "id": "e_209",
       "source": "gui_editor_py",
       "target": "ext_os",
       "type": "external",
@@ -53913,7 +53996,7 @@
       "externalPackage": "os"
     },
     {
-      "id": "e_208",
+      "id": "e_210",
       "source": "gui_editor_py",
       "target": "ext_re",
       "type": "external",
@@ -53923,7 +54006,7 @@
       "externalPackage": "re"
     },
     {
-      "id": "e_209",
+      "id": "e_211",
       "source": "gui_editor_py",
       "target": "ext_tkinter",
       "type": "external",
@@ -53935,7 +54018,7 @@
       "externalPackage": "tkinter"
     },
     {
-      "id": "e_210",
+      "id": "e_212",
       "source": "gui_editor_py",
       "target": "ext_typing",
       "type": "external",
@@ -53947,7 +54030,7 @@
       "externalPackage": "typing"
     },
     {
-      "id": "e_211",
+      "id": "e_213",
       "source": "gui_inspector_mixin_py",
       "target": "ext___future__",
       "type": "external",
@@ -53959,7 +54042,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_212",
+      "id": "e_214",
       "source": "gui_inspector_mixin_py",
       "target": "ext_os",
       "type": "external",
@@ -53969,7 +54052,7 @@
       "externalPackage": "os"
     },
     {
-      "id": "e_213",
+      "id": "e_215",
       "source": "gui_inspector_mixin_py",
       "target": "ext_sys",
       "type": "external",
@@ -53979,7 +54062,7 @@
       "externalPackage": "sys"
     },
     {
-      "id": "e_214",
+      "id": "e_216",
       "source": "gui_inspector_mixin_py",
       "target": "ext_re",
       "type": "external",
@@ -53989,7 +54072,7 @@
       "externalPackage": "re"
     },
     {
-      "id": "e_215",
+      "id": "e_217",
       "source": "gui_inspector_mixin_py",
       "target": "ext_json",
       "type": "external",
@@ -53999,7 +54082,7 @@
       "externalPackage": "json"
     },
     {
-      "id": "e_216",
+      "id": "e_218",
       "source": "gui_inspector_mixin_py",
       "target": "ext_subprocess",
       "type": "external",
@@ -54009,7 +54092,7 @@
       "externalPackage": "subprocess"
     },
     {
-      "id": "e_217",
+      "id": "e_219",
       "source": "gui_inspector_mixin_py",
       "target": "ext_math",
       "type": "external",
@@ -54019,7 +54102,7 @@
       "externalPackage": "math"
     },
     {
-      "id": "e_218",
+      "id": "e_220",
       "source": "gui_inspector_mixin_py",
       "target": "ext_threading",
       "type": "external",
@@ -54029,7 +54112,7 @@
       "externalPackage": "threading"
     },
     {
-      "id": "e_219",
+      "id": "e_221",
       "source": "gui_inspector_mixin_py",
       "target": "ext_datetime",
       "type": "external",
@@ -54039,7 +54122,7 @@
       "externalPackage": "datetime"
     },
     {
-      "id": "e_220",
+      "id": "e_222",
       "source": "gui_inspector_mixin_py",
       "target": "ext_time",
       "type": "external",
@@ -54049,7 +54132,7 @@
       "externalPackage": "time"
     },
     {
-      "id": "e_221",
+      "id": "e_223",
       "source": "gui_inspector_mixin_py",
       "target": "ext_tkinter",
       "type": "external",
@@ -54061,7 +54144,7 @@
       "externalPackage": "tkinter"
     },
     {
-      "id": "e_222",
+      "id": "e_224",
       "source": "gui_inspector_mixin_py",
       "target": "ext_typing",
       "type": "external",
@@ -54079,7 +54162,7 @@
       "externalPackage": "typing"
     },
     {
-      "id": "e_223",
+      "id": "e_225",
       "source": "gui_inspector_mixin_py",
       "target": "ext_dataclasses",
       "type": "external",
@@ -54092,7 +54175,7 @@
       "externalPackage": "dataclasses"
     },
     {
-      "id": "e_224",
+      "id": "e_226",
       "source": "gui_inspector_mixin_py",
       "target": "gui_app_py",
       "type": "import",
@@ -54104,7 +54187,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_225",
+      "id": "e_227",
       "source": "gui_log_py",
       "target": "ext___future__",
       "type": "external",
@@ -54116,7 +54199,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_226",
+      "id": "e_228",
       "source": "gui_log_py",
       "target": "ext_logging",
       "type": "external",
@@ -54126,7 +54209,7 @@
       "externalPackage": "logging"
     },
     {
-      "id": "e_227",
+      "id": "e_229",
       "source": "gui_log_py",
       "target": "ext_os",
       "type": "external",
@@ -54136,7 +54219,7 @@
       "externalPackage": "os"
     },
     {
-      "id": "e_228",
+      "id": "e_230",
       "source": "gui_log_py",
       "target": "ext_sys",
       "type": "external",
@@ -54146,7 +54229,7 @@
       "externalPackage": "sys"
     },
     {
-      "id": "e_229",
+      "id": "e_231",
       "source": "gui_log_py",
       "target": "ext_collections",
       "type": "external",
@@ -54158,7 +54241,7 @@
       "externalPackage": "collections"
     },
     {
-      "id": "e_230",
+      "id": "e_232",
       "source": "gui_markdown_py",
       "target": "ext___future__",
       "type": "external",
@@ -54170,7 +54253,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_231",
+      "id": "e_233",
       "source": "gui_markdown_py",
       "target": "ext_re",
       "type": "external",
@@ -54180,7 +54263,7 @@
       "externalPackage": "re"
     },
     {
-      "id": "e_232",
+      "id": "e_234",
       "source": "gui_panels_py",
       "target": "ext___future__",
       "type": "external",
@@ -54192,7 +54275,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_233",
+      "id": "e_235",
       "source": "gui_panels_py",
       "target": "ext_os",
       "type": "external",
@@ -54202,7 +54285,7 @@
       "externalPackage": "os"
     },
     {
-      "id": "e_234",
+      "id": "e_236",
       "source": "gui_panels_py",
       "target": "ext_re",
       "type": "external",
@@ -54212,7 +54295,7 @@
       "externalPackage": "re"
     },
     {
-      "id": "e_235",
+      "id": "e_237",
       "source": "gui_panels_py",
       "target": "ext_subprocess",
       "type": "external",
@@ -54222,7 +54305,7 @@
       "externalPackage": "subprocess"
     },
     {
-      "id": "e_236",
+      "id": "e_238",
       "source": "gui_panels_py",
       "target": "ext_threading",
       "type": "external",
@@ -54232,7 +54315,7 @@
       "externalPackage": "threading"
     },
     {
-      "id": "e_237",
+      "id": "e_239",
       "source": "gui_panels_py",
       "target": "ext_typing",
       "type": "external",
@@ -54244,7 +54327,7 @@
       "externalPackage": "typing"
     },
     {
-      "id": "e_238",
+      "id": "e_240",
       "source": "gui_panels_py",
       "target": "gui_markdown_py",
       "type": "import",
@@ -54257,7 +54340,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_239",
+      "id": "e_241",
       "source": "gui_panels_py",
       "target": "ext_tkinter",
       "type": "external",
@@ -54269,7 +54352,7 @@
       "externalPackage": "tkinter"
     },
     {
-      "id": "e_240",
+      "id": "e_242",
       "source": "gui_panels_py",
       "target": "gui_app_py",
       "type": "import",
@@ -54282,7 +54365,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_241",
+      "id": "e_243",
       "source": "gui_panels_py",
       "target": "ext_traceback",
       "type": "external",
@@ -54292,7 +54375,7 @@
       "externalPackage": "traceback"
     },
     {
-      "id": "e_242",
+      "id": "e_244",
       "source": "gui_panels_py",
       "target": "version_version_manager_py",
       "type": "import",
@@ -54304,7 +54387,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_243",
+      "id": "e_245",
       "source": "gui_panels_py",
       "target": "ai_client_py",
       "type": "import",
@@ -54316,7 +54399,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_244",
+      "id": "e_246",
       "source": "gui_panels_py",
       "target": "gui_log_py",
       "type": "import",
@@ -54330,7 +54413,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_245",
+      "id": "e_247",
       "source": "gui_server_py",
       "target": "ext___future__",
       "type": "external",
@@ -54342,7 +54425,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_246",
+      "id": "e_248",
       "source": "gui_server_py",
       "target": "ext_json",
       "type": "external",
@@ -54352,7 +54435,7 @@
       "externalPackage": "json"
     },
     {
-      "id": "e_247",
+      "id": "e_249",
       "source": "gui_server_py",
       "target": "ext_os",
       "type": "external",
@@ -54362,7 +54445,7 @@
       "externalPackage": "os"
     },
     {
-      "id": "e_248",
+      "id": "e_250",
       "source": "gui_server_py",
       "target": "ext_sys",
       "type": "external",
@@ -54372,7 +54455,7 @@
       "externalPackage": "sys"
     },
     {
-      "id": "e_249",
+      "id": "e_251",
       "source": "gui_server_py",
       "target": "ext_time",
       "type": "external",
@@ -54382,7 +54465,7 @@
       "externalPackage": "time"
     },
     {
-      "id": "e_250",
+      "id": "e_252",
       "source": "gui_server_py",
       "target": "ext_threading",
       "type": "external",
@@ -54392,7 +54475,7 @@
       "externalPackage": "threading"
     },
     {
-      "id": "e_251",
+      "id": "e_253",
       "source": "gui_server_py",
       "target": "ext_queue",
       "type": "external",
@@ -54402,7 +54485,7 @@
       "externalPackage": "queue"
     },
     {
-      "id": "e_252",
+      "id": "e_254",
       "source": "gui_server_py",
       "target": "ext_http",
       "type": "external",
@@ -54415,7 +54498,7 @@
       "externalPackage": "http"
     },
     {
-      "id": "e_253",
+      "id": "e_255",
       "source": "gui_server_py",
       "target": "ext_urllib",
       "type": "external",
@@ -54428,7 +54511,7 @@
       "externalPackage": "urllib"
     },
     {
-      "id": "e_254",
+      "id": "e_256",
       "source": "gui_server_py",
       "target": "ext_typing",
       "type": "external",
@@ -54440,7 +54523,7 @@
       "externalPackage": "typing"
     },
     {
-      "id": "e_255",
+      "id": "e_257",
       "source": "gui_server_py",
       "target": "parser_project_parser_py",
       "type": "import",
@@ -54452,7 +54535,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_256",
+      "id": "e_258",
       "source": "gui_server_py",
       "target": "parser_project_config_py",
       "type": "import",
@@ -54464,7 +54547,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_257",
+      "id": "e_259",
       "source": "gui_server_py",
       "target": "process_process_manager_py",
       "type": "import",
@@ -54476,7 +54559,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_258",
+      "id": "e_260",
       "source": "gui_server_py",
       "target": "version_version_manager_py",
       "type": "import",
@@ -54490,7 +54573,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_259",
+      "id": "e_261",
       "source": "gui_server_py",
       "target": "ext_build",
       "type": "external",
@@ -54503,7 +54586,7 @@
       "externalPackage": "build"
     },
     {
-      "id": "e_260",
+      "id": "e_262",
       "source": "gui_state_py",
       "target": "ext___future__",
       "type": "external",
@@ -54515,7 +54598,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_261",
+      "id": "e_263",
       "source": "gui_state_py",
       "target": "ext_json",
       "type": "external",
@@ -54525,7 +54608,7 @@
       "externalPackage": "json"
     },
     {
-      "id": "e_262",
+      "id": "e_264",
       "source": "gui_state_py",
       "target": "ext_os",
       "type": "external",
@@ -54535,7 +54618,7 @@
       "externalPackage": "os"
     },
     {
-      "id": "e_263",
+      "id": "e_265",
       "source": "gui_state_py",
       "target": "ext_typing",
       "type": "external",
@@ -54547,7 +54630,7 @@
       "externalPackage": "typing"
     },
     {
-      "id": "e_264",
+      "id": "e_266",
       "source": "gui_teams_canvas_py",
       "target": "ext___future__",
       "type": "external",
@@ -54559,7 +54642,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_265",
+      "id": "e_267",
       "source": "gui_teams_canvas_py",
       "target": "ext_threading",
       "type": "external",
@@ -54569,7 +54652,7 @@
       "externalPackage": "threading"
     },
     {
-      "id": "e_266",
+      "id": "e_268",
       "source": "gui_teams_canvas_py",
       "target": "ext_typing",
       "type": "external",
@@ -54581,7 +54664,7 @@
       "externalPackage": "typing"
     },
     {
-      "id": "e_267",
+      "id": "e_269",
       "source": "gui_teams_canvas_py",
       "target": "ext_tkinter",
       "type": "external",
@@ -54593,7 +54676,7 @@
       "externalPackage": "tkinter"
     },
     {
-      "id": "e_268",
+      "id": "e_270",
       "source": "gui_teams_canvas_py",
       "target": "gui_app_py",
       "type": "import",
@@ -54605,7 +54688,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_269",
+      "id": "e_271",
       "source": "gui_teams_canvas_py",
       "target": "ai_workflow_templates_py",
       "type": "import",
@@ -54619,7 +54702,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_270",
+      "id": "e_272",
       "source": "gui_teams_canvas_py",
       "target": "ai_teams_py",
       "type": "import",
@@ -54632,7 +54715,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_271",
+      "id": "e_273",
       "source": "gui_teams_canvas_py",
       "target": "ext_time",
       "type": "external",
@@ -54644,7 +54727,7 @@
       "externalPackage": "time"
     },
     {
-      "id": "e_272",
+      "id": "e_274",
       "source": "gui_teams_canvas_py",
       "target": "gui_panels_py",
       "type": "import",
@@ -54656,7 +54739,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_273",
+      "id": "e_275",
       "source": "monitor___init___py",
       "target": "monitor_perf_py",
       "type": "import",
@@ -54670,7 +54753,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_274",
+      "id": "e_276",
       "source": "monitor___init___py",
       "target": "monitor_profiler_py",
       "type": "import",
@@ -54685,7 +54768,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_275",
+      "id": "e_277",
       "source": "monitor_instrument_py",
       "target": "ext___future__",
       "type": "external",
@@ -54697,7 +54780,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_276",
+      "id": "e_278",
       "source": "monitor_instrument_py",
       "target": "ext_functools",
       "type": "external",
@@ -54707,7 +54790,7 @@
       "externalPackage": "functools"
     },
     {
-      "id": "e_277",
+      "id": "e_279",
       "source": "monitor_instrument_py",
       "target": "ext_json",
       "type": "external",
@@ -54717,7 +54800,7 @@
       "externalPackage": "json"
     },
     {
-      "id": "e_278",
+      "id": "e_280",
       "source": "monitor_instrument_py",
       "target": "ext_os",
       "type": "external",
@@ -54727,7 +54810,7 @@
       "externalPackage": "os"
     },
     {
-      "id": "e_279",
+      "id": "e_281",
       "source": "monitor_instrument_py",
       "target": "ext_sys",
       "type": "external",
@@ -54737,7 +54820,7 @@
       "externalPackage": "sys"
     },
     {
-      "id": "e_280",
+      "id": "e_282",
       "source": "monitor_instrument_py",
       "target": "ext_threading",
       "type": "external",
@@ -54747,7 +54830,7 @@
       "externalPackage": "threading"
     },
     {
-      "id": "e_281",
+      "id": "e_283",
       "source": "monitor_instrument_py",
       "target": "ext_time",
       "type": "external",
@@ -54757,7 +54840,7 @@
       "externalPackage": "time"
     },
     {
-      "id": "e_282",
+      "id": "e_284",
       "source": "monitor_instrument_py",
       "target": "ext_contextlib",
       "type": "external",
@@ -54769,7 +54852,7 @@
       "externalPackage": "contextlib"
     },
     {
-      "id": "e_283",
+      "id": "e_285",
       "source": "monitor_instrument_py",
       "target": "ext_typing",
       "type": "external",
@@ -54781,7 +54864,7 @@
       "externalPackage": "typing"
     },
     {
-      "id": "e_284",
+      "id": "e_286",
       "source": "monitor_instrument_py",
       "target": "ext_inspect",
       "type": "external",
@@ -54791,7 +54874,7 @@
       "externalPackage": "inspect"
     },
     {
-      "id": "e_285",
+      "id": "e_287",
       "source": "monitor_instrumenter_py",
       "target": "ext___future__",
       "type": "external",
@@ -54803,7 +54886,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_286",
+      "id": "e_288",
       "source": "monitor_instrumenter_py",
       "target": "ext_ast",
       "type": "external",
@@ -54813,7 +54896,7 @@
       "externalPackage": "ast"
     },
     {
-      "id": "e_287",
+      "id": "e_289",
       "source": "monitor_instrumenter_py",
       "target": "ext_os",
       "type": "external",
@@ -54823,7 +54906,7 @@
       "externalPackage": "os"
     },
     {
-      "id": "e_288",
+      "id": "e_290",
       "source": "monitor_instrumenter_py",
       "target": "ext_re",
       "type": "external",
@@ -54833,7 +54916,7 @@
       "externalPackage": "re"
     },
     {
-      "id": "e_289",
+      "id": "e_291",
       "source": "monitor_instrumenter_py",
       "target": "ext_shutil",
       "type": "external",
@@ -54843,7 +54926,7 @@
       "externalPackage": "shutil"
     },
     {
-      "id": "e_290",
+      "id": "e_292",
       "source": "monitor_instrumenter_py",
       "target": "ext_json",
       "type": "external",
@@ -54853,7 +54936,7 @@
       "externalPackage": "json"
     },
     {
-      "id": "e_291",
+      "id": "e_293",
       "source": "monitor_instrumenter_py",
       "target": "ext_dataclasses",
       "type": "external",
@@ -54866,7 +54949,7 @@
       "externalPackage": "dataclasses"
     },
     {
-      "id": "e_292",
+      "id": "e_294",
       "source": "monitor_instrumenter_py",
       "target": "ext_datetime",
       "type": "external",
@@ -54879,7 +54962,7 @@
       "externalPackage": "datetime"
     },
     {
-      "id": "e_293",
+      "id": "e_295",
       "source": "monitor_instrumenter_py",
       "target": "ext_fnmatch",
       "type": "external",
@@ -54889,7 +54972,7 @@
       "externalPackage": "fnmatch"
     },
     {
-      "id": "e_294",
+      "id": "e_296",
       "source": "monitor_perf_py",
       "target": "ext___future__",
       "type": "external",
@@ -54901,7 +54984,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_295",
+      "id": "e_297",
       "source": "monitor_perf_py",
       "target": "ext_os",
       "type": "external",
@@ -54911,7 +54994,7 @@
       "externalPackage": "os"
     },
     {
-      "id": "e_296",
+      "id": "e_298",
       "source": "monitor_perf_py",
       "target": "ext_sys",
       "type": "external",
@@ -54921,7 +55004,7 @@
       "externalPackage": "sys"
     },
     {
-      "id": "e_297",
+      "id": "e_299",
       "source": "monitor_perf_py",
       "target": "ext_time",
       "type": "external",
@@ -54931,7 +55014,7 @@
       "externalPackage": "time"
     },
     {
-      "id": "e_298",
+      "id": "e_300",
       "source": "monitor_perf_py",
       "target": "ext_threading",
       "type": "external",
@@ -54941,7 +55024,7 @@
       "externalPackage": "threading"
     },
     {
-      "id": "e_299",
+      "id": "e_301",
       "source": "monitor_perf_py",
       "target": "ext_collections",
       "type": "external",
@@ -54953,7 +55036,7 @@
       "externalPackage": "collections"
     },
     {
-      "id": "e_300",
+      "id": "e_302",
       "source": "monitor_perf_py",
       "target": "ext_contextlib",
       "type": "external",
@@ -54965,7 +55048,7 @@
       "externalPackage": "contextlib"
     },
     {
-      "id": "e_301",
+      "id": "e_303",
       "source": "monitor_perf_py",
       "target": "ext_typing",
       "type": "external",
@@ -54977,7 +55060,7 @@
       "externalPackage": "typing"
     },
     {
-      "id": "e_302",
+      "id": "e_304",
       "source": "monitor_perf_py",
       "target": "ext_psutil",
       "type": "external",
@@ -54987,7 +55070,7 @@
       "externalPackage": "psutil"
     },
     {
-      "id": "e_303",
+      "id": "e_305",
       "source": "monitor_perf_py",
       "target": "ext_json",
       "type": "external",
@@ -54997,7 +55080,7 @@
       "externalPackage": "json"
     },
     {
-      "id": "e_304",
+      "id": "e_306",
       "source": "monitor_profiler_py",
       "target": "ext___future__",
       "type": "external",
@@ -55009,7 +55092,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_305",
+      "id": "e_307",
       "source": "monitor_profiler_py",
       "target": "ext_json",
       "type": "external",
@@ -55019,7 +55102,7 @@
       "externalPackage": "json"
     },
     {
-      "id": "e_306",
+      "id": "e_308",
       "source": "monitor_profiler_py",
       "target": "ext_os",
       "type": "external",
@@ -55029,7 +55112,7 @@
       "externalPackage": "os"
     },
     {
-      "id": "e_307",
+      "id": "e_309",
       "source": "monitor_profiler_py",
       "target": "ext_pstats",
       "type": "external",
@@ -55039,7 +55122,7 @@
       "externalPackage": "pstats"
     },
     {
-      "id": "e_308",
+      "id": "e_310",
       "source": "monitor_profiler_py",
       "target": "ext_subprocess",
       "type": "external",
@@ -55049,7 +55132,7 @@
       "externalPackage": "subprocess"
     },
     {
-      "id": "e_309",
+      "id": "e_311",
       "source": "monitor_profiler_py",
       "target": "ext_sys",
       "type": "external",
@@ -55059,7 +55142,7 @@
       "externalPackage": "sys"
     },
     {
-      "id": "e_310",
+      "id": "e_312",
       "source": "monitor_profiler_py",
       "target": "ext_tempfile",
       "type": "external",
@@ -55069,7 +55152,7 @@
       "externalPackage": "tempfile"
     },
     {
-      "id": "e_311",
+      "id": "e_313",
       "source": "monitor_profiler_py",
       "target": "ext_time",
       "type": "external",
@@ -55079,7 +55162,7 @@
       "externalPackage": "time"
     },
     {
-      "id": "e_312",
+      "id": "e_314",
       "source": "monitor_profiler_py",
       "target": "ext_dataclasses",
       "type": "external",
@@ -55092,7 +55175,7 @@
       "externalPackage": "dataclasses"
     },
     {
-      "id": "e_313",
+      "id": "e_315",
       "source": "monitor_profiler_py",
       "target": "ext_typing",
       "type": "external",
@@ -55104,7 +55187,7 @@
       "externalPackage": "typing"
     },
     {
-      "id": "e_314",
+      "id": "e_316",
       "source": "parser___init___py",
       "target": "parser_project_parser_py",
       "type": "import",
@@ -55116,7 +55199,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_315",
+      "id": "e_317",
       "source": "parser___init___py",
       "target": "parser_project_config_py",
       "type": "import",
@@ -55131,7 +55214,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_316",
+      "id": "e_318",
       "source": "parser___init___py",
       "target": "parser_workspace_py",
       "type": "import",
@@ -55150,7 +55233,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_317",
+      "id": "e_319",
       "source": "parser_doc_check_py",
       "target": "ext___future__",
       "type": "external",
@@ -55162,7 +55245,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_318",
+      "id": "e_320",
       "source": "parser_doc_check_py",
       "target": "ext_os",
       "type": "external",
@@ -55172,7 +55255,7 @@
       "externalPackage": "os"
     },
     {
-      "id": "e_319",
+      "id": "e_321",
       "source": "parser_doc_check_py",
       "target": "ext_datetime",
       "type": "external",
@@ -55184,7 +55267,7 @@
       "externalPackage": "datetime"
     },
     {
-      "id": "e_320",
+      "id": "e_322",
       "source": "parser_doc_check_py",
       "target": "graph_types_py",
       "type": "import",
@@ -55198,7 +55281,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_321",
+      "id": "e_323",
       "source": "parser_layout_py",
       "target": "ext___future__",
       "type": "external",
@@ -55210,7 +55293,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_322",
+      "id": "e_324",
       "source": "parser_layout_py",
       "target": "ext_math",
       "type": "external",
@@ -55220,7 +55303,7 @@
       "externalPackage": "math"
     },
     {
-      "id": "e_323",
+      "id": "e_325",
       "source": "parser_layout_py",
       "target": "ext_collections",
       "type": "external",
@@ -55233,7 +55316,7 @@
       "externalPackage": "collections"
     },
     {
-      "id": "e_324",
+      "id": "e_326",
       "source": "parser_layout_py",
       "target": "graph_types_py",
       "type": "import",
@@ -55247,7 +55330,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_325",
+      "id": "e_327",
       "source": "parser_project_config_py",
       "target": "ext___future__",
       "type": "external",
@@ -55259,7 +55342,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_326",
+      "id": "e_328",
       "source": "parser_project_config_py",
       "target": "ext_json",
       "type": "external",
@@ -55269,7 +55352,7 @@
       "externalPackage": "json"
     },
     {
-      "id": "e_327",
+      "id": "e_329",
       "source": "parser_project_config_py",
       "target": "ext_os",
       "type": "external",
@@ -55279,7 +55362,7 @@
       "externalPackage": "os"
     },
     {
-      "id": "e_328",
+      "id": "e_330",
       "source": "parser_project_config_py",
       "target": "ext_copy",
       "type": "external",
@@ -55291,7 +55374,7 @@
       "externalPackage": "copy"
     },
     {
-      "id": "e_329",
+      "id": "e_331",
       "source": "parser_project_config_py",
       "target": "ext_typing",
       "type": "external",
@@ -55303,7 +55386,7 @@
       "externalPackage": "typing"
     },
     {
-      "id": "e_330",
+      "id": "e_332",
       "source": "parser_project_config_py",
       "target": "ext_re",
       "type": "external",
@@ -55313,7 +55396,7 @@
       "externalPackage": "re"
     },
     {
-      "id": "e_331",
+      "id": "e_333",
       "source": "parser_project_parser_py",
       "target": "ext___future__",
       "type": "external",
@@ -55325,7 +55408,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_332",
+      "id": "e_334",
       "source": "parser_project_parser_py",
       "target": "ext_json",
       "type": "external",
@@ -55335,7 +55418,7 @@
       "externalPackage": "json"
     },
     {
-      "id": "e_333",
+      "id": "e_335",
       "source": "parser_project_parser_py",
       "target": "ext_os",
       "type": "external",
@@ -55345,7 +55428,7 @@
       "externalPackage": "os"
     },
     {
-      "id": "e_334",
+      "id": "e_336",
       "source": "parser_project_parser_py",
       "target": "ext_datetime",
       "type": "external",
@@ -55358,7 +55441,7 @@
       "externalPackage": "datetime"
     },
     {
-      "id": "e_335",
+      "id": "e_337",
       "source": "parser_project_parser_py",
       "target": "parser_walker_py",
       "type": "import",
@@ -55371,7 +55454,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_336",
+      "id": "e_338",
       "source": "parser_project_parser_py",
       "target": "parser_parsers___init___py",
       "type": "import",
@@ -55383,7 +55466,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_337",
+      "id": "e_339",
       "source": "parser_project_parser_py",
       "target": "parser_resolve_edges_py",
       "type": "import",
@@ -55395,7 +55478,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_338",
+      "id": "e_340",
       "source": "parser_project_parser_py",
       "target": "parser_layout_py",
       "type": "import",
@@ -55407,7 +55490,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_339",
+      "id": "e_341",
       "source": "parser_project_parser_py",
       "target": "parser_doc_check_py",
       "type": "import",
@@ -55419,7 +55502,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_340",
+      "id": "e_342",
       "source": "parser_project_parser_py",
       "target": "parser_project_config_py",
       "type": "import",
@@ -55431,7 +55514,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_341",
+      "id": "e_343",
       "source": "parser_project_parser_py",
       "target": "monitor_perf_py",
       "type": "import",
@@ -55443,7 +55526,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_342",
+      "id": "e_344",
       "source": "parser_project_parser_py",
       "target": "graph_types_py",
       "type": "import",
@@ -55460,7 +55543,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_343",
+      "id": "e_345",
       "source": "parser_resolve_edges_py",
       "target": "ext___future__",
       "type": "external",
@@ -55472,7 +55555,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_344",
+      "id": "e_346",
       "source": "parser_resolve_edges_py",
       "target": "ext_os",
       "type": "external",
@@ -55482,7 +55565,7 @@
       "externalPackage": "os"
     },
     {
-      "id": "e_345",
+      "id": "e_347",
       "source": "parser_resolve_edges_py",
       "target": "graph_types_py",
       "type": "import",
@@ -55495,7 +55578,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_346",
+      "id": "e_348",
       "source": "parser_walker_py",
       "target": "ext___future__",
       "type": "external",
@@ -55507,7 +55590,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_347",
+      "id": "e_349",
       "source": "parser_walker_py",
       "target": "ext_os",
       "type": "external",
@@ -55517,7 +55600,7 @@
       "externalPackage": "os"
     },
     {
-      "id": "e_348",
+      "id": "e_350",
       "source": "parser_walker_py",
       "target": "ext_re",
       "type": "external",
@@ -55527,7 +55610,7 @@
       "externalPackage": "re"
     },
     {
-      "id": "e_349",
+      "id": "e_351",
       "source": "parser_walker_py",
       "target": "ext_dataclasses",
       "type": "external",
@@ -55539,7 +55622,7 @@
       "externalPackage": "dataclasses"
     },
     {
-      "id": "e_350",
+      "id": "e_352",
       "source": "parser_walker_py",
       "target": "ext_fnmatch",
       "type": "external",
@@ -55551,7 +55634,7 @@
       "externalPackage": "fnmatch"
     },
     {
-      "id": "e_351",
+      "id": "e_353",
       "source": "parser_workspace_py",
       "target": "ext___future__",
       "type": "external",
@@ -55563,7 +55646,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_352",
+      "id": "e_354",
       "source": "parser_workspace_py",
       "target": "ext_json",
       "type": "external",
@@ -55573,7 +55656,7 @@
       "externalPackage": "json"
     },
     {
-      "id": "e_353",
+      "id": "e_355",
       "source": "parser_workspace_py",
       "target": "ext_os",
       "type": "external",
@@ -55583,7 +55666,7 @@
       "externalPackage": "os"
     },
     {
-      "id": "e_354",
+      "id": "e_356",
       "source": "parser_workspace_py",
       "target": "ext_dataclasses",
       "type": "external",
@@ -55596,7 +55679,7 @@
       "externalPackage": "dataclasses"
     },
     {
-      "id": "e_355",
+      "id": "e_357",
       "source": "parser_workspace_py",
       "target": "ext_typing",
       "type": "external",
@@ -55608,17 +55691,17 @@
       "externalPackage": "typing"
     },
     {
-      "id": "e_356",
+      "id": "e_358",
       "source": "parser_workspace_py",
       "target": "ext_re",
       "type": "external",
       "symbols": [],
-      "line": 284,
+      "line": 285,
       "isExternal": true,
       "externalPackage": "re"
     },
     {
-      "id": "e_357",
+      "id": "e_359",
       "source": "parser_parsers___init___py",
       "target": "parser_parsers_python_parser_py",
       "type": "import",
@@ -55630,7 +55713,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_358",
+      "id": "e_360",
       "source": "parser_parsers___init___py",
       "target": "parser_parsers_js_parser_py",
       "type": "import",
@@ -55642,7 +55725,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_359",
+      "id": "e_361",
       "source": "parser_parsers___init___py",
       "target": "parser_parsers_json_parser_py",
       "type": "import",
@@ -55654,7 +55737,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_360",
+      "id": "e_362",
       "source": "parser_parsers___init___py",
       "target": "parser_parsers_shell_parser_py",
       "type": "import",
@@ -55666,7 +55749,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_361",
+      "id": "e_363",
       "source": "parser_parsers___init___py",
       "target": "parser_parsers_toml_yaml_parser_py",
       "type": "import",
@@ -55679,7 +55762,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_362",
+      "id": "e_364",
       "source": "parser_parsers_js_parser_py",
       "target": "ext___future__",
       "type": "external",
@@ -55691,7 +55774,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_363",
+      "id": "e_365",
       "source": "parser_parsers_js_parser_py",
       "target": "ext_re",
       "type": "external",
@@ -55701,7 +55784,7 @@
       "externalPackage": "re"
     },
     {
-      "id": "e_364",
+      "id": "e_366",
       "source": "parser_parsers_js_parser_py",
       "target": "graph_types_py",
       "type": "import",
@@ -55715,7 +55798,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_365",
+      "id": "e_367",
       "source": "parser_parsers_json_parser_py",
       "target": "ext___future__",
       "type": "external",
@@ -55727,7 +55810,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_366",
+      "id": "e_368",
       "source": "parser_parsers_json_parser_py",
       "target": "ext_json",
       "type": "external",
@@ -55737,7 +55820,7 @@
       "externalPackage": "json"
     },
     {
-      "id": "e_367",
+      "id": "e_369",
       "source": "parser_parsers_json_parser_py",
       "target": "ext_os",
       "type": "external",
@@ -55747,7 +55830,7 @@
       "externalPackage": "os"
     },
     {
-      "id": "e_368",
+      "id": "e_370",
       "source": "parser_parsers_json_parser_py",
       "target": "graph_types_py",
       "type": "import",
@@ -55761,7 +55844,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_369",
+      "id": "e_371",
       "source": "parser_parsers_python_parser_py",
       "target": "ext___future__",
       "type": "external",
@@ -55773,7 +55856,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_370",
+      "id": "e_372",
       "source": "parser_parsers_python_parser_py",
       "target": "ext_ast",
       "type": "external",
@@ -55783,7 +55866,7 @@
       "externalPackage": "ast"
     },
     {
-      "id": "e_371",
+      "id": "e_373",
       "source": "parser_parsers_python_parser_py",
       "target": "ext_re",
       "type": "external",
@@ -55793,7 +55876,7 @@
       "externalPackage": "re"
     },
     {
-      "id": "e_372",
+      "id": "e_374",
       "source": "parser_parsers_python_parser_py",
       "target": "ext_typing",
       "type": "external",
@@ -55805,7 +55888,7 @@
       "externalPackage": "typing"
     },
     {
-      "id": "e_373",
+      "id": "e_375",
       "source": "parser_parsers_python_parser_py",
       "target": "graph_types_py",
       "type": "import",
@@ -55819,7 +55902,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_374",
+      "id": "e_376",
       "source": "parser_parsers_shell_parser_py",
       "target": "ext___future__",
       "type": "external",
@@ -55831,7 +55914,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_375",
+      "id": "e_377",
       "source": "parser_parsers_shell_parser_py",
       "target": "ext_re",
       "type": "external",
@@ -55841,7 +55924,7 @@
       "externalPackage": "re"
     },
     {
-      "id": "e_376",
+      "id": "e_378",
       "source": "parser_parsers_shell_parser_py",
       "target": "graph_types_py",
       "type": "import",
@@ -55855,7 +55938,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_377",
+      "id": "e_379",
       "source": "parser_parsers_toml_yaml_parser_py",
       "target": "ext___future__",
       "type": "external",
@@ -55867,7 +55950,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_378",
+      "id": "e_380",
       "source": "parser_parsers_toml_yaml_parser_py",
       "target": "ext_os",
       "type": "external",
@@ -55877,7 +55960,7 @@
       "externalPackage": "os"
     },
     {
-      "id": "e_379",
+      "id": "e_381",
       "source": "parser_parsers_toml_yaml_parser_py",
       "target": "ext_re",
       "type": "external",
@@ -55887,7 +55970,7 @@
       "externalPackage": "re"
     },
     {
-      "id": "e_380",
+      "id": "e_382",
       "source": "parser_parsers_toml_yaml_parser_py",
       "target": "graph_types_py",
       "type": "import",
@@ -55901,7 +55984,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_381",
+      "id": "e_383",
       "source": "parser_parsers_toml_yaml_parser_py",
       "target": "ext_tomllib",
       "type": "external",
@@ -55911,7 +55994,7 @@
       "externalPackage": "tomllib"
     },
     {
-      "id": "e_382",
+      "id": "e_384",
       "source": "process___init___py",
       "target": "process_process_manager_py",
       "type": "import",
@@ -55924,7 +56007,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_383",
+      "id": "e_385",
       "source": "process_process_manager_py",
       "target": "ext___future__",
       "type": "external",
@@ -55936,7 +56019,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_384",
+      "id": "e_386",
       "source": "process_process_manager_py",
       "target": "ext_os",
       "type": "external",
@@ -55946,7 +56029,7 @@
       "externalPackage": "os"
     },
     {
-      "id": "e_385",
+      "id": "e_387",
       "source": "process_process_manager_py",
       "target": "ext_sys",
       "type": "external",
@@ -55956,7 +56039,7 @@
       "externalPackage": "sys"
     },
     {
-      "id": "e_386",
+      "id": "e_388",
       "source": "process_process_manager_py",
       "target": "ext_signal",
       "type": "external",
@@ -55966,7 +56049,7 @@
       "externalPackage": "signal"
     },
     {
-      "id": "e_387",
+      "id": "e_389",
       "source": "process_process_manager_py",
       "target": "ext_shlex",
       "type": "external",
@@ -55976,7 +56059,7 @@
       "externalPackage": "shlex"
     },
     {
-      "id": "e_388",
+      "id": "e_390",
       "source": "process_process_manager_py",
       "target": "ext_threading",
       "type": "external",
@@ -55986,7 +56069,7 @@
       "externalPackage": "threading"
     },
     {
-      "id": "e_389",
+      "id": "e_391",
       "source": "process_process_manager_py",
       "target": "ext_secrets",
       "type": "external",
@@ -55996,7 +56079,7 @@
       "externalPackage": "secrets"
     },
     {
-      "id": "e_390",
+      "id": "e_392",
       "source": "process_process_manager_py",
       "target": "ext_collections",
       "type": "external",
@@ -56008,7 +56091,7 @@
       "externalPackage": "collections"
     },
     {
-      "id": "e_391",
+      "id": "e_393",
       "source": "process_process_manager_py",
       "target": "ext_datetime",
       "type": "external",
@@ -56021,7 +56104,7 @@
       "externalPackage": "datetime"
     },
     {
-      "id": "e_392",
+      "id": "e_394",
       "source": "process_process_manager_py",
       "target": "ext_subprocess",
       "type": "external",
@@ -56034,7 +56117,7 @@
       "externalPackage": "subprocess"
     },
     {
-      "id": "e_393",
+      "id": "e_395",
       "source": "process_process_manager_py",
       "target": "ext_typing",
       "type": "external",
@@ -56046,7 +56129,7 @@
       "externalPackage": "typing"
     },
     {
-      "id": "e_394",
+      "id": "e_396",
       "source": "process_process_manager_py",
       "target": "ext_time",
       "type": "external",
@@ -56056,7 +56139,7 @@
       "externalPackage": "time"
     },
     {
-      "id": "e_395",
+      "id": "e_397",
       "source": "process_process_manager_py",
       "target": "ext_ctypes",
       "type": "external",
@@ -56066,7 +56149,7 @@
       "externalPackage": "ctypes"
     },
     {
-      "id": "e_396",
+      "id": "e_398",
       "source": "projects_calculator_src___init___py",
       "target": "ext___future__",
       "type": "external",
@@ -56078,7 +56161,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_397",
+      "id": "e_399",
       "source": "projects_calculator_src_cli_py",
       "target": "ext___future__",
       "type": "external",
@@ -56090,7 +56173,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_398",
+      "id": "e_400",
       "source": "projects_calculator_src_cli_py",
       "target": "ext_sys",
       "type": "external",
@@ -56100,7 +56183,7 @@
       "externalPackage": "sys"
     },
     {
-      "id": "e_399",
+      "id": "e_401",
       "source": "projects_calculator_src_cli_py",
       "target": "ext_src",
       "type": "external",
@@ -56114,7 +56197,7 @@
       "externalPackage": "src"
     },
     {
-      "id": "e_400",
+      "id": "e_402",
       "source": "projects_calculator_src_gui_app_py",
       "target": "ext___future__",
       "type": "external",
@@ -56126,7 +56209,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_401",
+      "id": "e_403",
       "source": "projects_calculator_src_gui_app_py",
       "target": "ext_sys",
       "type": "external",
@@ -56136,7 +56219,7 @@
       "externalPackage": "sys"
     },
     {
-      "id": "e_402",
+      "id": "e_404",
       "source": "projects_calculator_src_gui_app_py",
       "target": "ext_tkinter",
       "type": "external",
@@ -56148,7 +56231,7 @@
       "externalPackage": "tkinter"
     },
     {
-      "id": "e_403",
+      "id": "e_405",
       "source": "projects_calculator_src_gui_app_py",
       "target": "ext_src",
       "type": "external",
@@ -56162,7 +56245,7 @@
       "externalPackage": "src"
     },
     {
-      "id": "e_404",
+      "id": "e_406",
       "source": "projects_calculator_src_pemdas_py",
       "target": "ext___future__",
       "type": "external",
@@ -56174,7 +56257,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_405",
+      "id": "e_407",
       "source": "projects_calculator_src_pemdas_py",
       "target": "ext_re",
       "type": "external",
@@ -56184,7 +56267,7 @@
       "externalPackage": "re"
     },
     {
-      "id": "e_406",
+      "id": "e_408",
       "source": "projects_calculator_src_pemdas_py",
       "target": "ext_typing",
       "type": "external",
@@ -56196,7 +56279,7 @@
       "externalPackage": "typing"
     },
     {
-      "id": "e_407",
+      "id": "e_409",
       "source": "projects_calculator_test___init___py",
       "target": "ext___future__",
       "type": "external",
@@ -56208,7 +56291,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_408",
+      "id": "e_410",
       "source": "projects_calculator_test_test_pemdas_py",
       "target": "ext_sys",
       "type": "external",
@@ -56218,7 +56301,7 @@
       "externalPackage": "sys"
     },
     {
-      "id": "e_409",
+      "id": "e_411",
       "source": "projects_calculator_test_test_pemdas_py",
       "target": "ext_os",
       "type": "external",
@@ -56228,7 +56311,7 @@
       "externalPackage": "os"
     },
     {
-      "id": "e_410",
+      "id": "e_412",
       "source": "projects_calculator_test_test_pemdas_py",
       "target": "ext_unittest",
       "type": "external",
@@ -56238,7 +56321,7 @@
       "externalPackage": "unittest"
     },
     {
-      "id": "e_411",
+      "id": "e_413",
       "source": "projects_calculator_test_test_pemdas_py",
       "target": "ext_src",
       "type": "external",
@@ -56253,7 +56336,7 @@
       "externalPackage": "src"
     },
     {
-      "id": "e_412",
+      "id": "e_414",
       "source": "test_test_suite_py",
       "target": "ext___future__",
       "type": "external",
@@ -56265,7 +56348,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_413",
+      "id": "e_415",
       "source": "test_test_suite_py",
       "target": "ext_json",
       "type": "external",
@@ -56275,7 +56358,7 @@
       "externalPackage": "json"
     },
     {
-      "id": "e_414",
+      "id": "e_416",
       "source": "test_test_suite_py",
       "target": "ext_os",
       "type": "external",
@@ -56285,7 +56368,7 @@
       "externalPackage": "os"
     },
     {
-      "id": "e_415",
+      "id": "e_417",
       "source": "test_test_suite_py",
       "target": "ext_sys",
       "type": "external",
@@ -56295,7 +56378,7 @@
       "externalPackage": "sys"
     },
     {
-      "id": "e_416",
+      "id": "e_418",
       "source": "test_test_suite_py",
       "target": "ext_tarfile",
       "type": "external",
@@ -56305,7 +56388,7 @@
       "externalPackage": "tarfile"
     },
     {
-      "id": "e_417",
+      "id": "e_419",
       "source": "test_test_suite_py",
       "target": "ext_tempfile",
       "type": "external",
@@ -56315,7 +56398,7 @@
       "externalPackage": "tempfile"
     },
     {
-      "id": "e_418",
+      "id": "e_420",
       "source": "test_test_suite_py",
       "target": "ext_time",
       "type": "external",
@@ -56325,7 +56408,7 @@
       "externalPackage": "time"
     },
     {
-      "id": "e_419",
+      "id": "e_421",
       "source": "test_test_suite_py",
       "target": "ext_unittest",
       "type": "external",
@@ -56335,7 +56418,7 @@
       "externalPackage": "unittest"
     },
     {
-      "id": "e_420",
+      "id": "e_422",
       "source": "test_test_suite_py",
       "target": "parser_parsers_python_parser_py",
       "type": "import",
@@ -56347,7 +56430,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_421",
+      "id": "e_423",
       "source": "test_test_suite_py",
       "target": "parser_parsers_js_parser_py",
       "type": "import",
@@ -56359,7 +56442,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_422",
+      "id": "e_424",
       "source": "test_test_suite_py",
       "target": "parser_parsers_json_parser_py",
       "type": "import",
@@ -56371,7 +56454,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_423",
+      "id": "e_425",
       "source": "test_test_suite_py",
       "target": "parser_parsers_shell_parser_py",
       "type": "import",
@@ -56383,7 +56466,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_424",
+      "id": "e_426",
       "source": "test_test_suite_py",
       "target": "parser_walker_py",
       "type": "import",
@@ -56397,7 +56480,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_425",
+      "id": "e_427",
       "source": "test_test_suite_py",
       "target": "parser_project_config_py",
       "type": "import",
@@ -56412,7 +56495,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_426",
+      "id": "e_428",
       "source": "test_test_suite_py",
       "target": "parser_resolve_edges_py",
       "type": "import",
@@ -56425,7 +56508,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_427",
+      "id": "e_429",
       "source": "test_test_suite_py",
       "target": "parser_layout_py",
       "type": "import",
@@ -56437,7 +56520,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_428",
+      "id": "e_430",
       "source": "test_test_suite_py",
       "target": "parser_doc_check_py",
       "type": "import",
@@ -56449,7 +56532,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_429",
+      "id": "e_431",
       "source": "test_test_suite_py",
       "target": "parser_project_parser_py",
       "type": "import",
@@ -56461,7 +56544,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_430",
+      "id": "e_432",
       "source": "test_test_suite_py",
       "target": "version_version_manager_py",
       "type": "import",
@@ -56476,7 +56559,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_431",
+      "id": "e_433",
       "source": "test_test_suite_py",
       "target": "process_process_manager_py",
       "type": "import",
@@ -56488,7 +56571,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_432",
+      "id": "e_434",
       "source": "test_test_suite_py",
       "target": "graph_types_py",
       "type": "import",
@@ -56503,7 +56586,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_433",
+      "id": "e_435",
       "source": "test_test_suite_py",
       "target": "monitor_perf_py",
       "type": "import",
@@ -56515,7 +56598,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_434",
+      "id": "e_436",
       "source": "test_test_suite_py",
       "target": "ext_build",
       "type": "external",
@@ -56528,7 +56611,7 @@
       "externalPackage": "build"
     },
     {
-      "id": "e_435",
+      "id": "e_437",
       "source": "test_test_suite_py",
       "target": "parser_parsers_toml_yaml_parser_py",
       "type": "import",
@@ -56540,7 +56623,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_436",
+      "id": "e_438",
       "source": "test_test_suite_py",
       "target": "parser_parsers___init___py",
       "type": "import",
@@ -56552,7 +56635,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_437",
+      "id": "e_439",
       "source": "test_test_suite_py",
       "target": "monitor___init___py",
       "type": "import",
@@ -56564,7 +56647,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_438",
+      "id": "e_440",
       "source": "test_test_suite_py",
       "target": "monitor_instrument_py",
       "type": "import",
@@ -56577,7 +56660,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_439",
+      "id": "e_441",
       "source": "test_test_suite_py",
       "target": "monitor_instrumenter_py",
       "type": "import",
@@ -56590,7 +56673,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_440",
+      "id": "e_442",
       "source": "test_test_suite_py",
       "target": "ext_ast",
       "type": "external",
@@ -56600,7 +56683,7 @@
       "externalPackage": "ast"
     },
     {
-      "id": "e_441",
+      "id": "e_443",
       "source": "test_test_suite_py",
       "target": "ai_client_py",
       "type": "import",
@@ -56612,7 +56695,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_442",
+      "id": "e_444",
       "source": "test_test_suite_py",
       "target": "ai_context_py",
       "type": "import",
@@ -56624,7 +56707,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_443",
+      "id": "e_445",
       "source": "test_test_suite_py",
       "target": "ai_tools_py",
       "type": "import",
@@ -56636,7 +56719,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_444",
+      "id": "e_446",
       "source": "test_test_suite_py",
       "target": "gui_panels_py",
       "type": "import",
@@ -56648,7 +56731,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_445",
+      "id": "e_447",
       "source": "test_test_suite_py",
       "target": "ext_importlib",
       "type": "external",
@@ -56658,7 +56741,7 @@
       "externalPackage": "importlib"
     },
     {
-      "id": "e_446",
+      "id": "e_448",
       "source": "test_test_suite_py",
       "target": "ext_subprocess",
       "type": "external",
@@ -56668,7 +56751,7 @@
       "externalPackage": "subprocess"
     },
     {
-      "id": "e_447",
+      "id": "e_449",
       "source": "test_test_suite_py",
       "target": "ai_roles___init___py",
       "type": "import",
@@ -56680,7 +56763,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_448",
+      "id": "e_450",
       "source": "test_test_suite_py",
       "target": "ai_standards_py",
       "type": "import",
@@ -56692,7 +56775,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_449",
+      "id": "e_451",
       "source": "test_test_suite_py",
       "target": "ai_teams_py",
       "type": "import",
@@ -56704,7 +56787,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_450",
+      "id": "e_452",
       "source": "test_test_suite_py",
       "target": "ai_playground_py",
       "type": "import",
@@ -56716,7 +56799,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_451",
+      "id": "e_453",
       "source": "test_test_suite_py",
       "target": "gui_teams_canvas_py",
       "type": "import",
@@ -56728,7 +56811,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_452",
+      "id": "e_454",
       "source": "test_test_suite_py",
       "target": "ai_manager_py",
       "type": "import",
@@ -56740,7 +56823,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_453",
+      "id": "e_455",
       "source": "test_test_suite_py",
       "target": "ext_src",
       "type": "external",
@@ -56753,7 +56836,7 @@
       "externalPackage": "src"
     },
     {
-      "id": "e_454",
+      "id": "e_456",
       "source": "test_test_suite_py",
       "target": "ai_tool_builder_py",
       "type": "import",
@@ -56766,7 +56849,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_455",
+      "id": "e_457",
       "source": "test_test_suite_py",
       "target": "monitor_profiler_py",
       "type": "import",
@@ -56778,7 +56861,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_456",
+      "id": "e_458",
       "source": "test_test_suite_py",
       "target": "ai_workflow_templates_py",
       "type": "import",
@@ -56790,7 +56873,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_457",
+      "id": "e_459",
       "source": "test_test_suite_py",
       "target": "parser_workspace_py",
       "type": "import",
@@ -56803,7 +56886,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_458",
+      "id": "e_460",
       "source": "version___init___py",
       "target": "version_version_manager_py",
       "type": "import",
@@ -56818,7 +56901,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_459",
+      "id": "e_461",
       "source": "version_version_manager_py",
       "target": "ext___future__",
       "type": "external",
@@ -56830,7 +56913,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_460",
+      "id": "e_462",
       "source": "version_version_manager_py",
       "target": "ext_os",
       "type": "external",
@@ -56840,7 +56923,7 @@
       "externalPackage": "os"
     },
     {
-      "id": "e_461",
+      "id": "e_463",
       "source": "version_version_manager_py",
       "target": "ext_tarfile",
       "type": "external",
@@ -56850,7 +56933,7 @@
       "externalPackage": "tarfile"
     },
     {
-      "id": "e_462",
+      "id": "e_464",
       "source": "version_version_manager_py",
       "target": "ext_fnmatch",
       "type": "external",
@@ -56860,7 +56943,7 @@
       "externalPackage": "fnmatch"
     },
     {
-      "id": "e_463",
+      "id": "e_465",
       "source": "version_version_manager_py",
       "target": "ext_datetime",
       "type": "external",
@@ -56873,7 +56956,7 @@
       "externalPackage": "datetime"
     },
     {
-      "id": "e_464",
+      "id": "e_466",
       "source": "version_version_manager_py",
       "target": "ext_pathlib",
       "type": "external",
@@ -56885,7 +56968,7 @@
       "externalPackage": "pathlib"
     },
     {
-      "id": "e_465",
+      "id": "e_467",
       "source": "version_version_manager_py",
       "target": "parser_project_config_py",
       "type": "import",
@@ -56900,7 +56983,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_466",
+      "id": "e_468",
       "source": "version_version_manager_py",
       "target": "ext_shutil",
       "type": "external",

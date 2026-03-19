@@ -2664,7 +2664,7 @@ class TestToolBuilder(unittest.TestCase):
                 'TOOL_SCHEMA = {"type": "function", "function": {"name": "greet", '
                 '"description": "Say hi", "parameters": {"type": "object", '
                 '"properties": {"name": {"type": "string"}}, "required": ["name"]}}}\n'
-                'def TOOL_HANDLER(args, ctx): return {"greeting": f"Hello {args[\"name\"]}!"}\n'
+                'def TOOL_HANDLER(args, ctx): return {"greeting": f"Hello {args[\'name\']}!"}\n'
             )
             name = register_custom_tool(tool_file)
             self.assertEqual(name, 'greet')

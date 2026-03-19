@@ -1,1 +1,2 @@
-# gui package — import submodules directly
+""" S-IDE GUI package """
+from gui.app import SIDE_App

@@ -1,1 +1,5 @@
-# calculator src package
+""" Calculator src package """
+__version__ = "1.0.0"
+
+def get_version():
+    return __version__

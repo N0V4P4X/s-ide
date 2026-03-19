@@ -31,8 +31,10 @@ import json
 import os
 from datetime import datetime, timezone
 
-from parser.walker import walk_directory, make_node_id
+from parser.walker import walk_directory, make_node_id, FileInfo
 from parser.parsers import PARSERS
+import parser.parsers.python_parser   # ensure picklable
+import concurrent.futures
 from parser.resolve_edges import resolve_edges
 from parser.layout import assign_positions
 from parser.doc_check import audit_docs
@@ -88,6 +90,25 @@ def _make_node(file_info, parsed: dict, size: int, mtime: str | None, content: s
         tags=list(parsed.get("tags") or []),
         errors=list(parsed.get("errors") or []),
     )
+def _parse_file_worker(file_info: FileInfo) -> FileNode:
+    """Worker task for ProcessPoolExecutor."""
+    content = _read_safe(file_info.full_path)
+    size, mtime = _file_stats(file_info.full_path)
+    # Re-import parsers inside worker if needed, but they are top-level so should work
+    from parser.parsers import PARSERS
+    
+    parser_fn = PARSERS.get(file_info.ext)
+    if parser_fn and content is not None:
+        try:
+            parsed = parser_fn(content, file_info.full_path)
+        except Exception as exc:
+            parsed = {"imports": [], "exports": [], "definitions": [],
+                      "tags": [], "errors": [f"Parser crash: {exc}"]}
+    else:
+        parsed = {"imports": [], "exports": [], "definitions": [],
+                  "tags": [], "errors": []}
+        
+    return _make_node(file_info, parsed, size, mtime, content)
 
 
 def parse_project(root_dir: str, save_json: bool = True) -> ProjectGraph:
@@ -121,26 +142,54 @@ def parse_project(root_dir: str, save_json: bool = True) -> ProjectGraph:
     with timer.stage("walk"):
         files = walk_directory(root_dir, extra_ignore=extra_ignore)
 
-    # 3. Parse files
+    # Load existing graph for delta-updates
+    old_nodes: dict[str, dict] = {}
+    if os.path.isfile(os.path.join(root_dir, ".nodegraph.json")):
+        try:
+            with open(os.path.join(root_dir, ".nodegraph.json"), "r") as f:
+                old_data = json.load(f)
+                for n in old_data.get("nodes", []):
+                    old_nodes[n["path"]] = n
+        except Exception:
+            pass
+
+    # 3. Parse files (Delta + Parallel)
     nodes: list[FileNode] = []
     file_index: dict[str, str] = {}
+    changed_files: list[FileInfo] = []
+
     with timer.stage("parse_files"):
         for file_info in files:
-            content = _read_safe(file_info.full_path)
             size, mtime = _file_stats(file_info.full_path)
-            parser_fn = PARSERS.get(file_info.ext)
-            if parser_fn and content is not None:
-                try:
-                    parsed = parser_fn(content, file_info.full_path)
-                except Exception as exc:
-                    parsed = {"imports": [], "exports": [], "definitions": [],
-                              "tags": [], "errors": [f"Parser crash: {exc}"]}
+            old = old_nodes.get(file_info.relative_path)
+            
+            # Re-use node if mtime and size match
+            if old and old.get("modified") == mtime and old.get("size") == size:
+                # Reconstruct FileNode from dict
+                node = FileNode(
+                    id=old["id"], label=old["label"], path=old["path"],
+                    full_path=old.get("full_path", file_info.full_path),
+                    category=old.get("category", "other"),
+                    ext=old.get("ext", ".py"), lines=old.get("lines", 0),
+                    size=size, modified=mtime,
+                    imports=[ImportRecord(**r) for r in old.get("imports", [])],
+                    exports=[ExportRecord(**r) for r in old.get("exports", [])],
+                    definitions=[Definition(**r) for r in old.get("definitions", [])],
+                    tags=list(old.get("tags") or []),
+                    errors=list(old.get("errors") or []),
+                )
+                nodes.append(node)
+                file_index[node.path] = node.id
             else:
-                parsed = {"imports": [], "exports": [], "definitions": [],
-                          "tags": [], "errors": []}
-            node = _make_node(file_info, parsed, size, mtime, content)
-            nodes.append(node)
-            file_index[file_info.relative_path] = node.id
+                changed_files.append(file_info)
+
+        if changed_files:
+            # Parse only changed files in parallel
+            with concurrent.futures.ProcessPoolExecutor() as executor:
+                results = list(executor.map(_parse_file_worker, changed_files))
+            for node in results:
+                nodes.append(node)
+                file_index[node.path] = node.id
 
     # 4. Edges
     with timer.stage("resolve_edges"):

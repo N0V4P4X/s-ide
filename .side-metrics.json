@@ -1,0 +1,1428 @@
+{
+  "pid": 597955,
+  "updated": 1773958522.6376731,
+  "profiled": "main.py",
+  "total_ms": 8548.68374398211,
+  "files": {
+    "main.py": {
+      "calls": 4,
+      "total_ms": 2.537,
+      "avg_ms": 0.634,
+      "max_ms": 2.073,
+      "last_ms": 0.007,
+      "last_ts": 8548.68374398211
+    },
+    "parser/project_parser.py": {
+      "calls": 3,
+      "total_ms": 0.917,
+      "avg_ms": 0.306,
+      "max_ms": 0.501,
+      "last_ms": 0.416,
+      "last_ts": 8548.68374398211
+    },
+    "<frozen importlib._bootstrap>": {
+      "calls": 3904,
+      "total_ms": 3.9549999999999983,
+      "avg_ms": 0.001,
+      "max_ms": 0.556,
+      "last_ms": 0.0,
+      "last_ts": 8548.68374398211
+    },
+    "<frozen importlib._bootstrap_external>": {
+      "calls": 3945,
+      "total_ms": 4.992999999999999,
+      "avg_ms": 0.001,
+      "max_ms": 1.357,
+      "last_ms": 0.006,
+      "last_ts": 8548.68374398211
+    },
+    "parser/resolve_edges.py": {
+      "calls": 3325,
+      "total_ms": 5.962000000000001,
+      "avg_ms": 0.002,
+      "max_ms": 3.144,
+      "last_ms": 0.09,
+      "last_ts": 8548.68374398211
+    },
+    "parser/walker.py": {
+      "calls": 141,
+      "total_ms": 1.6389999999999998,
+      "avg_ms": 0.012,
+      "max_ms": 1.022,
+      "last_ms": 0.001,
+      "last_ts": 8548.68374398211
+    },
+    "graph/types.py": {
+      "calls": 1699,
+      "total_ms": 1.6799999999999997,
+      "avg_ms": 0.001,
+      "max_ms": 0.906,
+      "last_ms": 0.001,
+      "last_ts": 8548.68374398211
+    },
+    "<frozen posixpath>": {
+      "calls": 2627,
+      "total_ms": 2.2729999999999997,
+      "avg_ms": 0.001,
+      "max_ms": 0.635,
+      "last_ms": 0.05,
+      "last_ts": 8548.68374398211
+    },
+    "<frozen os>": {
+      "calls": 452,
+      "total_ms": 0.5910000000000001,
+      "avg_ms": 0.001,
+      "max_ms": 0.315,
+      "last_ms": 0.002,
+      "last_ts": 8548.68374398211
+    },
+    "parser/layout.py": {
+      "calls": 193,
+      "total_ms": 0.557,
+      "avg_ms": 0.003,
+      "max_ms": 0.226,
+      "last_ms": 0.013,
+      "last_ts": 8548.68374398211
+    },
+    "parser/project_config.py": {
+      "calls": 2,
+      "total_ms": 0.102,
+      "avg_ms": 0.051,
+      "max_ms": 0.075,
+      "last_ms": 0.075,
+      "last_ts": 8548.68374398211
+    },
+    "parser/doc_check.py": {
+      "calls": 85,
+      "total_ms": 0.281,
+      "avg_ms": 0.003,
+      "max_ms": 0.231,
+      "last_ms": 0.05,
+      "last_ts": 8548.68374398211
+    },
+    "<frozen genericpath>": {
+      "calls": 291,
+      "total_ms": 0.348,
+      "avg_ms": 0.001,
+      "max_ms": 0.179,
+      "last_ms": 0.003,
+      "last_ts": 8548.68374398211
+    },
+    "<frozen abc>": {
+      "calls": 37,
+      "total_ms": 0.032999999999999995,
+      "avg_ms": 0.001,
+      "max_ms": 0.019,
+      "last_ms": 0.001,
+      "last_ts": 8548.68374398211
+    },
+    "<frozen _collections_abc>": {
+      "calls": 111,
+      "total_ms": 0.045000000000000005,
+      "avg_ms": 0.0,
+      "max_ms": 0.042,
+      "last_ms": 0.001,
+      "last_ts": 8548.68374398211
+    },
+    "monitor/perf.py": {
+      "calls": 22,
+      "total_ms": 0.082,
+      "avg_ms": 0.004,
+      "max_ms": 0.042,
+      "last_ms": 0.002,
+      "last_ts": 8548.68374398211
+    },
+    "<frozen zipimport>": {
+      "calls": 8,
+      "total_ms": 0.03,
+      "avg_ms": 0.004,
+      "max_ms": 0.03,
+      "last_ms": 0.03,
+      "last_ts": 8548.68374398211
+    },
+    "<string>": {
+      "calls": 3,
+      "total_ms": 0.011,
+      "avg_ms": 0.004,
+      "max_ms": 0.011,
+      "last_ms": 0.0,
+      "last_ts": 8548.68374398211
+    },
+    "<frozen codecs>": {
+      "calls": 6,
+      "total_ms": 0.025,
+      "avg_ms": 0.004,
+      "max_ms": 0.009,
+      "last_ms": 0.001,
+      "last_ts": 8548.68374398211
+    },
+    "parser/workspace.py": {
+      "calls": 1,
+      "total_ms": 0.004,
+      "avg_ms": 0.004,
+      "max_ms": 0.004,
+      "last_ms": 0.004,
+      "last_ts": 8548.68374398211
+    },
+    "monitor/profiler.py": {
+      "calls": 2,
+      "total_ms": 0.003,
+      "avg_ms": 0.002,
+      "max_ms": 0.002,
+      "last_ms": 0.001,
+      "last_ts": 8548.68374398211
+    },
+    "parser/parsers/python_parser.py": {
+      "calls": 1,
+      "total_ms": 0.001,
+      "avg_ms": 0.001,
+      "max_ms": 0.001,
+      "last_ms": 0.001,
+      "last_ts": 8548.68374398211
+    }
+  },
+  "functions": {
+    "main.py::main": {
+      "calls": 1,
+      "total_ms": 8498.474,
+      "avg_ms": 8498.474,
+      "max_ms": 8498.474,
+      "own_ms": 2.073,
+      "last_ms": 8498.474,
+      "last_ts": 1773958522.6374915
+    },
+    "main.py::cmd_self_check": {
+      "calls": 1,
+      "total_ms": 8490.297,
+      "avg_ms": 8490.297,
+      "max_ms": 8490.297,
+      "own_ms": 0.427,
+      "last_ms": 8490.297,
+      "last_ts": 1773958522.6374943
+    },
+    "parser/project_parser.py::parse_project": {
+      "calls": 1,
+      "total_ms": 1623.513,
+      "avg_ms": 1623.513,
+      "max_ms": 1623.513,
+      "own_ms": 0.501,
+      "last_ms": 1623.513,
+      "last_ts": 1773958522.6374965
+    },
+    "parser/project_parser.py::_write_graph_json": {
+      "calls": 2,
+      "total_ms": 340.232,
+      "avg_ms": 170.116,
+      "max_ms": 340.232,
+      "own_ms": 0.416,
+      "last_ms": 170.116,
+      "last_ts": 1773958522.6374981
+    },
+    "<frozen importlib._bootstrap>::_find_and_load": {
+      "calls": 89,
+      "total_ms": 46.583,
+      "avg_ms": 0.523,
+      "max_ms": 46.583,
+      "own_ms": 0.377,
+      "last_ms": 0.523,
+      "last_ts": 1773958522.6374998
+    },
+    "<frozen importlib._bootstrap>::_find_and_load_unlocked": {
+      "calls": 89,
+      "total_ms": 46.353,
+      "avg_ms": 0.521,
+      "max_ms": 46.353,
+      "own_ms": 0.256,
+      "last_ms": 0.521,
+      "last_ts": 1773958522.6375015
+    },
+    "<frozen importlib._bootstrap>::_load_unlocked": {
+      "calls": 80,
+      "total_ms": 45.485,
+      "avg_ms": 0.569,
+      "max_ms": 45.485,
+      "own_ms": 0.246,
+      "last_ms": 0.569,
+      "last_ts": 1773958522.637503
+    },
+    "<frozen importlib._bootstrap_external>::exec_module": {
+      "calls": 19,
+      "total_ms": 0.377,
+      "avg_ms": 0.02,
+      "max_ms": 0.377,
+      "own_ms": 0.028,
+      "last_ms": 0.02,
+      "last_ts": 1773958522.6375597
+    },
+    "<frozen importlib._bootstrap>::_call_with_frames_removed": {
+      "calls": 195,
+      "total_ms": 43.371,
+      "avg_ms": 0.222,
+      "max_ms": 43.371,
+      "own_ms": 0.096,
+      "last_ms": 0.222,
+      "last_ts": 1773958522.6375098
+    },
+    "<frozen importlib._bootstrap>::_handle_fromlist": {
+      "calls": 21,
+      "total_ms": 12.949,
+      "avg_ms": 0.617,
+      "max_ms": 12.949,
+      "own_ms": 0.038,
+      "last_ms": 0.617,
+      "last_ts": 1773958522.6375113
+    },
+    "<frozen importlib._bootstrap_external>::get_code": {
+      "calls": 59,
+      "total_ms": 10.921,
+      "avg_ms": 0.185,
+      "max_ms": 10.921,
+      "own_ms": 0.393,
+      "last_ms": 0.185,
+      "last_ts": 1773958522.6375124
+    },
+    "parser/resolve_edges.py::resolve_edges": {
+      "calls": 1,
+      "total_ms": 8.158,
+      "avg_ms": 8.158,
+      "max_ms": 8.158,
+      "own_ms": 3.144,
+      "last_ms": 8.158,
+      "last_ts": 1773958522.6375146
+    },
+    "parser/walker.py::walk_directory": {
+      "calls": 1,
+      "total_ms": 8.087,
+      "avg_ms": 8.087,
+      "max_ms": 8.087,
+      "own_ms": 0.616,
+      "last_ms": 8.087,
+      "last_ts": 1773958522.637516
+    },
+    "<frozen importlib._bootstrap_external>::_compile_bytecode": {
+      "calls": 59,
+      "total_ms": 7.394,
+      "avg_ms": 0.125,
+      "max_ms": 7.394,
+      "own_ms": 0.115,
+      "last_ms": 0.125,
+      "last_ts": 1773958522.6375172
+    },
+    "<frozen importlib._bootstrap>::_find_spec": {
+      "calls": 84,
+      "total_ms": 6.967,
+      "avg_ms": 0.083,
+      "max_ms": 6.967,
+      "own_ms": 0.556,
+      "last_ms": 0.083,
+      "last_ts": 1773958522.6375184
+    },
+    "main.py::build_parser": {
+      "calls": 1,
+      "total_ms": 5.783,
+      "avg_ms": 5.783,
+      "max_ms": 5.783,
+      "own_ms": 0.03,
+      "last_ms": 5.783,
+      "last_ts": 1773958522.6375194
+    },
+    "<frozen importlib._bootstrap_external>::find_spec": {
+      "calls": 207,
+      "total_ms": 4.906,
+      "avg_ms": 0.024,
+      "max_ms": 4.906,
+      "own_ms": 1.357,
+      "last_ms": 0.024,
+      "last_ts": 1773958522.6375234
+    },
+    "<frozen importlib._bootstrap_external>::_get_spec": {
+      "calls": 78,
+      "total_ms": 0.462,
+      "avg_ms": 0.006,
+      "max_ms": 0.462,
+      "own_ms": 0.145,
+      "last_ms": 0.006,
+      "last_ts": 1773958522.637556
+    },
+    "<frozen importlib._bootstrap>::module_from_spec": {
+      "calls": 80,
+      "total_ms": 5.231,
+      "avg_ms": 0.065,
+      "max_ms": 5.231,
+      "own_ms": 0.118,
+      "last_ms": 0.065,
+      "last_ts": 1773958522.6375225
+    },
+    "graph/types.py::to_dict": {
+      "calls": 3,
+      "total_ms": 0.046,
+      "avg_ms": 0.015,
+      "max_ms": 0.046,
+      "own_ms": 0.03,
+      "last_ms": 0.015,
+      "last_ts": 1773958522.6376064
+    },
+    "<frozen importlib._bootstrap_external>::create_module": {
+      "calls": 59,
+      "total_ms": 0.006,
+      "avg_ms": 0.0,
+      "max_ms": 0.006,
+      "own_ms": 0.006,
+      "last_ms": 0.0,
+      "last_ts": 1773958522.6376376
+    },
+    "parser/walker.py::_should_ignore": {
+      "calls": 139,
+      "total_ms": 3.48,
+      "avg_ms": 0.025,
+      "max_ms": 3.48,
+      "own_ms": 1.022,
+      "last_ms": 0.025,
+      "last_ts": 1773958522.6375268
+    },
+    "parser/resolve_edges.py::_try_resolve": {
+      "calls": 1622,
+      "total_ms": 2.552,
+      "avg_ms": 0.002,
+      "max_ms": 2.552,
+      "own_ms": 2.341,
+      "last_ms": 0.002,
+      "last_ts": 1773958522.6375303
+    },
+    "<frozen importlib._bootstrap_external>::get_data": {
+      "calls": 59,
+      "total_ms": 2.124,
+      "avg_ms": 0.036,
+      "max_ms": 2.124,
+      "own_ms": 0.135,
+      "last_ms": 0.036,
+      "last_ts": 1773958522.6375313
+    },
+    "<frozen posixpath>::relpath": {
+      "calls": 90,
+      "total_ms": 2.052,
+      "avg_ms": 0.023,
+      "max_ms": 2.052,
+      "own_ms": 0.492,
+      "last_ms": 0.023,
+      "last_ts": 1773958522.6375327
+    },
+    "<frozen importlib._bootstrap_external>::_path_stat": {
+      "calls": 387,
+      "total_ms": 1.572,
+      "avg_ms": 0.004,
+      "max_ms": 1.572,
+      "own_ms": 0.129,
+      "last_ms": 0.004,
+      "last_ts": 1773958522.6375337
+    },
+    "<frozen importlib._bootstrap>::_init_module_attrs": {
+      "calls": 80,
+      "total_ms": 1.498,
+      "avg_ms": 0.019,
+      "max_ms": 1.498,
+      "own_ms": 0.264,
+      "last_ms": 0.019,
+      "last_ts": 1773958522.6375346
+    },
+    "<frozen importlib._bootstrap_external>::_path_join": {
+      "calls": 1027,
+      "total_ms": 1.414,
+      "avg_ms": 0.001,
+      "max_ms": 1.414,
+      "own_ms": 0.556,
+      "last_ms": 0.001,
+      "last_ts": 1773958522.6375358
+    },
+    "<frozen os>::_walk": {
+      "calls": 81,
+      "total_ms": 1.181,
+      "avg_ms": 0.015,
+      "max_ms": 1.181,
+      "own_ms": 0.315,
+      "last_ms": 0.015,
+      "last_ts": 1773958522.6375372
+    },
+    "parser/layout.py::assign_positions": {
+      "calls": 1,
+      "total_ms": 0.974,
+      "avg_ms": 0.974,
+      "max_ms": 0.974,
+      "own_ms": 0.225,
+      "last_ms": 0.974,
+      "last_ts": 1773958522.6375382
+    },
+    "<frozen posixpath>::join": {
+      "calls": 316,
+      "total_ms": 0.97,
+      "avg_ms": 0.003,
+      "max_ms": 0.97,
+      "own_ms": 0.635,
+      "last_ms": 0.003,
+      "last_ts": 1773958522.6375396
+    },
+    "<frozen importlib._bootstrap_external>::cache_from_source": {
+      "calls": 118,
+      "total_ms": 0.926,
+      "avg_ms": 0.008,
+      "max_ms": 0.926,
+      "own_ms": 0.329,
+      "last_ms": 0.008,
+      "last_ts": 1773958522.6375408
+    },
+    "<frozen importlib._bootstrap>::__enter__": {
+      "calls": 332,
+      "total_ms": 0.116,
+      "avg_ms": 0.0,
+      "max_ms": 0.116,
+      "own_ms": 0.079,
+      "last_ms": 0.0,
+      "last_ts": 1773958522.6375906
+    },
+    "<frozen posixpath>::abspath": {
+      "calls": 183,
+      "total_ms": 0.798,
+      "avg_ms": 0.004,
+      "max_ms": 0.798,
+      "own_ms": 0.191,
+      "last_ms": 0.004,
+      "last_ts": 1773958522.637545
+    },
+    "<frozen importlib._bootstrap>::cached": {
+      "calls": 137,
+      "total_ms": 0.776,
+      "avg_ms": 0.006,
+      "max_ms": 0.776,
+      "own_ms": 0.07,
+      "last_ms": 0.006,
+      "last_ts": 1773958522.6375463
+    },
+    "<frozen importlib._bootstrap_external>::_get_cached": {
+      "calls": 78,
+      "total_ms": 0.706,
+      "avg_ms": 0.009,
+      "max_ms": 0.706,
+      "own_ms": 0.117,
+      "last_ms": 0.009,
+      "last_ts": 1773958522.6375475
+    },
+    "parser/project_config.py::init_project_config": {
+      "calls": 1,
+      "total_ms": 0.625,
+      "avg_ms": 0.625,
+      "max_ms": 0.625,
+      "own_ms": 0.027,
+      "last_ms": 0.625,
+      "last_ts": 1773958522.6375487
+    },
+    "<frozen importlib._bootstrap_external>::_path_isfile": {
+      "calls": 105,
+      "total_ms": 0.597,
+      "avg_ms": 0.006,
+      "max_ms": 0.597,
+      "own_ms": 0.052,
+      "last_ms": 0.006,
+      "last_ts": 1773958522.63755
+    },
+    "parser/doc_check.py::audit_docs": {
+      "calls": 1,
+      "total_ms": 0.585,
+      "avg_ms": 0.585,
+      "max_ms": 0.585,
+      "own_ms": 0.231,
+      "last_ms": 0.585,
+      "last_ts": 1773958522.6375518
+    },
+    "<frozen importlib._bootstrap_external>::_path_is_mode_type": {
+      "calls": 113,
+      "total_ms": 0.569,
+      "avg_ms": 0.005,
+      "max_ms": 0.569,
+      "own_ms": 0.071,
+      "last_ms": 0.005,
+      "last_ts": 1773958522.6375532
+    },
+    "<frozen importlib._bootstrap>::_get_module_lock": {
+      "calls": 102,
+      "total_ms": 0.55,
+      "avg_ms": 0.005,
+      "max_ms": 0.55,
+      "own_ms": 0.392,
+      "last_ms": 0.005,
+      "last_ts": 1773958522.6375542
+    },
+    "parser/project_config.py::load_project_config": {
+      "calls": 1,
+      "total_ms": 0.542,
+      "avg_ms": 0.542,
+      "max_ms": 0.542,
+      "own_ms": 0.075,
+      "last_ms": 0.542,
+      "last_ts": 1773958522.6375551
+    },
+    "parser/layout.py::_layout_cluster": {
+      "calls": 11,
+      "total_ms": 0.446,
+      "avg_ms": 0.041,
+      "max_ms": 0.446,
+      "own_ms": 0.226,
+      "last_ms": 0.041,
+      "last_ts": 1773958522.637557
+    },
+    "parser/resolve_edges.py::_is_relative": {
+      "calls": 800,
+      "total_ms": 0.4,
+      "avg_ms": 0.001,
+      "max_ms": 0.4,
+      "own_ms": 0.237,
+      "last_ms": 0.001,
+      "last_ts": 1773958522.6375587
+    },
+    "<frozen importlib._bootstrap_external>::_path_split": {
+      "calls": 118,
+      "total_ms": 0.343,
+      "avg_ms": 0.003,
+      "max_ms": 0.343,
+      "own_ms": 0.152,
+      "last_ms": 0.003,
+      "last_ts": 1773958522.6375606
+    },
+    "<frozen importlib._bootstrap_external>::_path_importer_cache": {
+      "calls": 256,
+      "total_ms": 0.307,
+      "avg_ms": 0.001,
+      "max_ms": 0.307,
+      "own_ms": 0.096,
+      "last_ms": 0.001,
+      "last_ts": 1773958522.6375613
+    },
+    "<frozen posixpath>::isabs": {
+      "calls": 183,
+      "total_ms": 0.305,
+      "avg_ms": 0.002,
+      "max_ms": 0.305,
+      "own_ms": 0.159,
+      "last_ms": 0.002,
+      "last_ts": 1773958522.637562
+    },
+    "<frozen genericpath>::exists": {
+      "calls": 110,
+      "total_ms": 0.297,
+      "avg_ms": 0.003,
+      "max_ms": 0.297,
+      "own_ms": 0.051,
+      "last_ms": 0.003,
+      "last_ts": 1773958522.6375635
+    },
+    "<frozen importlib._bootstrap_external>::spec_from_file_location": {
+      "calls": 78,
+      "total_ms": 0.296,
+      "avg_ms": 0.004,
+      "max_ms": 0.296,
+      "own_ms": 0.194,
+      "last_ms": 0.004,
+      "last_ts": 1773958522.6375642
+    },
+    "<frozen os>::__getitem__": {
+      "calls": 170,
+      "total_ms": 0.289,
+      "avg_ms": 0.002,
+      "max_ms": 0.289,
+      "own_ms": 0.185,
+      "last_ms": 0.002,
+      "last_ts": 1773958522.637565
+    },
+    "<frozen abc>::__new__": {
+      "calls": 14,
+      "total_ms": 0.28,
+      "avg_ms": 0.02,
+      "max_ms": 0.28,
+      "own_ms": 0.019,
+      "last_ms": 0.02,
+      "last_ts": 1773958522.637566
+    },
+    "<frozen posixpath>::normpath": {
+      "calls": 183,
+      "total_ms": 0.277,
+      "avg_ms": 0.002,
+      "max_ms": 0.277,
+      "own_ms": 0.151,
+      "last_ms": 0.002,
+      "last_ts": 1773958522.637567
+    },
+    "<frozen posixpath>::splitext": {
+      "calls": 90,
+      "total_ms": 0.277,
+      "avg_ms": 0.003,
+      "max_ms": 0.277,
+      "own_ms": 0.097,
+      "last_ms": 0.003,
+      "last_ts": 1773958522.6375678
+    },
+    "<frozen posixpath>::_get_sep": {
+      "calls": 682,
+      "total_ms": 0.274,
+      "avg_ms": 0.0,
+      "max_ms": 0.274,
+      "own_ms": 0.191,
+      "last_ms": 0.0,
+      "last_ts": 1773958522.6375685
+    },
+    "<frozen genericpath>::commonprefix": {
+      "calls": 90,
+      "total_ms": 0.274,
+      "avg_ms": 0.003,
+      "max_ms": 0.274,
+      "own_ms": 0.179,
+      "last_ms": 0.003,
+      "last_ts": 1773958522.6375694
+    },
+    "<frozen posixpath>::normcase": {
+      "calls": 695,
+      "total_ms": 0.25,
+      "avg_ms": 0.0,
+      "max_ms": 0.25,
+      "own_ms": 0.189,
+      "last_ms": 0.0,
+      "last_ts": 1773958522.6375704
+    },
+    "<frozen importlib._bootstrap>::__exit__": {
+      "calls": 332,
+      "total_ms": 0.125,
+      "avg_ms": 0.0,
+      "max_ms": 0.125,
+      "own_ms": 0.09,
+      "last_ms": 0.0,
+      "last_ts": 1773958522.6375868
+    },
+    "<frozen importlib._bootstrap_external>::path_stats": {
+      "calls": 59,
+      "total_ms": 0.232,
+      "avg_ms": 0.004,
+      "max_ms": 0.232,
+      "own_ms": 0.044,
+      "last_ms": 0.004,
+      "last_ts": 1773958522.6375718
+    },
+    "<frozen importlib._bootstrap>::acquire": {
+      "calls": 102,
+      "total_ms": 0.23,
+      "avg_ms": 0.002,
+      "max_ms": 0.23,
+      "own_ms": 0.199,
+      "last_ms": 0.002,
+      "last_ts": 1773958522.6375728
+    },
+    "<frozen importlib._bootstrap>::parent": {
+      "calls": 128,
+      "total_ms": 0.225,
+      "avg_ms": 0.002,
+      "max_ms": 0.225,
+      "own_ms": 0.195,
+      "last_ms": 0.002,
+      "last_ts": 1773958522.6375737
+    },
+    "<frozen importlib._bootstrap_external>::_fill_cache": {
+      "calls": 8,
+      "total_ms": 0.216,
+      "avg_ms": 0.027,
+      "max_ms": 0.216,
+      "own_ms": 0.028,
+      "last_ms": 0.027,
+      "last_ts": 1773958522.6375744
+    },
+    "<frozen importlib._bootstrap>::release": {
+      "calls": 102,
+      "total_ms": 0.216,
+      "avg_ms": 0.002,
+      "max_ms": 0.216,
+      "own_ms": 0.18,
+      "last_ms": 0.002,
+      "last_ts": 1773958522.6375751
+    },
+    "<frozen importlib._bootstrap_external>::_path_hooks": {
+      "calls": 8,
+      "total_ms": 0.211,
+      "avg_ms": 0.026,
+      "max_ms": 0.211,
+      "own_ms": 0.035,
+      "last_ms": 0.026,
+      "last_ts": 1773958522.6375759
+    },
+    "<frozen importlib._bootstrap>::_verbose_message": {
+      "calls": 1100,
+      "total_ms": 0.211,
+      "avg_ms": 0.0,
+      "max_ms": 0.211,
+      "own_ms": 0.211,
+      "last_ms": 0.0,
+      "last_ts": 1773958522.637577
+    },
+    "<frozen _collections_abc>::get": {
+      "calls": 108,
+      "total_ms": 0.186,
+      "avg_ms": 0.002,
+      "max_ms": 0.186,
+      "own_ms": 0.042,
+      "last_ms": 0.002,
+      "last_ts": 1773958522.6375785
+    },
+    "<frozen importlib._bootstrap_external>::_classify_pyc": {
+      "calls": 59,
+      "total_ms": 0.178,
+      "avg_ms": 0.003,
+      "max_ms": 0.178,
+      "own_ms": 0.09,
+      "last_ms": 0.003,
+      "last_ts": 1773958522.6375792
+    },
+    "<frozen posixpath>::islink": {
+      "calls": 22,
+      "total_ms": 0.169,
+      "avg_ms": 0.008,
+      "max_ms": 0.169,
+      "own_ms": 0.034,
+      "last_ms": 0.008,
+      "last_ts": 1773958522.6375804
+    },
+    "<frozen genericpath>::_splitext": {
+      "calls": 90,
+      "total_ms": 0.159,
+      "avg_ms": 0.002,
+      "max_ms": 0.159,
+      "own_ms": 0.115,
+      "last_ms": 0.002,
+      "last_ts": 1773958522.637581
+    },
+    "parser/resolve_edges.py::_is_python_relative": {
+      "calls": 851,
+      "total_ms": 0.157,
+      "avg_ms": 0.0,
+      "max_ms": 0.157,
+      "own_ms": 0.15,
+      "last_ms": 0.0,
+      "last_ts": 1773958522.637582
+    },
+    "<frozen importlib._bootstrap_external>::_unpack_uint32": {
+      "calls": 177,
+      "total_ms": 0.153,
+      "avg_ms": 0.001,
+      "max_ms": 0.153,
+      "own_ms": 0.098,
+      "last_ms": 0.001,
+      "last_ts": 1773958522.6375828
+    },
+    "<frozen importlib._bootstrap_external>::_validate_timestamp_pyc": {
+      "calls": 59,
+      "total_ms": 0.15,
+      "avg_ms": 0.003,
+      "max_ms": 0.15,
+      "own_ms": 0.071,
+      "last_ms": 0.003,
+      "last_ts": 1773958522.6375837
+    },
+    "<frozen posixpath>::dirname": {
+      "calls": 92,
+      "total_ms": 0.137,
+      "avg_ms": 0.001,
+      "max_ms": 0.137,
+      "own_ms": 0.084,
+      "last_ms": 0.001,
+      "last_ts": 1773958522.6375844
+    },
+    "<frozen importlib._bootstrap>::find_spec": {
+      "calls": 84,
+      "total_ms": 0.09,
+      "avg_ms": 0.001,
+      "max_ms": 0.09,
+      "own_ms": 0.041,
+      "last_ms": 0.001,
+      "last_ts": 1773958522.6375945
+    },
+    "parser/resolve_edges.py::_resolve_python_relative": {
+      "calls": 51,
+      "total_ms": 0.126,
+      "avg_ms": 0.002,
+      "max_ms": 0.126,
+      "own_ms": 0.09,
+      "last_ms": 0.002,
+      "last_ts": 1773958522.637586
+    },
+    "<frozen importlib._bootstrap>::cb": {
+      "calls": 86,
+      "total_ms": 0.124,
+      "avg_ms": 0.001,
+      "max_ms": 0.124,
+      "own_ms": 0.088,
+      "last_ms": 0.001,
+      "last_ts": 1773958522.637588
+    },
+    "<frozen importlib._bootstrap>::__init__": {
+      "calls": 89,
+      "total_ms": 0.022,
+      "avg_ms": 0.0,
+      "max_ms": 0.022,
+      "own_ms": 0.022,
+      "last_ms": 0.0,
+      "last_ts": 1773958522.637613
+    },
+    "<frozen importlib._bootstrap_external>::path_hook_for_FileFinder": {
+      "calls": 8,
+      "total_ms": 0.119,
+      "avg_ms": 0.015,
+      "max_ms": 0.119,
+      "own_ms": 0.03,
+      "last_ms": 0.015,
+      "last_ts": 1773958522.6375897
+    },
+    "<frozen os>::_get_exports_list": {
+      "calls": 1,
+      "total_ms": 0.113,
+      "avg_ms": 0.113,
+      "max_ms": 0.113,
+      "own_ms": 0.009,
+      "last_ms": 0.113,
+      "last_ts": 1773958522.6375916
+    },
+    "monitor/perf.py::stage": {
+      "calls": 14,
+      "total_ms": 0.1,
+      "avg_ms": 0.007,
+      "max_ms": 0.1,
+      "own_ms": 0.042,
+      "last_ms": 0.007,
+      "last_ts": 1773958522.6375926
+    },
+    "parser/doc_check.py::_mtime_ts": {
+      "calls": 84,
+      "total_ms": 0.094,
+      "avg_ms": 0.001,
+      "max_ms": 0.094,
+      "own_ms": 0.05,
+      "last_ms": 0.001,
+      "last_ts": 1773958522.6375935
+    },
+    "<frozen os>::encode": {
+      "calls": 170,
+      "total_ms": 0.087,
+      "avg_ms": 0.001,
+      "max_ms": 0.087,
+      "own_ms": 0.057,
+      "last_ms": 0.001,
+      "last_ts": 1773958522.6375954
+    },
+    "parser/layout.py::_cluster_key": {
+      "calls": 90,
+      "total_ms": 0.086,
+      "avg_ms": 0.001,
+      "max_ms": 0.086,
+      "own_ms": 0.055,
+      "last_ms": 0.001,
+      "last_ts": 1773958522.6375964
+    },
+    "<frozen posixpath>::basename": {
+      "calls": 91,
+      "total_ms": 0.085,
+      "avg_ms": 0.001,
+      "max_ms": 0.085,
+      "own_ms": 0.05,
+      "last_ms": 0.001,
+      "last_ts": 1773958522.637597
+    },
+    "<frozen importlib._bootstrap>::_lock_unlock_module": {
+      "calls": 13,
+      "total_ms": 0.084,
+      "avg_ms": 0.006,
+      "max_ms": 0.084,
+      "own_ms": 0.018,
+      "last_ms": 0.006,
+      "last_ts": 1773958522.637598
+    },
+    "parser/layout.py::_sort_key": {
+      "calls": 90,
+      "total_ms": 0.066,
+      "avg_ms": 0.001,
+      "max_ms": 0.066,
+      "own_ms": 0.038,
+      "last_ms": 0.001,
+      "last_ts": 1773958522.637599
+    },
+    "<frozen importlib._bootstrap_external>::_check_name_wrapper": {
+      "calls": 59,
+      "total_ms": 0.066,
+      "avg_ms": 0.001,
+      "max_ms": 0.066,
+      "own_ms": 0.058,
+      "last_ms": 0.001,
+      "last_ts": 1773958522.6376
+    },
+    "<frozen importlib._bootstrap_external>::__init__": {
+      "calls": 19,
+      "total_ms": 0.006,
+      "avg_ms": 0.0,
+      "max_ms": 0.006,
+      "own_ms": 0.006,
+      "last_ms": 0.0,
+      "last_ts": 1773958522.6376364
+    },
+    "<frozen zipimport>::__init__": {
+      "calls": 8,
+      "total_ms": 0.057,
+      "avg_ms": 0.007,
+      "max_ms": 0.057,
+      "own_ms": 0.03,
+      "last_ms": 0.007,
+      "last_ts": 1773958522.6376033
+    },
+    "<frozen importlib._bootstrap_external>::_path_isabs": {
+      "calls": 86,
+      "total_ms": 0.057,
+      "avg_ms": 0.001,
+      "max_ms": 0.057,
+      "own_ms": 0.03,
+      "last_ms": 0.001,
+      "last_ts": 1773958522.6376042
+    },
+    "monitor/perf.py::report": {
+      "calls": 2,
+      "total_ms": 0.055,
+      "avg_ms": 0.028,
+      "max_ms": 0.055,
+      "own_ms": 0.019,
+      "last_ms": 0.028,
+      "last_ts": 1773958522.6376054
+    },
+    "<frozen importlib._bootstrap>::_new_module": {
+      "calls": 59,
+      "total_ms": 0.039,
+      "avg_ms": 0.001,
+      "max_ms": 0.039,
+      "own_ms": 0.039,
+      "last_ms": 0.001,
+      "last_ts": 1773958522.6376085
+    },
+    "main.py::_require_dir": {
+      "calls": 1,
+      "total_ms": 0.038,
+      "avg_ms": 0.038,
+      "max_ms": 0.038,
+      "own_ms": 0.007,
+      "last_ms": 0.038,
+      "last_ts": 1773958522.6376095
+    },
+    "<frozen importlib._bootstrap_external>::_path_isdir": {
+      "calls": 8,
+      "total_ms": 0.029,
+      "avg_ms": 0.004,
+      "max_ms": 0.029,
+      "own_ms": 0.005,
+      "last_ms": 0.004,
+      "last_ts": 1773958522.6376104
+    },
+    "<frozen abc>::__subclasscheck__": {
+      "calls": 3,
+      "total_ms": 0.026,
+      "avg_ms": 0.009,
+      "max_ms": 0.026,
+      "own_ms": 0.003,
+      "last_ms": 0.009,
+      "last_ts": 1773958522.6376112
+    },
+    "<frozen abc>::register": {
+      "calls": 1,
+      "total_ms": 0.024,
+      "avg_ms": 0.024,
+      "max_ms": 0.024,
+      "own_ms": 0.003,
+      "last_ms": 0.024,
+      "last_ts": 1773958522.637612
+    },
+    "<frozen importlib._bootstrap_external>::_relax_case": {
+      "calls": 207,
+      "total_ms": 0.02,
+      "avg_ms": 0.0,
+      "max_ms": 0.02,
+      "own_ms": 0.02,
+      "last_ms": 0.0,
+      "last_ts": 1773958522.637614
+    },
+    "parser/layout.py::_grid_arrange": {
+      "calls": 1,
+      "total_ms": 0.019,
+      "avg_ms": 0.019,
+      "max_ms": 0.019,
+      "own_ms": 0.013,
+      "last_ms": 0.019,
+      "last_ts": 1773958522.637615
+    },
+    "monitor/perf.py::ParseTimer": {
+      "calls": 1,
+      "total_ms": 0.019,
+      "avg_ms": 0.019,
+      "max_ms": 0.019,
+      "own_ms": 0.005,
+      "last_ms": 0.019,
+      "last_ts": 1773958522.637616
+    },
+    "<frozen os>::decode": {
+      "calls": 27,
+      "total_ms": 0.017,
+      "avg_ms": 0.001,
+      "max_ms": 0.017,
+      "own_ms": 0.011,
+      "last_ms": 0.001,
+      "last_ts": 1773958522.6376166
+    },
+    "monitor/perf.py::__init__": {
+      "calls": 1,
+      "total_ms": 0.015,
+      "avg_ms": 0.015,
+      "max_ms": 0.015,
+      "own_ms": 0.009,
+      "last_ms": 0.015,
+      "last_ts": 1773958522.6376176
+    },
+    "<frozen abc>::__instancecheck__": {
+      "calls": 1,
+      "total_ms": 0.013,
+      "avg_ms": 0.013,
+      "max_ms": 0.013,
+      "own_ms": 0.002,
+      "last_ms": 0.013,
+      "last_ts": 1773958522.6376195
+    },
+    "<frozen importlib._bootstrap>::create_module": {
+      "calls": 2,
+      "total_ms": 0.013,
+      "avg_ms": 0.006,
+      "max_ms": 0.013,
+      "own_ms": 0.002,
+      "last_ms": 0.006,
+      "last_ts": 1773958522.6376204
+    },
+    "<string>::__init__": {
+      "calls": 2,
+      "total_ms": 0.011,
+      "avg_ms": 0.006,
+      "max_ms": 0.011,
+      "own_ms": 0.011,
+      "last_ms": 0.006,
+      "last_ts": 1773958522.6376214
+    },
+    "graph/types.py::GraphMeta": {
+      "calls": 1,
+      "total_ms": 0.011,
+      "avg_ms": 0.011,
+      "max_ms": 0.011,
+      "own_ms": 0.006,
+      "last_ms": 0.011,
+      "last_ts": 1773958522.6376226
+    },
+    "<frozen os>::walk": {
+      "calls": 1,
+      "total_ms": 0.011,
+      "avg_ms": 0.011,
+      "max_ms": 0.011,
+      "own_ms": 0.009,
+      "last_ms": 0.011,
+      "last_ts": 1773958522.6376235
+    },
+    "<frozen codecs>::decode": {
+      "calls": 1,
+      "total_ms": 0.011,
+      "avg_ms": 0.011,
+      "max_ms": 0.011,
+      "own_ms": 0.009,
+      "last_ms": 0.011,
+      "last_ts": 1773958522.6376247
+    },
+    "<frozen importlib._bootstrap>::spec_from_loader": {
+      "calls": 2,
+      "total_ms": 0.011,
+      "avg_ms": 0.005,
+      "max_ms": 0.011,
+      "own_ms": 0.005,
+      "last_ms": 0.005,
+      "last_ts": 1773958522.6376257
+    },
+    "<frozen importlib._bootstrap>::has_location": {
+      "calls": 80,
+      "total_ms": 0.01,
+      "avg_ms": 0.0,
+      "max_ms": 0.01,
+      "own_ms": 0.01,
+      "last_ms": 0.0,
+      "last_ts": 1773958522.6376264
+    },
+    "<frozen codecs>::__init__": {
+      "calls": 1,
+      "total_ms": 0.001,
+      "avg_ms": 0.001,
+      "max_ms": 0.001,
+      "own_ms": 0.001,
+      "last_ms": 0.001,
+      "last_ts": 1773958522.6376576
+    },
+    "<frozen abc>::update_abstractmethods": {
+      "calls": 14,
+      "total_ms": 0.009,
+      "avg_ms": 0.001,
+      "max_ms": 0.009,
+      "own_ms": 0.005,
+      "last_ms": 0.001,
+      "last_ts": 1773958522.6376286
+    },
+    "<frozen importlib._bootstrap_external>::get_filename": {
+      "calls": 59,
+      "total_ms": 0.008,
+      "avg_ms": 0.0,
+      "max_ms": 0.008,
+      "own_ms": 0.008,
+      "last_ms": 0.0,
+      "last_ts": 1773958522.6376295
+    },
+    "graph/types.py::FileNode": {
+      "calls": 1,
+      "total_ms": 0.007,
+      "avg_ms": 0.007,
+      "max_ms": 0.007,
+      "own_ms": 0.003,
+      "last_ms": 0.007,
+      "last_ts": 1773958522.6376305
+    },
+    "graph/types.py::Definition": {
+      "calls": 1,
+      "total_ms": 0.007,
+      "avg_ms": 0.007,
+      "max_ms": 0.007,
+      "own_ms": 0.003,
+      "last_ms": 0.007,
+      "last_ts": 1773958522.6376314
+    },
+    "<frozen genericpath>::isdir": {
+      "calls": 1,
+      "total_ms": 0.007,
+      "avg_ms": 0.007,
+      "max_ms": 0.007,
+      "own_ms": 0.003,
+      "last_ms": 0.007,
+      "last_ts": 1773958522.6376324
+    },
+    "graph/types.py::ImportRecord": {
+      "calls": 1,
+      "total_ms": 0.006,
+      "avg_ms": 0.006,
+      "max_ms": 0.006,
+      "own_ms": 0.004,
+      "last_ms": 0.006,
+      "last_ts": 1773958522.6376343
+    },
+    "parser/workspace.py::WorkspaceManifest": {
+      "calls": 1,
+      "total_ms": 0.006,
+      "avg_ms": 0.006,
+      "max_ms": 0.006,
+      "own_ms": 0.004,
+      "last_ms": 0.006,
+      "last_ts": 1773958522.6376355
+    },
+    "monitor/profiler.py::ProfileResult": {
+      "calls": 1,
+      "total_ms": 0.004,
+      "avg_ms": 0.004,
+      "max_ms": 0.004,
+      "own_ms": 0.002,
+      "last_ms": 0.004,
+      "last_ts": 1773958522.6376388
+    },
+    "monitor/perf.py::total_ms": {
+      "calls": 2,
+      "total_ms": 0.004,
+      "avg_ms": 0.002,
+      "max_ms": 0.004,
+      "own_ms": 0.003,
+      "last_ms": 0.002,
+      "last_ts": 1773958522.6376402
+    },
+    "<frozen os>::__subclasshook__": {
+      "calls": 1,
+      "total_ms": 0.004,
+      "avg_ms": 0.004,
+      "max_ms": 0.004,
+      "own_ms": 0.003,
+      "last_ms": 0.004,
+      "last_ts": 1773958522.6376412
+    },
+    "<frozen importlib._bootstrap>::_requires_builtin_wrapper": {
+      "calls": 2,
+      "total_ms": 0.004,
+      "avg_ms": 0.002,
+      "max_ms": 0.004,
+      "own_ms": 0.004,
+      "last_ms": 0.002,
+      "last_ts": 1773958522.6376421
+    },
+    "graph/types.py::DocWarning": {
+      "calls": 1,
+      "total_ms": 0.003,
+      "avg_ms": 0.003,
+      "max_ms": 0.003,
+      "own_ms": 0.002,
+      "last_ms": 0.003,
+      "last_ts": 1773958522.6376433
+    },
+    "graph/types.py::ExportRecord": {
+      "calls": 1,
+      "total_ms": 0.003,
+      "avg_ms": 0.003,
+      "max_ms": 0.003,
+      "own_ms": 0.002,
+      "last_ms": 0.003,
+      "last_ts": 1773958522.637644
+    },
+    "graph/types.py::DocAudit": {
+      "calls": 1,
+      "total_ms": 0.003,
+      "avg_ms": 0.003,
+      "max_ms": 0.003,
+      "own_ms": 0.002,
+      "last_ms": 0.003,
+      "last_ts": 1773958522.637645
+    },
+    "graph/types.py::Edge": {
+      "calls": 1,
+      "total_ms": 0.003,
+      "avg_ms": 0.003,
+      "max_ms": 0.003,
+      "own_ms": 0.002,
+      "last_ms": 0.003,
+      "last_ts": 1773958522.6376457
+    },
+    "<frozen importlib._bootstrap>::exec_module": {
+      "calls": 2,
+      "total_ms": 0.003,
+      "avg_ms": 0.001,
+      "max_ms": 0.003,
+      "own_ms": 0.001,
+      "last_ms": 0.001,
+      "last_ts": 1773958522.637647
+    },
+    "monitor/perf.py::MetricsWatcher": {
+      "calls": 1,
+      "total_ms": 0.002,
+      "avg_ms": 0.002,
+      "max_ms": 0.002,
+      "own_ms": 0.002,
+      "last_ms": 0.002,
+      "last_ts": 1773958522.6376476
+    },
+    "monitor/perf.py::ProcessMonitor": {
+      "calls": 1,
+      "total_ms": 0.002,
+      "avg_ms": 0.002,
+      "max_ms": 0.002,
+      "own_ms": 0.002,
+      "last_ms": 0.002,
+      "last_ts": 1773958522.6376486
+    },
+    "<frozen os>::fsencode": {
+      "calls": 1,
+      "total_ms": 0.002,
+      "avg_ms": 0.002,
+      "max_ms": 0.002,
+      "own_ms": 0.002,
+      "last_ms": 0.002,
+      "last_ts": 1773958522.6376493
+    },
+    "<frozen _collections_abc>::__subclasshook__": {
+      "calls": 2,
+      "total_ms": 0.002,
+      "avg_ms": 0.001,
+      "max_ms": 0.002,
+      "own_ms": 0.002,
+      "last_ms": 0.001,
+      "last_ts": 1773958522.6376505
+    },
+    "monitor/profiler.py::FunctionMetrics": {
+      "calls": 1,
+      "total_ms": 0.001,
+      "avg_ms": 0.001,
+      "max_ms": 0.001,
+      "own_ms": 0.001,
+      "last_ms": 0.001,
+      "last_ts": 1773958522.6376514
+    },
+    "graph/types.py::ProjectGraph": {
+      "calls": 1,
+      "total_ms": 0.001,
+      "avg_ms": 0.001,
+      "max_ms": 0.001,
+      "own_ms": 0.001,
+      "last_ms": 0.001,
+      "last_ts": 1773958522.6376524
+    },
+    "parser/walker.py::FileInfo": {
+      "calls": 1,
+      "total_ms": 0.001,
+      "avg_ms": 0.001,
+      "max_ms": 0.001,
+      "own_ms": 0.001,
+      "last_ms": 0.001,
+      "last_ts": 1773958522.6376534
+    },
+    "parser/parsers/python_parser.py::_SinglePassVisitor": {
+      "calls": 1,
+      "total_ms": 0.001,
+      "avg_ms": 0.001,
+      "max_ms": 0.001,
+      "own_ms": 0.001,
+      "last_ms": 0.001,
+      "last_ts": 1773958522.6376548
+    },
+    "graph/types.py::Position": {
+      "calls": 1,
+      "total_ms": 0.001,
+      "avg_ms": 0.001,
+      "max_ms": 0.001,
+      "own_ms": 0.001,
+      "last_ms": 0.001,
+      "last_ts": 1773958522.6376557
+    },
+    "<frozen _collections_abc>::_check_methods": {
+      "calls": 1,
+      "total_ms": 0.001,
+      "avg_ms": 0.001,
+      "max_ms": 0.001,
+      "own_ms": 0.001,
+      "last_ms": 0.001,
+      "last_ts": 1773958522.637657
+    },
+    "<frozen abc>::abstractmethod": {
+      "calls": 4,
+      "total_ms": 0.001,
+      "avg_ms": 0.0,
+      "max_ms": 0.001,
+      "own_ms": 0.001,
+      "last_ms": 0.0,
+      "last_ts": 1773958522.6376586
+    },
+    "<string>::__create_fn__": {
+      "calls": 1,
+      "total_ms": 0.0,
+      "avg_ms": 0.0,
+      "max_ms": 0.0,
+      "own_ms": 0.0,
+      "last_ms": 0.0,
+      "last_ts": 1773958522.6376595
+    },
+    "<frozen importlib._bootstrap>::is_package": {
+      "calls": 2,
+      "total_ms": 0.0,
+      "avg_ms": 0.0,
+      "max_ms": 0.0,
+      "own_ms": 0.0,
+      "last_ms": 0.0,
+      "last_ts": 1773958522.6376605
+    }
+  }
+}

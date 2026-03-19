@@ -296,6 +296,9 @@ class SIDE_App(tk.Tk, TeamsCanvasMixin):
         }
         self._ai_conv: Optional[tk.Text] = None
         self._ai_input: Optional[tk.Entry] = None
+        
+        # Redraw throttling
+        self._redraw_queued = False
 
         # Plan / Playground
         self._plan_text: Optional[tk.Text] = None
@@ -852,6 +855,11 @@ class SIDE_App(tk.Tk, TeamsCanvasMixin):
         """Re-run the layout engine on the current graph and update positions."""
         if not self.graph:
             return
+        
+        # Explicit check to satisfy type checkers and prevent NoneType errors
+        g = self.graph
+        if g is None: return
+
         import sys as _sys
         _sys.path.insert(0, '.')
         from graph.types import FileNode, Edge, Position
@@ -863,8 +871,8 @@ class SIDE_App(tk.Tk, TeamsCanvasMixin):
         else:
             layout_fn = _lay.assign_positions        # clustered grid
 
-        nodes_raw = self.graph.get("nodes", [])
-        edges_raw = self.graph.get("edges", [])
+        nodes_raw = g.get("nodes", [])
+        edges_raw = g.get("edges", [])
 
         # Build lightweight FileNode stubs
         file_nodes = []
@@ -2791,6 +2799,26 @@ class SIDE_App(tk.Tk, TeamsCanvasMixin):
             self.after_cancel(self._redraw_after_id)
         self._redraw_after_id = self.after(16, self._do_redraw)
 
+    def _request_redraw(self):
+        """Queue a redraw for the next frame."""
+        if not self._redraw_queued:
+            self._redraw_queued = True
+            self.after(16, self._do_redraw_throttled)
+
+    def _do_redraw_throttled(self):
+        self._redraw_queued = False
+        if not self._canvas: return
+        # Invalidate hit boxes
+        self._hit_boxes = {}
+        # Simple partial redraw for dragging
+        self._canvas.delete("edge")
+        self._canvas.delete("edgehit")
+        self._canvas.delete("node")
+        self._draw_edges()
+        self._draw_nodes()
+        self._draw_minimap()
+        self._rebuild_hit_boxes()
+
     def _redraw(self) -> None:
         """Immediate redraw — use for interactions that must not lag."""
         self._redraw_pending = False
@@ -3543,16 +3571,9 @@ class SIDE_App(tk.Tk, TeamsCanvasMixin):
             anchors = d.get("anchors") or {d["id"]: (d["ox"], d["oy"])}
             for nid, (ox, oy) in anchors.items():
                 self.positions[nid] = (ox + dwx, oy + dwy)
-            # Invalidate hit boxes — nodes moved in screen space
-            self._hit_boxes = {}
-            # Partial redraw: just edges + nodes (skip grid for perf)
-            self._canvas.delete("edge")
-            self._canvas.delete("edgehit")
-            self._canvas.delete("node")
-            self._draw_edges()
-            self._draw_nodes()
-            self._draw_minimap()
-            self._rebuild_hit_boxes()
+            
+            # Request throttled redraw
+            self._request_redraw()
         elif self._pan:
             p = self._pan
             self.vp_x = p["ox"] + (event.x - p["sx"])

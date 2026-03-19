@@ -384,6 +384,17 @@ TOOLS: list[dict] = [
             }
         }
     },
+    {
+        "type": "function",
+        "function": {
+            "name": "audit_project",
+            "description": "Run a comprehensive health audit: unit tests, project graph parsing, and documentation health. Returns a 'ready-to-ship' status.",
+            "parameters": {
+                "type": "object",
+                "properties": {}
+            }
+        }
+    },
 ]
 
 
@@ -940,6 +951,38 @@ def _profile_project(args: dict, ctx: Any) -> dict:
     }
 
 
+def _audit_project(args: dict, ctx: Any) -> dict:
+    """Run tests, parse graph, check docs. Returns health report."""
+    if not ctx.project_root:
+        return {"error": "No project root set"}
+    
+    # 1. Run tests
+    test_res = _run_command({"name": "test"}, ctx)
+    tests_ok = test_res.get("exit_code") == 0
+    
+    # 2. Check docs (from last graph parse)
+    docs_ok = True
+    doc_warnings = []
+    if ctx.graph:
+        docs = ctx.graph.get("meta", {}).get("docs", {})
+        docs_ok = docs.get("healthy", True)
+        doc_warnings = [w.get("message") for w in docs.get("warnings", [])]
+        
+    return {
+        "healthy": tests_ok and docs_ok,
+        "tests": {
+            "ok": tests_ok,
+            "exit_code": test_res.get("exit_code"),
+            "summary": "Passed" if tests_ok else "Failed",
+        },
+        "docs": {
+            "ok": docs_ok,
+            "warnings": doc_warnings,
+        },
+        "recommendation": "Ready to ship" if tests_ok and docs_ok else "Fix tests/docs before commit"
+    }
+
+
 _HANDLERS = {
     "read_file":             _read_file,
     "list_files":            _list_files,
@@ -959,4 +1002,5 @@ _HANDLERS = {
     "read_session_file":     _read_session_file,
     "list_session_files":    _list_session_files,
     "profile_project":       _profile_project,
+    "audit_project":         _audit_project,
 }

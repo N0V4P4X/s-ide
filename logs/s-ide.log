@@ -233,3 +233,29 @@ FileNotFoundError: [Errno 2] No such file or directory: '/home/n0v4p4x/DevOps/S-
 18:14:23 INFO     side                     session started — log → /home/n0v4p4x/DevOps/s-ide-py/logs/s-ide.log
 18:15:06 INFO     side                     session started — log → /home/n0v4p4x/DevOps/s-ide-py/logs/s-ide.log
 18:15:14 INFO     side                     session started — log → /home/n0v4p4x/DevOps/s-ide-py/logs/s-ide.log
+18:54:46 INFO     side                     session started — log → /home/n0v4p4x/DevOps/s-ide-py/logs/s-ide.log
+18:58:16 INFO     side                     session started — log → /home/n0v4p4x/DevOps/s-ide-py/logs/s-ide.log
+19:01:02 INFO     side                     session started — log → /home/n0v4p4x/DevOps/s-ide-py/logs/s-ide.log
+19:01:02 INFO     side.app                 S-IDE starting
+19:01:02 INFO     side.app                 Loading project: /home/n0v4p4x/DevOps/s-ide-py
+19:01:03 DEBUG    side.app                 parse_project thread started
+19:01:03 INFO     side.app                 Parse OK — 90 nodes, 473 edges in 70ms  (slowest: parse_files)
+19:01:03 INFO     side.app                 S-IDE is monitoring itself: /home/n0v4p4x/DevOps/s-ide-py
+19:01:03 DEBUG    side.app                 MetricsWatcher started for /home/n0v4p4x/DevOps/s-ide-py
+19:02:57 INFO     side.app                 S-IDE shutting down
+19:18:54 INFO     side.app                 S-IDE shutting down
+19:18:57 INFO     side                     session started — log → /home/n0v4p4x/DevOps/s-ide-py/logs/s-ide.log
+19:18:58 INFO     side.app                 S-IDE starting
+19:18:58 INFO     side.app                 Loading project: /home/n0v4p4x/DevOps/s-ide-py
+19:18:58 DEBUG    side.app                 parse_project thread started
+19:18:58 INFO     side.app                 Parse OK — 90 nodes, 473 edges in 70ms  (slowest: parse_files)
+19:18:58 INFO     side.app                 S-IDE is monitoring itself: /home/n0v4p4x/DevOps/s-ide-py
+19:18:58 DEBUG    side.app                 MetricsWatcher started for /home/n0v4p4x/DevOps/s-ide-py
+19:22:44 INFO     side.app                 S-IDE shutting down
+19:23:59 INFO     side                     session started — log → /home/n0v4p4x/DevOps/s-ide-py/logs/s-ide.log
+19:24:00 INFO     side.app                 S-IDE starting
+19:24:00 INFO     side.app                 Loading project: /home/n0v4p4x/DevOps/s-ide-py
+19:24:00 DEBUG    side.app                 parse_project thread started
+19:24:00 INFO     side.app                 Parse OK — 90 nodes, 473 edges in 110ms  (slowest: parse_files)
+19:24:00 INFO     side.app                 S-IDE is monitoring itself: /home/n0v4p4x/DevOps/s-ide-py
+19:24:00 DEBUG    side.app                 MetricsWatcher started for /home/n0v4p4x/DevOps/s-ide-py

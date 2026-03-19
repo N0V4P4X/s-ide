@@ -155,7 +155,7 @@ class OllamaClient:
                     try:
                         d = json.loads(line)
                         status = d.get("status", "")
-                        if on_progress:
+                        if on_progress is not None:
                             on_progress(status)
                         if d.get("error"):
                             return False
@@ -271,18 +271,21 @@ class OllamaClient:
             
             curr_content = ""
             curr_tool_calls = []
+            is_finished = True
             
             try:
                 for d in self._stream_raw(req):
                     if d.get("error"):
-                        if on_text: on_text(f"\n[error: {d['error']}]")
+                        if on_text is not None:
+                            on_text(f"\n[error: {d['error']}]")
                         break
                     
                     msg = d.get("message", {})
                     content = msg.get("content", "")
                     if content:
                         curr_content += content
-                        if on_text: on_text(content)
+                        if on_text is not None:
+                            on_text(content)
                     
                     tcs = msg.get("tool_calls", [])
                     if tcs:
@@ -295,11 +298,11 @@ class OllamaClient:
                             ))
                     
                     # Detect truncation
-                    if d.get("done") == False and not tcs and not content:
-                        # Continue reading stream
-                        pass
+                    if "done" in d:
+                        is_finished = d["done"]
             except Exception as e:
-                if on_text: on_text(f"\n[HTTP Error: {e}]")
+                if on_text is not None:
+                    on_text(f"\n[HTTP Error: {e}]")
                 break
 
             # --- SIMULATION INTERCEPTOR ---
@@ -320,7 +323,7 @@ class OllamaClient:
                         k, v = part.split('=', 1)
                         v = v.strip().strip("'").strip('"')
                         if v.startswith('[') and v.endswith(']'):
-                            try: v = __import__('json').loads(v.replace("'", '"'))
+                            try: v = json.loads(v.replace("'", '"'))
                             except: pass
                         args[k.strip()] = v
                 return args
@@ -368,14 +371,22 @@ class OllamaClient:
             ))
             final_content = curr_content
             
-            if not curr_tool_calls:
+            if not curr_tool_calls and is_finished:
                 return ChatResponse(content=final_content, done=True)
+            
+            if not curr_tool_calls and not is_finished:
+                # Truncated! Loop back and let the model continue
+                if on_text is not None:
+                    on_text("\n[auto-continuing truncated message...]\n")
+                continue
             
             # Execute tool calls and append results
             for tc in curr_tool_calls:
-                if on_text: on_text(f"\n[executing tool: {tc.name}...]\n")
+                if on_text is not None:
+                    on_text(f"\n[executing tool: {tc.name}...]\n")
                 result = dispatch_fn(tc.name, tc.arguments)
-                if on_text: on_text(f"[tool result: {result.name}]\n")
+                if on_text is not None:
+                    on_text(f"[tool result: {result.name}]\n")
                 msgs.append(result.to_message())
         
         return ChatResponse(content=final_content or "[max rounds reached]", done=True)

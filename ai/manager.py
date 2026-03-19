@@ -597,26 +597,30 @@ def scaffold_new_project(parent_dir: str, name: str,
     # src/
     src_dir = os.path.join(root, "src")
     os.makedirs(src_dir, exist_ok=True)
-    open(os.path.join(src_dir, "__init__.py"), "w").write("")
-    open(os.path.join(src_dir, "main.py"), "w").write(
-        f'"""\n{name}\n{"=" * len(name)}\n{description or "Entry point."}\n"""\n\n\n'
-        f'def main():\n    print("Hello from {name}!")\n\n\n'
-        f'if __name__ == "__main__":\n    main()\n'
-    )
+    with open(os.path.join(src_dir, "__init__.py"), "w") as f:
+        f.write("")
+    with open(os.path.join(src_dir, "main.py"), "w") as f:
+        f.write(
+            f'"""\n{name}\n{"=" * len(name)}\n{description or "Entry point."}\n"""\n\n\n'
+            f'def main():\n    print("Hello from {name}!")\n\n\n'
+            f'if __name__ == "__main__":\n    main()\n'
+        )
 
     # test/
     test_dir = os.path.join(root, "test")
     os.makedirs(test_dir, exist_ok=True)
-    open(os.path.join(test_dir, "__init__.py"), "w").write("")
-    open(os.path.join(test_dir, "test_main.py"), "w").write(
-        f'"""Tests for {name}."""\nimport unittest\nimport sys\nimport os\n\n'
-        f'sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))\n\n\n'
-        f'class TestMain(unittest.TestCase):\n\n'
-        f'    def test_placeholder(self):\n'
-        f'        """Replace with real tests."""\n'
-        f'        self.assertTrue(True)\n\n\n'
-        f'if __name__ == "__main__":\n    unittest.main()\n'
-    )
+    with open(os.path.join(test_dir, "__init__.py"), "w") as f:
+        f.write("")
+    with open(os.path.join(test_dir, "test_main.py"), "w") as f:
+        f.write(
+            f'"""Tests for {name}."""\nimport unittest\nimport sys\nimport os\n\n'
+            f'sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))\n\n\n'
+            f'class TestMain(unittest.TestCase):\n\n'
+            f'    def test_placeholder(self):\n'
+            f'        """Replace with real tests."""\n'
+            f'        self.assertTrue(True)\n\n\n'
+            f'if __name__ == "__main__":\n    unittest.main()\n'
+        )
 
     return root
 

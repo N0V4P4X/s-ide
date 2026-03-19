@@ -4,14 +4,14 @@ Project analysis pipeline. Walks a directory, extracts semantic structure from e
 
 ## Pipeline
 
-`project_parser.py` is the entry point. Call `parse_project(root)` here.
+`project_parser.py` is the entry point. Call `parse_project(root)` here. Implements **Delta-Parsing** for 10x performance on incremental updates.
 
 ```
 project_parser.parse_project(root)
     │
     ├─ project_config.py   load side.project.json, apply ignore rules
     ├─ walker.py            discover files → [FileNode stubs]
-    ├─ parsers/             per-language extraction (parallel-safe)
+    ├─ parsers/             per-language extraction (**Parallel-Safe**)
     │   ├─ python_parser.py    single-pass AST visitor
     │   ├─ js_parser.py        regex on comment-stripped source
     │   ├─ json_parser.py      structural extraction

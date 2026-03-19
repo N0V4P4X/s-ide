@@ -9,9 +9,9 @@ creation for S-IDE.
 ai/
 ├── client.py        — Ollama HTTP client (streaming, tool-calling loop)
 ├── tools.py         — 17 built-in tool definitions + permission-aware dispatch
-├── context.py       — AppContext, role permissions, build_system_message
+├── models.py        — Specialist model registry (Role → Model mapping)
 ├── standards.py     — Base system prompt: dev standards + tool-use rules
-├── manager.py       — Manager: user-facing orchestrator + scaffold_new_project
+├── manager.py       — Manager with Governance: Shadow Audit + Context Pruning
 ├── teams.py         — TeamSession: turn-based multi-agent workflow engine
 ├── playground.py    — Isolated sandbox for agent code execution
 ├── tool_builder.py  — Self-improving tool creation workflow
@@ -141,6 +141,9 @@ at the start of every Manager turn.
 ---
 
 ## client.py
+
+The Ollama API client. Supports streaming responses and automatic **recursive
+continuation** for messages that are truncated due to token limits.
 
 ```python
 from ai.client import OllamaClient

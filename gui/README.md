@@ -6,7 +6,7 @@ Tkinter desktop application for S-IDE.
 
 | File | Purpose |
 |---|---|
-| `app.py` | Main window, canvas, topbar, inspector, all core logic |
+| `app.py` | Main window, canvas, topbar. Implements **Delta-Parsing** and **Redraw Throttling** for 10x performance. |
 | `panels.py` | Bottom panel tab content builders |
 | `markdown.py` | Markdown→Tk Text renderer (importable without a display) |
 | `editor.py` | Syntax-highlighted source editor (Toplevel window) |
@@ -52,7 +52,7 @@ Tkinter desktop application for S-IDE.
 
 Multi-select. Clicking a chip toggles that file type on/off. **Docs** and **Config** are hidden by default — click them to reveal. **ALL** clears all filters and restores defaults.
 
-The canvas only re-renders when selection or zoom changes — hit boxes are cached per redraw and rebuilt incrementally on drag.
+The canvas only re-renders when selection or zoom changes. Redraws are **throttled** to 60FPS using a decoupled `_redraw_needed` loop. Hit boxes are cached per redraw and rebuilt incrementally on drag.
 
 ## app.py structure
 

@@ -52,7 +52,6 @@ import glob
 import os
 import sys
 import time
-import tarfile
 
 # ── Make sure we can import from the s-ide-py package root ───────────────────
 SELF_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -160,9 +159,6 @@ def run_update(
     bump_part: str = "patch",
     relaunch: bool = True,
     yes: bool = False,
-    dry_run: bool = False,
-    self_check: bool = False,
-    self_check_strict_docs: bool = False,
 ) -> int:
     """
     Perform the full update sequence.
@@ -174,9 +170,6 @@ def run_update(
     # ── Pre-flight checks ─────────────────────────────────────────────────────
     if not os.path.isfile(tarball_path):
         print(red(f"[update] Tarball not found: {tarball_path}"))
-        return 1
-    if not tarfile.is_tarfile(tarball_path):
-        print(red(f"[update] Not a valid tar archive: {tarball_path}"))
         return 1
 
     if not os.path.isdir(project_dir):
@@ -195,10 +188,6 @@ def run_update(
     print(f"  Tarball         : {green(tarball_name)}  ({tarball_size})")
     print(f"  Install dir     : {dim(project_dir)}")
     print(f"  Version bump    : {bump_part}")
-    if dry_run:
-        print(f"  Mode            : {yellow('dry-run')}")
-    if self_check:
-        print(f"  Post-check      : {green('self-check')}{' + strict-docs' if self_check_strict_docs else ''}")
     print()
 
     if not yes and not confirm("  Apply this update?"):
@@ -206,11 +195,6 @@ def run_update(
         return 0
 
     print()
-
-    if dry_run:
-        print(dim("  Dry-run: no files will be modified."))
-        print(dim("  Would archive current state, extract tarball, bump version, and optionally relaunch."))
-        return 0
 
     # ── Step 1: Archive current state ────────────────────────────────────────
     print(f"  {dim('1/3')} Archiving current state…", end=" ", flush=True)
@@ -251,30 +235,6 @@ def run_update(
         print(red("✗"))
         print(red(f"      Version bump failed: {exc}"))
         # Non-fatal — code is already updated
-
-    # ── Optional self-check ───────────────────────────────────────────────────
-    if self_check:
-        print()
-        print("  Running self-check…", end=" ", flush=True)
-        try:
-            import subprocess
-            cmd = [sys.executable, os.path.join(project_dir, "main.py"), "self-check", project_dir]
-            if self_check_strict_docs:
-                cmd.append("--strict-docs")
-            p = subprocess.run(cmd, cwd=project_dir)
-            if p.returncode == 0:
-                print(green("✓"))
-            else:
-                print(red("✗"))
-                print(red(f"  Self-check failed (exit {p.returncode})."))
-                print(yellow(f"  Your previous state was archived to: {archive_path}"))
-                print(yellow("  Fix forward or roll back by extracting that archive manually."))
-                return 1
-        except Exception as exc:
-            print(red("✗"))
-            print(red(f"  Self-check errored: {exc}"))
-            print(yellow(f"  Your previous state was archived to: {archive_path}"))
-            return 1
 
     # ── Summary ───────────────────────────────────────────────────────────────
     print()
@@ -347,24 +307,6 @@ examples:
         help="Skip confirmation prompt (for scripting)",
     )
     p.add_argument(
-        "--dry-run",
-        action="store_true",
-        default=False,
-        help="Show what would happen, but don't modify anything",
-    )
-    p.add_argument(
-        "--self-check",
-        action="store_true",
-        default=False,
-        help="Run `python main.py self-check` after applying the update",
-    )
-    p.add_argument(
-        "--self-check-strict-docs",
-        action="store_true",
-        default=False,
-        help="When running --self-check, treat doc warnings as failures",
-    )
-    p.add_argument(
         "--dir", "-d",
         default=SELF_DIR,
         metavar="PROJECT_DIR",
@@ -402,9 +344,6 @@ def main() -> None:
         bump_part=args.bump,
         relaunch=args.relaunch,
         yes=args.yes,
-        dry_run=args.dry_run,
-        self_check=args.self_check,
-        self_check_strict_docs=args.self_check_strict_docs,
     ))
 
 

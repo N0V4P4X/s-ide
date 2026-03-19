@@ -74,10 +74,18 @@ calculator, 55 tests, ready to load and hand off to an AI team.
 
 ### What remains in Phase 2
 
-- **Shared devspace dependencies** — workspace-level package manifest; projects
-  reference it, packager copies what's needed into each build output.
-- **Saved workflow templates** — save a Teams canvas configuration as a named
-  template (e.g. "Standard review: Architect → Implementer → Reviewer → Tester").
+- **Packager integration for workspace deps** — the packager needs to read the
+  workspace manifest and copy only the packages a project imports into the
+  build output. `resolve_project_deps()` is ready in `parser/workspace.py`;
+  `build/packager.py` needs to call it.
+
+### Completed in v0.5.0
+
+- `parser/workspace.py` — shared devspace dependency manifest: init, load,
+  save, find_workspace_root, resolve_project_deps, requirements_txt.
+- Session browser — split-pane Teams Log tab with session history sidebar.
+- `ai/workflow_templates.py` — 5 built-in templates, save/load/delete,
+  Teams canvas right-click → Templates dialog.
 
 ## Phase 3 — Optimize (future: v0.6.x+)
 

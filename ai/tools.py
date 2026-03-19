@@ -306,24 +306,78 @@ TOOLS: list[dict] = [
     {
         "type": "function",
         "function": {
+            "name": "profile_project",
+            "description": (
+                "Profile a project's entry point with cProfile to get real per-module "
+                "and per-function timing. Writes results to .side-metrics.json so the "
+                "graph shows live performance overlays. Use this instead of @timed decorators."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "entry_point": {
+                        "type": "string",
+                        "description": "Relative path to the script to run (e.g. 'src/main.py'). "
+                                       "Leave empty to auto-detect."
+                    },
+                    "timeout": {
+                        "type": "integer",
+                        "description": "Max seconds to run (default 60)"
+                    }
+                },
+                "required": []
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
             "name": "git",
             "description": (
-                "Run a git operation on the project repository. "
-                "Use status to see changes, log for history, diff for diffs, "
-                "branch to list branches, commit to commit staged changes."
+                "Run git operations on the project repository. "
+                "Supports the full development workflow: status, log, diff, "
+                "staging, committing, branching, push/pull, stash, blame, reset."
             ),
             "parameters": {
                 "type": "object",
                 "properties": {
                     "command": {
                         "type": "string",
-                        "enum": ["status", "log", "diff", "branch", "add",
-                                 "commit", "checkout", "stash", "stash_pop", "show"],
-                        "description": "Git sub-command to run"
+                        "enum": [
+                            "status", "log", "diff", "diff_staged",
+                            "branch", "add", "add_all",
+                            "commit", "commit_all",
+                            "push", "pull",
+                            "checkout", "checkout_new",
+                            "stash", "stash_pop", "stash_list",
+                            "show", "blame", "init", "remote", "reset", "tag"
+                        ],
+                        "description": (
+                            "Git operation. "
+                            "commit/commit_all require 'message'. "
+                            "add/checkout/blame require 'args' (path or branch). "
+                            "push/pull accept optional 'remote' and 'branch'."
+                        )
+                    },
+                    "message": {
+                        "type": "string",
+                        "description": "Commit message (for commit, commit_all, stash)"
                     },
                     "args": {
                         "type": "string",
-                        "description": "Extra arguments, e.g. a filename for diff or '-m message' for commit"
+                        "description": "File path, branch name, or commit ref"
+                    },
+                    "remote": {
+                        "type": "string",
+                        "description": "Remote name (default: origin)"
+                    },
+                    "branch": {
+                        "type": "string",
+                        "description": "Branch name for push/pull"
+                    },
+                    "n": {
+                        "type": "integer",
+                        "description": "Number of log entries (default 20)"
                     }
                 },
                 "required": ["command"]
@@ -341,15 +395,6 @@ def dispatch_tool(name: str, args: dict, context: "AppContext") -> ToolResult:  
     Checks role-based permissions before dispatching.
     context is the AppContext from ai/context.py.
     """
-    # Ollama may send tool arguments as a JSON string; normalise to a dict
-    if isinstance(args, str):
-        try:
-            args = json.loads(args)
-        except Exception:
-            args = {}
-    elif args is None:
-        args = {}
-
     try:
         handler = _HANDLERS.get(name)
         if handler is None:
@@ -738,42 +783,162 @@ def _list_session_files(args: dict, ctx: Any) -> dict:
     return {"files": files, "count": len(files), "workspace": ctx.session_dir}
 
 
-def _git(args: dict, ctx: Any) -> dict:
-    """Run a safe git command in the project root."""
-    if not ctx.project_root:
-        return {"error": "No project root set"}
-    cmd_name = args.get("command", "status")
-    extra    = args.get("args", "").strip()
-    safe_cmds = {
-        "status":    "status --short",
-        "log":       "log --oneline -20",
-        "diff":      f"diff {extra}".strip(),
-        "branch":    "branch -v",
-        "add":       f"add {extra}" if extra else None,
-        "commit":    f"commit {extra}" if extra else None,
-        "checkout":  f"checkout {extra}" if extra else None,
-        "stash":     "stash",
-        "stash_pop": "stash pop",
-        "show":      f"show {extra}".strip(),
-    }
-    git_args = safe_cmds.get(cmd_name)
-    if git_args is None:
-        return {"error": f"Command '{cmd_name}' requires args"}
+def _git_run(cmd: str, cwd: str, timeout: int = 15) -> dict:
+    """Internal helper: run a git command, return structured result."""
     try:
         result = subprocess.run(
-            f"git {git_args}", shell=True, cwd=ctx.project_root,
-            capture_output=True, text=True, timeout=15,
+            cmd, shell=True, cwd=cwd,
+            capture_output=True, text=True, timeout=timeout,
         )
         return {
-            "command":   f"git {git_args}",
+            "command":   cmd,
             "exit_code": result.returncode,
-            "output":    result.stdout[-4000:] if result.stdout else "",
-            "stderr":    result.stderr[-500:]  if result.stderr else "",
+            "output":    result.stdout[-6000:] if result.stdout else "",
+            "stderr":    result.stderr[-800:]  if result.stderr else "",
+            "ok":        result.returncode == 0,
         }
     except subprocess.TimeoutExpired:
-        return {"error": "git command timed out"}
+        return {"command": cmd, "exit_code": -1, "output": "",
+                "stderr": "timed out", "ok": False,
+                "error": f"git timed out after {timeout}s"}
     except Exception as e:
-        return {"error": str(e)}
+        return {"command": cmd, "exit_code": -1, "output": "",
+                "stderr": str(e), "ok": False, "error": str(e)}
+
+
+def _git(args: dict, ctx: Any) -> dict:
+    """Run a git operation in the project root. Supports all common workflows."""
+    if not ctx.project_root:
+        return {"error": "No project root set"}
+    root     = ctx.project_root
+    cmd_name = args.get("command", "status")
+    extra    = args.get("args", "").strip()
+    message  = args.get("message", "").strip()
+
+    # Map command names → git command strings
+    # Commands that require extra args return an error if not provided.
+    def need(field: str, label: str):
+        v = args.get(field, "").strip()
+        if not v:
+            return None, {"error": f"'{cmd_name}' requires '{label}' argument"}
+        return v, None
+
+    match cmd_name:
+        case "status":
+            return _git_run("git status --short --branch", root)
+        case "log":
+            n = int(args.get("n", 20))
+            fmt = args.get("format", "oneline")
+            flag = "--oneline" if fmt == "oneline" else "--format='%h %an %ar %s'"
+            return _git_run(f"git log {flag} -{n}", root)
+        case "diff":
+            target = extra or "HEAD"
+            return _git_run(f"git diff {target}", root)
+        case "diff_staged":
+            return _git_run("git diff --cached", root)
+        case "branch":
+            return _git_run("git branch -vv", root)
+        case "add":
+            path, err = need("args", "args (file path or '.')")
+            if err: return err
+            return _git_run(f"git add {path}", root)
+        case "add_all":
+            return _git_run("git add -A", root)
+        case "commit":
+            msg, err = need("message", "message")
+            if err: return err
+            # Escape message for shell
+            safe_msg = msg.replace('"', '\"')
+            return _git_run(f'git commit -m "{safe_msg}"', root)
+        case "commit_all":
+            msg, err = need("message", "message")
+            if err: return err
+            safe_msg = msg.replace('"', '\"')
+            return _git_run(f'git add -A && git commit -m "{safe_msg}"', root)
+        case "push":
+            remote = args.get("remote", "origin").strip()
+            branch = args.get("branch", "").strip()
+            target = f"{remote} {branch}" if branch else remote
+            return _git_run(f"git push {target}", root, timeout=30)
+        case "pull":
+            remote = args.get("remote", "origin").strip()
+            branch = args.get("branch", "").strip()
+            target = f"{remote} {branch}" if branch else ""
+            return _git_run(f"git pull {remote} {target}".strip(), root, timeout=30)
+        case "checkout":
+            target, err = need("args", "args (branch or file)")
+            if err: return err
+            return _git_run(f"git checkout {target}", root)
+        case "checkout_new":
+            branch, err = need("args", "args (new branch name)")
+            if err: return err
+            return _git_run(f"git checkout -b {branch}", root)
+        case "stash":
+            msg_part = f' -m "{message}"' if message else ""
+            return _git_run(f"git stash{msg_part}", root)
+        case "stash_pop":
+            return _git_run("git stash pop", root)
+        case "stash_list":
+            return _git_run("git stash list", root)
+        case "show":
+            target = extra or "HEAD"
+            return _git_run(f"git show --stat {target}", root)
+        case "blame":
+            path, err = need("args", "args (file path)")
+            if err: return err
+            return _git_run(f"git blame {path}", root)
+        case "init":
+            return _git_run("git init", root)
+        case "remote":
+            return _git_run("git remote -v", root)
+        case "reset":
+            target = extra or "HEAD"
+            mode   = args.get("mode", "soft")  # soft | mixed | hard
+            if mode not in ("soft", "mixed", "hard"):
+                mode = "soft"
+            return _git_run(f"git reset --{mode} {target}", root)
+        case "tag":
+            name, err = need("args", "args (tag name)")
+            if err: return err
+            return _git_run(f"git tag {name}", root)
+        case _:
+            # Pass-through for any unlisted command with extra args
+            if extra:
+                return _git_run(f"git {cmd_name} {extra}", root)
+            return {"error": f"Unknown git command: '{cmd_name}'. "
+                             f"Supported: status, log, diff, diff_staged, branch, "
+                             f"add, add_all, commit, commit_all, push, pull, "
+                             f"checkout, checkout_new, stash, stash_pop, stash_list, "
+                             f"show, blame, init, remote, reset, tag"}
+
+def _profile_project(args: dict, ctx: Any) -> dict:
+    """Profile a project entry point with cProfile, write metrics JSON."""
+    if not ctx.project_root:
+        return {"error": "No project root set"}
+    from monitor.profiler import profile_project
+    entry   = args.get("entry_point", "")
+    timeout = int(args.get("timeout", 60))
+    result  = profile_project(
+        project_root = ctx.project_root,
+        entry_point  = entry,
+        timeout      = timeout,
+    )
+    return {
+        "ok":           result.ok,
+        "entry_point":  result.entry_point,
+        "total_ms":     round(result.total_ms, 1),
+        "exit_code":    result.exit_code,
+        "error":        result.error,
+        "metrics_path": result.metrics_path,
+        "top_functions": [
+            {"name": f.function_name, "module": f.module_path,
+             "calls": f.calls, "total_ms": f.total_ms,
+             "per_call_ms": f.per_call_ms}
+            for f in result.top_functions(10)
+        ],
+        "summary": result.summary(),
+    }
+
 
 _HANDLERS = {
     "read_file":             _read_file,
@@ -793,4 +958,5 @@ _HANDLERS = {
     "write_session_file":    _write_session_file,
     "read_session_file":     _read_session_file,
     "list_session_files":    _list_session_files,
+    "profile_project":       _profile_project,
 }

@@ -27,7 +27,7 @@ ALL_TOOLS = frozenset([
     "read_file", "list_files", "get_file_summary", "search_definitions",
     "get_graph_overview", "get_metrics", "run_command",
     "get_definition_source", "write_file", "create_plan", "update_plan",
-    "write_agent_note", "run_in_playground", "git",
+    "write_agent_note", "run_in_playground", "git", "profile_project",
     "write_session_file", "read_session_file", "list_session_files",
 ])
 
@@ -46,8 +46,9 @@ ROLE_TOOLS: dict[str, frozenset] = {
     "implementer":    ALL_TOOLS,
     "reviewer":       READ_TOOLS | {"write_session_file", "write_agent_note"},
     "tester":         READ_TOOLS | {"run_command", "run_in_playground",
+                                     "profile_project",
                                      "write_session_file", "write_agent_note"},
-    "optimizer":      ALL_TOOLS,
+    "optimizer":      ALL_TOOLS,  # includes profile_project
     "documentarian":  READ_TOOLS | {"write_session_file", "write_agent_note"},
 }
 

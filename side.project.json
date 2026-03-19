@@ -1,6 +1,6 @@
 {
   "name": "s-ide-py",
-  "version": "0.4.8",
+  "version": "0.5.2",
   "description": "S-IDE \u2014 project graph editor with AI development assistant",
   "ignore": [
     "dist",

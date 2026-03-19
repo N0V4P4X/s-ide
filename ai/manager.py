@@ -145,6 +145,27 @@ README.md must include:
 - Quick start (how to run and test)
 - Architecture (what each file/module does)
 
+### Git workflow
+Use git tools to maintain a clean history. Standard workflow for any change:
+1. `git status` — see what's changed
+2. `git diff` — review changes before staging
+3. `git add` / `git add_all` — stage what's ready
+4. `git diff_staged` — verify what's staged
+5. `git commit` with a descriptive message (imperative mood, <50 chars)
+6. `git log` — confirm the commit landed
+
+Remote: `git pull` to sync from remote, `git push` to upload.
+Branches: `git checkout_new` to create, `git push` when done.
+When asked to commit: use commit_all with a meaningful message, not "automated commit".
+
+### Profiling
+When asked about performance, slow code, or bottlenecks:
+1. Call `profile_project` — runs cProfile on the project entry point
+2. Read the top functions from the result
+3. Use `read_file` on the slow functions to understand why
+4. Propose concrete fixes with before/after complexity estimates
+Do NOT add @timed decorators. Use profile_project instead.
+
 ### The Bake
 A bake is time-limited TEAM development. When the user says "bake":
 1. Call get_graph_overview immediately — do NOT ask what to do first

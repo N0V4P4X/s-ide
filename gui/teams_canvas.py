@@ -130,6 +130,7 @@ class TeamsCanvasMixin:
         self._tw_sel = None
         self._redraw()
 
+
     # ── Default workflow ────────────────────────────────────────────────────────
 
     def _tw_add_default_workflow(self) -> None:
@@ -393,6 +394,9 @@ class TeamsCanvasMixin:
                          command=lambda: self._tw_edit_node(hit))
         menu.add_command(label="  ✕  Remove",
                          command=lambda: (self._tw_delete_node(hit), self._redraw()))
+        menu.add_separator()
+        menu.add_command(label="  ▦  Templates",
+                         command=lambda: self._tw_show_template_dialog())
         if self._tw_nodes and self._tw_nodes[-1]["id"] != hit:
             menu.add_separator()
             menu.add_command(label="  → Connect to next",
@@ -581,6 +585,130 @@ class TeamsCanvasMixin:
         self._redraw()
 
     # ── Workflow execution ─────────────────────────────────────────────────────
+
+    def _tw_show_template_dialog(self) -> None:
+        """Show dialog to load a saved template or save the current workflow."""
+        from gui.app import P
+        from ai.workflow_templates import list_templates, save_template, delete_template
+
+        win = tk.Toplevel(self)
+        win.title("Workflow Templates")
+        win.configure(bg=P["bg1"])
+        win.geometry("400x420")
+        win.resizable(True, True)
+        win.transient(self)
+
+        tk.Frame(win, bg=P["line"], height=1).pack(fill="x")
+        hdr = tk.Frame(win, bg=P["bg2"])
+        hdr.pack(fill="x")
+        tk.Label(hdr, text="WORKFLOW TEMPLATES", bg=P["bg2"], fg=P["t0"],
+                 font=self._mono_l, padx=14, pady=10).pack(anchor="w")
+        tk.Frame(win, bg=P["line"], height=1).pack(fill="x")
+
+        # Template list
+        lst_f = tk.Frame(win, bg=P["bg0"])
+        lst_f.pack(fill="both", expand=True, padx=10, pady=8)
+        sb = tk.Scrollbar(lst_f); sb.pack(side="right", fill="y")
+        lb = tk.Listbox(lst_f, bg=P["bg0"], fg=P["t1"],
+                        font=(self._mono_xs.actual()["family"], 9),
+                        bd=0, highlightthickness=0,
+                        selectbackground=P["bg3"],
+                        yscrollcommand=sb.set, activestyle="none")
+        lb.pack(fill="both", expand=True)
+        sb.config(command=lb.yview)
+
+        desc_var = tk.StringVar(value="")
+        tk.Label(win, textvariable=desc_var, bg=P["bg1"], fg=P["t2"],
+                 font=(self._mono_xs.actual()["family"], 8),
+                 wraplength=360, justify="left", padx=10).pack(anchor="w")
+
+        templates = list_templates()
+        for t in templates:
+            tag = "[builtin] " if t.builtin else ""
+            lb.insert("end", f"{tag}{t.name}")
+
+        def _on_select(_=None):
+            sel = lb.curselection()
+            if sel and sel[0] < len(templates):
+                desc_var.set(templates[sel[0]].description)
+        lb.bind("<<ListboxSelect>>", _on_select)
+
+        # Buttons
+        tk.Frame(win, bg=P["line"], height=1).pack(fill="x")
+        btn_row = tk.Frame(win, bg=P["bg1"])
+        btn_row.pack(fill="x", padx=10, pady=8)
+
+        def _load():
+            sel = lb.curselection()
+            if not sel: return
+            t = templates[sel[0]]
+            nodes, edges = t.to_canvas_nodes()
+            self._tw_nodes.clear()
+            self._tw_edges.clear()
+            self._tw_node_counter = 0
+            # Re-create nodes with proper IDs
+            id_map = {}
+            for n in nodes:
+                nid = self._tw_new_node(n['role'], x=n['x'], y=n['y'])
+                node = self._tw_node_by_id(nid)
+                if node:
+                    node['model'] = n['model']
+                    node['name']  = n['name']
+                id_map[n['id']] = nid
+            for e in edges:
+                src = id_map.get(e['source'])
+                tgt = id_map.get(e['target'])
+                if src and tgt:
+                    self._tw_edges.append({
+                        'id': f'te_{src}_{tgt}',
+                        'source': src, 'target': tgt})
+            if self.canvas_mode != 'teams':
+                self._toggle_teams_mode()
+            win.destroy()
+            self._redraw()
+
+        def _save_current():
+            if not self._tw_nodes:
+                return
+            from tkinter.simpledialog import askstring
+            name = askstring('Save Template',
+                'Template name (no spaces):', parent=win)
+            if not name:
+                return
+            name = name.strip().replace(' ', '_').lower()
+            save_template(name, self._tw_nodes, self._tw_edges)
+            win.destroy()
+            self._tw_show_template_dialog()
+
+        def _delete():
+            sel = lb.curselection()
+            if not sel: return
+            t = templates[sel[0]]
+            if t.builtin: return
+            delete_template(t.name)
+            win.destroy()
+            self._tw_show_template_dialog()
+
+        load_btn = tk.Label(btn_row, text='Load', bg=P['green2'], fg=P['green'],
+                            font=self._mono_s, padx=12, pady=4, cursor='hand2',
+                            highlightbackground=P['green'], highlightthickness=1)
+        load_btn.pack(side='left')
+        load_btn.bind('<Button-1>', lambda _: _load())
+
+        save_btn = tk.Label(btn_row, text='Save current', bg=P['bg3'], fg=P['t2'],
+                            font=self._mono_xs, padx=8, pady=4, cursor='hand2',
+                            highlightbackground=P['line2'], highlightthickness=1)
+        save_btn.pack(side='left', padx=6)
+        save_btn.bind('<Button-1>', lambda _: _save_current())
+
+        del_btn = tk.Label(btn_row, text='Delete', bg=P['bg3'], fg=P['red'],
+                           font=self._mono_xs, padx=8, pady=4, cursor='hand2',
+                           highlightbackground=P['line2'], highlightthickness=1)
+        del_btn.pack(side='right')
+        del_btn.bind('<Button-1>', lambda _: _delete())
+
+        win.bind('<Return>', lambda _: _load())
+        win.bind('<Escape>', lambda _: win.destroy())
 
     def _tw_run_workflow(self) -> None:
         """Build a TeamSession from current nodes and run it."""

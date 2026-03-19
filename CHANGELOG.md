@@ -6,6 +6,48 @@ All notable changes follow [Semantic Versioning](https://semver.org):
 - **PATCH** — bug fixes and internal improvements
 
 ---
+## [0.5.1] -- 2026-03-19
+
+### Added
+- **`ai/workflow_templates.py`** -- 5 built-in workflow templates
+  (standard_review, quick_implement, full_pipeline, optimize_only,
+  docs_update). Save/load/delete user templates persisted to
+  `~/.s-ide-templates.json`. Teams canvas right-click menu shows
+  a Templates dialog with Load/Save current/Delete buttons.
+- **`parser/workspace.py`** -- shared devspace dependency manifest.
+  `init_workspace`, `find_workspace_root`, `load/save_workspace`,
+  `resolve_project_deps` (uses graph isExternal edges or scans .py files),
+  `requirements_txt` generation. Persists as `.side-workspace.json`.
+- **301 tests** across 45 classes (added TestWorkflowTemplates: 9,
+  TestWorkspaceManifest: 11).
+
+### Fixed
+- `_profile_btn` not initialised in `SIDE_App.__init__` -- AttributeError
+  on first load before the topbar was built.
+- `profile_project` missing from `ALL_TOOLS` and `ROLE_TOOLS` -- agents
+  could not call it even though the schema and handler existed.
+- Manager prompt: added `git pull` and a dedicated Profiling section
+  directing the Manager to use `profile_project` instead of `@timed`.
+
+---
+
+## [0.5.0] -- 2026-03-19
+
+### Added
+- **`monitor/profiler.py`** -- cProfile-based live project profiler.
+  Profiles a project entry point in a subprocess sandbox, parses pstats,
+  writes `.side-metrics.json` so node overlays update immediately.
+- **`profile_project` tool** -- Manager can call `profile_project()` to
+  trigger profiling. Results in AI Chat and on node cards.
+- **Git tool expanded** -- 22 commands incl. add_all, commit_all, push,
+  pull, checkout_new, diff_staged, blame, init, remote, reset, tag.
+  Structured params: message, remote, branch, n.
+- **Profile button** in topbar -- auto-detects entry point, shows top
+  10 functions, updates node overlays via MetricsWatcher.
+- **280 tests** (added TestProfiler: 10, TestGitToolExpanded: 8).
+
+---
+
 ## [0.4.5] -- 2026-03-19
 
 ### Added

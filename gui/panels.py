@@ -358,8 +358,7 @@ def _check_ollama(app, model_combo) -> None:
                     app._ai_btn.config(fg=P["red"])
             app.after(0, _no)
     except Exception as e:
-        err_msg = str(e)
-        app.after(0, lambda msg=err_msg: app._ai_status_var.set(f"Error: {msg}"))
+        app.after(0, lambda: app._ai_status_var.set(f"Error: {e}"))
 
 
 def _load_ai_history(app) -> None:

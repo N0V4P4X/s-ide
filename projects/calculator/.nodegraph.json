@@ -1,0 +1,2701 @@
+{
+  "version": "1.0.0",
+  "meta": {
+    "root": "/home/n0v4p4x/DevOps/s-ide-py/projects/calculator",
+    "parsedAt": "2026-03-19T08:04:42.179986+00:00",
+    "parseTime": 40.06,
+    "perf": {
+      "total_ms": 44.32,
+      "stages": [
+        {
+          "name": "config",
+          "ms": 0.29
+        },
+        {
+          "name": "walk",
+          "ms": 0.93
+        },
+        {
+          "name": "parse_files",
+          "ms": 38.27
+        },
+        {
+          "name": "resolve_edges",
+          "ms": 0.2
+        },
+        {
+          "name": "layout",
+          "ms": 0.07
+        },
+        {
+          "name": "doc_audit",
+          "ms": 0.12
+        },
+        {
+          "name": "write_json",
+          "ms": 4.18
+        }
+      ],
+      "slowest": "parse_files"
+    },
+    "totalFiles": 7,
+    "totalEdges": 14,
+    "languages": {
+      "docs": {
+        "files": 1,
+        "lines": 67
+      },
+      "python": {
+        "files": 6,
+        "lines": 805
+      }
+    },
+    "docs": {
+      "healthy": false,
+      "summary": {
+        "missingReadmes": 2,
+        "staleReadmes": 0,
+        "emptyModules": 2,
+        "total": 4
+      },
+      "warnings": [
+        {
+          "type": "missing-readme",
+          "severity": "warning",
+          "message": "No README.md in 'src'",
+          "dir": "src",
+          "node_id": null,
+          "readme_path": null,
+          "affected_files": [
+            "src___init___py",
+            "src_cli_py",
+            "src_gui_app_py",
+            "src_pemdas_py"
+          ],
+          "stale_since": null
+        },
+        {
+          "type": "missing-readme",
+          "severity": "warning",
+          "message": "No README.md in 'test'",
+          "dir": "test",
+          "node_id": null,
+          "readme_path": null,
+          "affected_files": [
+            "test___init___py",
+            "test_test_pemdas_py"
+          ],
+          "stale_since": null
+        },
+        {
+          "type": "empty-module",
+          "severity": "info",
+          "message": "'src/__init__.py' has no imports, exports, or definitions",
+          "dir": null,
+          "node_id": "src___init___py",
+          "readme_path": null,
+          "affected_files": [
+            "src___init___py"
+          ],
+          "stale_since": null
+        },
+        {
+          "type": "empty-module",
+          "severity": "info",
+          "message": "'test/__init__.py' has no imports, exports, or definitions",
+          "dir": null,
+          "node_id": "test___init___py",
+          "readme_path": null,
+          "affected_files": [
+            "test___init___py"
+          ],
+          "stale_since": null
+        }
+      ]
+    },
+    "project": {
+      "name": "calculator",
+      "version": "0.1.0",
+      "description": "PEMDAS-correct calculator with GUI and CLI interfaces",
+      "run": {
+        "gui": "python src/gui_app.py",
+        "cli": "python src/cli.py",
+        "test": "python -m unittest discover test/ -v"
+      },
+      "hasConfig": true
+    }
+  },
+  "nodes": [
+    {
+      "id": "README_md",
+      "label": "README.md",
+      "path": "README.md",
+      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/projects/calculator/README.md",
+      "category": "docs",
+      "ext": ".md",
+      "lines": 67,
+      "size": 1732,
+      "modified": "2026-03-19T07:27:08.570802+00:00",
+      "imports": [],
+      "exports": [],
+      "definitions": [],
+      "tags": [],
+      "errors": [],
+      "position": {
+        "x": 0.0,
+        "y": 420.0
+      }
+    },
+    {
+      "id": "src___init___py",
+      "label": "__init__.py",
+      "path": "src/__init__.py",
+      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/projects/calculator/src/__init__.py",
+      "category": "python",
+      "ext": ".py",
+      "lines": 2,
+      "size": 25,
+      "modified": "2026-03-19T07:27:08.570802+00:00",
+      "imports": [],
+      "exports": [],
+      "definitions": [],
+      "tags": [],
+      "errors": [],
+      "position": {
+        "x": 0.0,
+        "y": 0.0
+      }
+    },
+    {
+      "id": "src_cli_py",
+      "label": "cli.py",
+      "path": "src/cli.py",
+      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/projects/calculator/src/cli.py",
+      "category": "python",
+      "ext": ".py",
+      "lines": 89,
+      "size": 2120,
+      "modified": "2026-03-19T07:27:08.570802+00:00",
+      "imports": [
+        {
+          "type": "from-import",
+          "source": "__future__",
+          "line": 13,
+          "names": [
+            "annotations"
+          ],
+          "alias": null
+        },
+        {
+          "type": "import",
+          "source": "sys",
+          "line": 14,
+          "names": [],
+          "alias": null
+        },
+        {
+          "type": "from-import",
+          "source": "src.pemdas",
+          "line": 15,
+          "names": [
+            "evaluate",
+            "format_result",
+            "ParseError"
+          ],
+          "alias": null
+        }
+      ],
+      "exports": [
+        {
+          "type": "implicit",
+          "name": "run_repl",
+          "names": [],
+          "source": null,
+          "kind": null,
+          "line": null
+        },
+        {
+          "type": "implicit",
+          "name": "run_expression",
+          "names": [],
+          "source": null,
+          "kind": null,
+          "line": null
+        },
+        {
+          "type": "implicit",
+          "name": "main",
+          "names": [],
+          "source": null,
+          "kind": null,
+          "line": null
+        }
+      ],
+      "definitions": [
+        {
+          "name": "run_repl",
+          "kind": "function",
+          "line": 27,
+          "end_line": 54,
+          "indent": 0,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [],
+          "return_type": "None",
+          "calls": [
+            "print",
+            "input(PROMPT).strip",
+            "line.lower",
+            "enumerate",
+            "evaluate",
+            "format_result",
+            "history.append",
+            "input"
+          ],
+          "raises": [],
+          "complexity": 9
+        },
+        {
+          "name": "run_expression",
+          "kind": "function",
+          "line": 57,
+          "end_line": 65,
+          "indent": 0,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "expr",
+              "str"
+            ]
+          ],
+          "return_type": "int",
+          "calls": [
+            "evaluate",
+            "print",
+            "format_result"
+          ],
+          "raises": [],
+          "complexity": 2
+        },
+        {
+          "name": "main",
+          "kind": "function",
+          "line": 68,
+          "end_line": 84,
+          "indent": 0,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [],
+          "return_type": "int",
+          "calls": [
+            "run_repl",
+            "run_expression",
+            "stdin.isatty",
+            "line.strip",
+            "' '.join"
+          ],
+          "raises": [],
+          "complexity": 5
+        }
+      ],
+      "tags": [
+        "entrypoint"
+      ],
+      "errors": [],
+      "position": {
+        "x": 0.0,
+        "y": -630.0
+      }
+    },
+    {
+      "id": "src_gui_app_py",
+      "label": "gui_app.py",
+      "path": "src/gui_app.py",
+      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/projects/calculator/src/gui_app.py",
+      "category": "python",
+      "ext": ".py",
+      "lines": 256,
+      "size": 8329,
+      "modified": "2026-03-19T07:27:08.570802+00:00",
+      "imports": [
+        {
+          "type": "from-import",
+          "source": "__future__",
+          "line": 25,
+          "names": [
+            "annotations"
+          ],
+          "alias": null
+        },
+        {
+          "type": "import",
+          "source": "sys",
+          "line": 26,
+          "names": [],
+          "alias": null
+        },
+        {
+          "type": "import",
+          "source": "tkinter",
+          "line": 27,
+          "names": [],
+          "alias": "tk"
+        },
+        {
+          "type": "from-import",
+          "source": "src.pemdas",
+          "line": 28,
+          "names": [
+            "evaluate",
+            "format_result",
+            "ParseError"
+          ],
+          "alias": null
+        }
+      ],
+      "exports": [
+        {
+          "type": "implicit",
+          "name": "CalculatorApp",
+          "names": [],
+          "source": null,
+          "kind": null,
+          "line": null
+        },
+        {
+          "type": "implicit",
+          "name": "main",
+          "names": [],
+          "source": null,
+          "kind": null,
+          "line": null
+        }
+      ],
+      "definitions": [
+        {
+          "name": "CalculatorApp",
+          "kind": "class",
+          "line": 48,
+          "end_line": 244,
+          "indent": 0,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [],
+          "return_type": "",
+          "calls": [],
+          "raises": [],
+          "complexity": 0
+        },
+        {
+          "name": "__init__",
+          "kind": "dunder",
+          "line": 62,
+          "end_line": 74,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ],
+            [
+              "root",
+              "tk.Tk"
+            ]
+          ],
+          "return_type": "None",
+          "calls": [
+            "_root.title",
+            "_root.configure",
+            "_root.resizable",
+            "self._build_ui",
+            "self._bind_keys"
+          ],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "_build_ui",
+          "kind": "method",
+          "line": 78,
+          "end_line": 162,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "None",
+          "calls": [
+            "tk.Frame",
+            "disp.pack",
+            "tk.StringVar",
+            "tk.Label",
+            "_expr_lbl.pack",
+            "_result_lbl.pack",
+            "grid.pack",
+            "btn.grid",
+            "btn.bind",
+            "self._handle",
+            "b.config"
+          ],
+          "raises": [],
+          "complexity": 6
+        },
+        {
+          "name": "_bind_keys",
+          "kind": "method",
+          "line": 164,
+          "end_line": 166,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "None",
+          "calls": [
+            "_root.bind"
+          ],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "_on_key",
+          "kind": "method",
+          "line": 168,
+          "end_line": 180,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ],
+            [
+              "event",
+              "tk.Event"
+            ]
+          ],
+          "return_type": "None",
+          "calls": [
+            "self._handle"
+          ],
+          "raises": [],
+          "complexity": 6
+        },
+        {
+          "name": "_handle",
+          "kind": "method",
+          "line": 184,
+          "end_line": 227,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ],
+            [
+              "action",
+              "str"
+            ]
+          ],
+          "return_type": "None",
+          "calls": [
+            "self._update_display",
+            "_expr.strip",
+            "evaluate",
+            "format_result",
+            "_history.append",
+            "_result_var.set",
+            "_expr_var.set",
+            "str"
+          ],
+          "raises": [],
+          "complexity": 10
+        },
+        {
+          "name": "_update_display",
+          "kind": "method",
+          "line": 229,
+          "end_line": 244,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "None",
+          "calls": [
+            "_expr_var.set",
+            "_result_var.set",
+            "evaluate",
+            "format_result"
+          ],
+          "raises": [],
+          "complexity": 4
+        },
+        {
+          "name": "main",
+          "kind": "function",
+          "line": 247,
+          "end_line": 251,
+          "indent": 0,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [],
+          "return_type": "None",
+          "calls": [
+            "tk.Tk",
+            "CalculatorApp",
+            "root.mainloop"
+          ],
+          "raises": [],
+          "complexity": 1
+        }
+      ],
+      "tags": [
+        "entrypoint"
+      ],
+      "errors": [],
+      "position": {
+        "x": 0.0,
+        "y": -420.0
+      }
+    },
+    {
+      "id": "src_pemdas_py",
+      "label": "pemdas.py",
+      "path": "src/pemdas.py",
+      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/projects/calculator/src/pemdas.py",
+      "category": "python",
+      "ext": ".py",
+      "lines": 231,
+      "size": 7226,
+      "modified": "2026-03-19T07:27:08.570802+00:00",
+      "imports": [
+        {
+          "type": "from-import",
+          "source": "__future__",
+          "line": 27,
+          "names": [
+            "annotations"
+          ],
+          "alias": null
+        },
+        {
+          "type": "import",
+          "source": "re",
+          "line": 28,
+          "names": [],
+          "alias": null
+        },
+        {
+          "type": "from-import",
+          "source": "typing",
+          "line": 29,
+          "names": [
+            "Iterator"
+          ],
+          "alias": null
+        }
+      ],
+      "exports": [
+        {
+          "type": "implicit",
+          "name": "ParseError",
+          "names": [],
+          "source": null,
+          "kind": null,
+          "line": null
+        },
+        {
+          "type": "implicit",
+          "name": "tokenise",
+          "names": [],
+          "source": null,
+          "kind": null,
+          "line": null
+        },
+        {
+          "type": "implicit",
+          "name": "evaluate",
+          "names": [],
+          "source": null,
+          "kind": null,
+          "line": null
+        },
+        {
+          "type": "implicit",
+          "name": "format_result",
+          "names": [],
+          "source": null,
+          "kind": null,
+          "line": null
+        }
+      ],
+      "definitions": [
+        {
+          "name": "ParseError",
+          "kind": "class",
+          "line": 41,
+          "end_line": 42,
+          "indent": 0,
+          "is_async": false,
+          "decorators": [],
+          "bases": [
+            "ValueError"
+          ],
+          "args": [],
+          "return_type": "",
+          "calls": [],
+          "raises": [],
+          "complexity": 0
+        },
+        {
+          "name": "tokenise",
+          "kind": "function",
+          "line": 45,
+          "end_line": 76,
+          "indent": 0,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "expr",
+              "str"
+            ]
+          ],
+          "return_type": "list[str]",
+          "calls": [
+            "len",
+            "expr[pos].isspace",
+            "_TOK_RE.match",
+            "tokens.append",
+            "m.end",
+            "ParseError",
+            "m.group"
+          ],
+          "raises": [
+            "ParseError"
+          ],
+          "complexity": 5
+        },
+        {
+          "name": "_Parser",
+          "kind": "class",
+          "line": 81,
+          "end_line": 183,
+          "indent": 0,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [],
+          "return_type": "",
+          "calls": [],
+          "raises": [],
+          "complexity": 0
+        },
+        {
+          "name": "__init__",
+          "kind": "dunder",
+          "line": 94,
+          "end_line": 96,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ],
+            [
+              "tokens",
+              "list[str]"
+            ]
+          ],
+          "return_type": "None",
+          "calls": [],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "_current",
+          "kind": "method",
+          "line": 99,
+          "end_line": 100,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [
+            "property"
+          ],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "str | None",
+          "calls": [
+            "len"
+          ],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "_consume",
+          "kind": "method",
+          "line": 102,
+          "end_line": 107,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "str",
+          "calls": [
+            "ParseError"
+          ],
+          "raises": [
+            "ParseError"
+          ],
+          "complexity": 2
+        },
+        {
+          "name": "_expect",
+          "kind": "method",
+          "line": 109,
+          "end_line": 112,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ],
+            [
+              "value",
+              "str"
+            ]
+          ],
+          "return_type": "None",
+          "calls": [
+            "self._consume",
+            "ParseError"
+          ],
+          "raises": [
+            "ParseError"
+          ],
+          "complexity": 2
+        },
+        {
+          "name": "parse",
+          "kind": "method",
+          "line": 116,
+          "end_line": 120,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "float",
+          "calls": [
+            "self._add_sub",
+            "ParseError"
+          ],
+          "raises": [
+            "ParseError"
+          ],
+          "complexity": 2
+        },
+        {
+          "name": "_add_sub",
+          "kind": "method",
+          "line": 122,
+          "end_line": 128,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "float",
+          "calls": [
+            "self._mul_div",
+            "self._consume"
+          ],
+          "raises": [],
+          "complexity": 2
+        },
+        {
+          "name": "_mul_div",
+          "kind": "method",
+          "line": 130,
+          "end_line": 149,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "float",
+          "calls": [
+            "self._unary",
+            "self._consume",
+            "ParseError",
+            "float",
+            "int"
+          ],
+          "raises": [
+            "ParseError"
+          ],
+          "complexity": 8
+        },
+        {
+          "name": "_unary",
+          "kind": "method",
+          "line": 151,
+          "end_line": 158,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "float",
+          "calls": [
+            "self._exponent",
+            "self._consume",
+            "self._unary"
+          ],
+          "raises": [],
+          "complexity": 3
+        },
+        {
+          "name": "_exponent",
+          "kind": "method",
+          "line": 160,
+          "end_line": 167,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "float",
+          "calls": [
+            "self._atom",
+            "self._consume",
+            "self._unary"
+          ],
+          "raises": [],
+          "complexity": 2
+        },
+        {
+          "name": "_atom",
+          "kind": "method",
+          "line": 169,
+          "end_line": 183,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "float",
+          "calls": [
+            "ParseError",
+            "self._consume",
+            "self._add_sub",
+            "self._expect",
+            "float"
+          ],
+          "raises": [
+            "ParseError"
+          ],
+          "complexity": 4
+        },
+        {
+          "name": "evaluate",
+          "kind": "function",
+          "line": 188,
+          "end_line": 210,
+          "indent": 0,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "expr",
+              "str"
+            ]
+          ],
+          "return_type": "float",
+          "calls": [
+            "tokenise",
+            "_Parser(tokens).parse",
+            "ParseError",
+            "expr.strip",
+            "_Parser"
+          ],
+          "raises": [
+            "ParseError"
+          ],
+          "complexity": 3
+        },
+        {
+          "name": "format_result",
+          "kind": "function",
+          "line": 213,
+          "end_line": 230,
+          "indent": 0,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "value",
+              "float"
+            ]
+          ],
+          "return_type": "str",
+          "calls": [
+            "rstrip('0').rstrip",
+            "str",
+            "int",
+            "abs",
+            "10f}'.rstrip"
+          ],
+          "raises": [],
+          "complexity": 2
+        }
+      ],
+      "tags": [],
+      "errors": [],
+      "position": {
+        "x": 340.0,
+        "y": -105.0
+      }
+    },
+    {
+      "id": "test___init___py",
+      "label": "__init__.py",
+      "path": "test/__init__.py",
+      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/projects/calculator/test/__init__.py",
+      "category": "python",
+      "ext": ".py",
+      "lines": 0,
+      "size": 0,
+      "modified": "2026-03-19T07:27:08.570802+00:00",
+      "imports": [],
+      "exports": [],
+      "definitions": [],
+      "tags": [],
+      "errors": [],
+      "position": {
+        "x": 0.0,
+        "y": 210.0
+      }
+    },
+    {
+      "id": "test_test_pemdas_py",
+      "label": "test_pemdas.py",
+      "path": "test/test_pemdas.py",
+      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/projects/calculator/test/test_pemdas.py",
+      "category": "python",
+      "ext": ".py",
+      "lines": 227,
+      "size": 6595,
+      "modified": "2026-03-19T07:27:08.570802+00:00",
+      "imports": [
+        {
+          "type": "import",
+          "source": "sys",
+          "line": 8,
+          "names": [],
+          "alias": null
+        },
+        {
+          "type": "import",
+          "source": "os",
+          "line": 9,
+          "names": [],
+          "alias": null
+        },
+        {
+          "type": "import",
+          "source": "unittest",
+          "line": 10,
+          "names": [],
+          "alias": null
+        },
+        {
+          "type": "from-import",
+          "source": "src.pemdas",
+          "line": 14,
+          "names": [
+            "evaluate",
+            "tokenise",
+            "format_result",
+            "ParseError"
+          ],
+          "alias": null
+        }
+      ],
+      "exports": [
+        {
+          "type": "implicit",
+          "name": "TestTokenise",
+          "names": [],
+          "source": null,
+          "kind": null,
+          "line": null
+        },
+        {
+          "type": "implicit",
+          "name": "TestArithmetic",
+          "names": [],
+          "source": null,
+          "kind": null,
+          "line": null
+        },
+        {
+          "type": "implicit",
+          "name": "TestPrecedence",
+          "names": [],
+          "source": null,
+          "kind": null,
+          "line": null
+        },
+        {
+          "type": "implicit",
+          "name": "TestEdgeCases",
+          "names": [],
+          "source": null,
+          "kind": null,
+          "line": null
+        },
+        {
+          "type": "implicit",
+          "name": "TestErrors",
+          "names": [],
+          "source": null,
+          "kind": null,
+          "line": null
+        },
+        {
+          "type": "implicit",
+          "name": "TestFormatResult",
+          "names": [],
+          "source": null,
+          "kind": null,
+          "line": null
+        }
+      ],
+      "definitions": [
+        {
+          "name": "TestTokenise",
+          "kind": "class",
+          "line": 17,
+          "end_line": 45,
+          "indent": 0,
+          "is_async": false,
+          "decorators": [],
+          "bases": [
+            "unittest.TestCase"
+          ],
+          "args": [],
+          "return_type": "",
+          "calls": [],
+          "raises": [],
+          "complexity": 0
+        },
+        {
+          "name": "test_integers",
+          "kind": "method",
+          "line": 19,
+          "end_line": 20,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertEqual",
+            "tokenise"
+          ],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "test_floats",
+          "kind": "method",
+          "line": 22,
+          "end_line": 23,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertEqual",
+            "tokenise"
+          ],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "test_operators",
+          "kind": "method",
+          "line": 25,
+          "end_line": 26,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertEqual",
+            "tokenise"
+          ],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "test_power",
+          "kind": "method",
+          "line": 28,
+          "end_line": 29,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertEqual",
+            "tokenise"
+          ],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "test_caret_normalised",
+          "kind": "method",
+          "line": 31,
+          "end_line": 32,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertEqual",
+            "tokenise"
+          ],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "test_parens",
+          "kind": "method",
+          "line": 34,
+          "end_line": 35,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertEqual",
+            "tokenise"
+          ],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "test_whitespace_ignored",
+          "kind": "method",
+          "line": 37,
+          "end_line": 38,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertEqual",
+            "tokenise"
+          ],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "test_floor_div_token",
+          "kind": "method",
+          "line": 40,
+          "end_line": 41,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertIn",
+            "tokenise"
+          ],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "test_unexpected_char_raises",
+          "kind": "method",
+          "line": 43,
+          "end_line": 45,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertRaises",
+            "tokenise"
+          ],
+          "raises": [],
+          "complexity": 2
+        },
+        {
+          "name": "TestArithmetic",
+          "kind": "class",
+          "line": 48,
+          "end_line": 81,
+          "indent": 0,
+          "is_async": false,
+          "decorators": [],
+          "bases": [
+            "unittest.TestCase"
+          ],
+          "args": [],
+          "return_type": "",
+          "calls": [],
+          "raises": [],
+          "complexity": 0
+        },
+        {
+          "name": "test_addition",
+          "kind": "method",
+          "line": 50,
+          "end_line": 51,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertAlmostEqual",
+            "evaluate"
+          ],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "test_subtraction",
+          "kind": "method",
+          "line": 53,
+          "end_line": 54,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertAlmostEqual",
+            "evaluate"
+          ],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "test_multiplication",
+          "kind": "method",
+          "line": 56,
+          "end_line": 57,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertAlmostEqual",
+            "evaluate"
+          ],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "test_division",
+          "kind": "method",
+          "line": 59,
+          "end_line": 60,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertAlmostEqual",
+            "evaluate"
+          ],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "test_floor_division",
+          "kind": "method",
+          "line": 62,
+          "end_line": 63,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertAlmostEqual",
+            "evaluate"
+          ],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "test_modulo",
+          "kind": "method",
+          "line": 65,
+          "end_line": 66,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertAlmostEqual",
+            "evaluate"
+          ],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "test_exponentiation",
+          "kind": "method",
+          "line": 68,
+          "end_line": 69,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertAlmostEqual",
+            "evaluate"
+          ],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "test_unary_minus",
+          "kind": "method",
+          "line": 71,
+          "end_line": 72,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertAlmostEqual",
+            "evaluate"
+          ],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "test_unary_minus_in_expr",
+          "kind": "method",
+          "line": 74,
+          "end_line": 75,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertAlmostEqual",
+            "evaluate"
+          ],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "test_unary_plus",
+          "kind": "method",
+          "line": 77,
+          "end_line": 78,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertAlmostEqual",
+            "evaluate"
+          ],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "test_float_literal",
+          "kind": "method",
+          "line": 80,
+          "end_line": 81,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertAlmostEqual",
+            "evaluate"
+          ],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "TestPrecedence",
+          "kind": "class",
+          "line": 84,
+          "end_line": 128,
+          "indent": 0,
+          "is_async": false,
+          "decorators": [],
+          "bases": [
+            "unittest.TestCase"
+          ],
+          "args": [],
+          "return_type": "",
+          "calls": [],
+          "raises": [],
+          "complexity": 0
+        },
+        {
+          "name": "test_mul_before_add",
+          "kind": "method",
+          "line": 87,
+          "end_line": 89,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertAlmostEqual",
+            "evaluate"
+          ],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "test_div_before_add",
+          "kind": "method",
+          "line": 91,
+          "end_line": 93,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertAlmostEqual",
+            "evaluate"
+          ],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "test_parens_override_precedence",
+          "kind": "method",
+          "line": 95,
+          "end_line": 97,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertAlmostEqual",
+            "evaluate"
+          ],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "test_exp_before_mul",
+          "kind": "method",
+          "line": 99,
+          "end_line": 101,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertAlmostEqual",
+            "evaluate"
+          ],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "test_exp_right_associative",
+          "kind": "method",
+          "line": 103,
+          "end_line": 105,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertAlmostEqual",
+            "evaluate"
+          ],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "test_unary_minus_with_exp",
+          "kind": "method",
+          "line": 107,
+          "end_line": 109,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertAlmostEqual",
+            "evaluate"
+          ],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "test_left_assoc_subtraction",
+          "kind": "method",
+          "line": 111,
+          "end_line": 113,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertAlmostEqual",
+            "evaluate"
+          ],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "test_left_assoc_division",
+          "kind": "method",
+          "line": 115,
+          "end_line": 117,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertAlmostEqual",
+            "evaluate"
+          ],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "test_nested_parens",
+          "kind": "method",
+          "line": 119,
+          "end_line": 120,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertAlmostEqual",
+            "evaluate"
+          ],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "test_complex_pemdas",
+          "kind": "method",
+          "line": 122,
+          "end_line": 124,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertAlmostEqual",
+            "evaluate"
+          ],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "test_mixed_all_ops",
+          "kind": "method",
+          "line": 126,
+          "end_line": 128,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertAlmostEqual",
+            "evaluate"
+          ],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "TestEdgeCases",
+          "kind": "class",
+          "line": 131,
+          "end_line": 156,
+          "indent": 0,
+          "is_async": false,
+          "decorators": [],
+          "bases": [
+            "unittest.TestCase"
+          ],
+          "args": [],
+          "return_type": "",
+          "calls": [],
+          "raises": [],
+          "complexity": 0
+        },
+        {
+          "name": "test_zero",
+          "kind": "method",
+          "line": 133,
+          "end_line": 134,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertAlmostEqual",
+            "evaluate"
+          ],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "test_negative_result",
+          "kind": "method",
+          "line": 136,
+          "end_line": 137,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertAlmostEqual",
+            "evaluate"
+          ],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "test_large_exponent",
+          "kind": "method",
+          "line": 139,
+          "end_line": 140,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertAlmostEqual",
+            "evaluate"
+          ],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "test_chained_parens",
+          "kind": "method",
+          "line": 142,
+          "end_line": 143,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertAlmostEqual",
+            "evaluate"
+          ],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "test_division_result_float",
+          "kind": "method",
+          "line": 145,
+          "end_line": 147,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "evaluate",
+            "self.assertAlmostEqual"
+          ],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "test_caret_operator",
+          "kind": "method",
+          "line": 149,
+          "end_line": 150,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertAlmostEqual",
+            "evaluate"
+          ],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "test_percent_operator",
+          "kind": "method",
+          "line": 152,
+          "end_line": 153,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertAlmostEqual",
+            "evaluate"
+          ],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "test_floor_div",
+          "kind": "method",
+          "line": 155,
+          "end_line": 156,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertAlmostEqual",
+            "evaluate"
+          ],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "TestErrors",
+          "kind": "class",
+          "line": 159,
+          "end_line": 203,
+          "indent": 0,
+          "is_async": false,
+          "decorators": [],
+          "bases": [
+            "unittest.TestCase"
+          ],
+          "args": [],
+          "return_type": "",
+          "calls": [],
+          "raises": [],
+          "complexity": 0
+        },
+        {
+          "name": "test_empty_expr",
+          "kind": "method",
+          "line": 161,
+          "end_line": 163,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertRaises",
+            "evaluate"
+          ],
+          "raises": [],
+          "complexity": 2
+        },
+        {
+          "name": "test_whitespace_only",
+          "kind": "method",
+          "line": 165,
+          "end_line": 167,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertRaises",
+            "evaluate"
+          ],
+          "raises": [],
+          "complexity": 2
+        },
+        {
+          "name": "test_division_by_zero",
+          "kind": "method",
+          "line": 169,
+          "end_line": 171,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertRaises",
+            "evaluate"
+          ],
+          "raises": [],
+          "complexity": 2
+        },
+        {
+          "name": "test_floor_div_by_zero",
+          "kind": "method",
+          "line": 173,
+          "end_line": 175,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertRaises",
+            "evaluate"
+          ],
+          "raises": [],
+          "complexity": 2
+        },
+        {
+          "name": "test_modulo_by_zero",
+          "kind": "method",
+          "line": 177,
+          "end_line": 179,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertRaises",
+            "evaluate"
+          ],
+          "raises": [],
+          "complexity": 2
+        },
+        {
+          "name": "test_mismatched_parens_open",
+          "kind": "method",
+          "line": 181,
+          "end_line": 183,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertRaises",
+            "evaluate"
+          ],
+          "raises": [],
+          "complexity": 2
+        },
+        {
+          "name": "test_mismatched_parens_close",
+          "kind": "method",
+          "line": 185,
+          "end_line": 187,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertRaises",
+            "evaluate"
+          ],
+          "raises": [],
+          "complexity": 2
+        },
+        {
+          "name": "test_double_operator",
+          "kind": "method",
+          "line": 189,
+          "end_line": 191,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertAlmostEqual",
+            "evaluate"
+          ],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "test_truly_invalid_double_op",
+          "kind": "method",
+          "line": 193,
+          "end_line": 195,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertRaises",
+            "evaluate"
+          ],
+          "raises": [],
+          "complexity": 2
+        },
+        {
+          "name": "test_trailing_operator",
+          "kind": "method",
+          "line": 197,
+          "end_line": 199,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertRaises",
+            "evaluate"
+          ],
+          "raises": [],
+          "complexity": 2
+        },
+        {
+          "name": "test_unexpected_char",
+          "kind": "method",
+          "line": 201,
+          "end_line": 203,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertRaises",
+            "evaluate"
+          ],
+          "raises": [],
+          "complexity": 2
+        },
+        {
+          "name": "TestFormatResult",
+          "kind": "class",
+          "line": 206,
+          "end_line": 222,
+          "indent": 0,
+          "is_async": false,
+          "decorators": [],
+          "bases": [
+            "unittest.TestCase"
+          ],
+          "args": [],
+          "return_type": "",
+          "calls": [],
+          "raises": [],
+          "complexity": 0
+        },
+        {
+          "name": "test_whole_number",
+          "kind": "method",
+          "line": 208,
+          "end_line": 209,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertEqual",
+            "format_result"
+          ],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "test_float",
+          "kind": "method",
+          "line": 211,
+          "end_line": 213,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "format_result",
+            "self.assertIn"
+          ],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "test_negative_whole",
+          "kind": "method",
+          "line": 215,
+          "end_line": 216,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertEqual",
+            "format_result"
+          ],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "test_zero",
+          "kind": "method",
+          "line": 218,
+          "end_line": 219,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertEqual",
+            "format_result"
+          ],
+          "raises": [],
+          "complexity": 1
+        },
+        {
+          "name": "test_large_whole",
+          "kind": "method",
+          "line": 221,
+          "end_line": 222,
+          "indent": 4,
+          "is_async": false,
+          "decorators": [],
+          "bases": [],
+          "args": [
+            [
+              "self",
+              ""
+            ]
+          ],
+          "return_type": "",
+          "calls": [
+            "self.assertEqual",
+            "format_result"
+          ],
+          "raises": [],
+          "complexity": 1
+        }
+      ],
+      "tags": [
+        "entrypoint",
+        "pytest",
+        "test"
+      ],
+      "errors": [],
+      "position": {
+        "x": 0.0,
+        "y": -210.0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e_0",
+      "source": "src_cli_py",
+      "target": "ext___future__",
+      "type": "external",
+      "symbols": [
+        "annotations"
+      ],
+      "line": 13,
+      "isExternal": true,
+      "externalPackage": "__future__"
+    },
+    {
+      "id": "e_1",
+      "source": "src_cli_py",
+      "target": "ext_sys",
+      "type": "external",
+      "symbols": [],
+      "line": 14,
+      "isExternal": true,
+      "externalPackage": "sys"
+    },
+    {
+      "id": "e_2",
+      "source": "src_cli_py",
+      "target": "src_pemdas_py",
+      "type": "import",
+      "symbols": [
+        "evaluate",
+        "format_result",
+        "ParseError"
+      ],
+      "line": 15,
+      "isExternal": false,
+      "externalPackage": null
+    },
+    {
+      "id": "e_3",
+      "source": "src_gui_app_py",
+      "target": "ext___future__",
+      "type": "external",
+      "symbols": [
+        "annotations"
+      ],
+      "line": 25,
+      "isExternal": true,
+      "externalPackage": "__future__"
+    },
+    {
+      "id": "e_4",
+      "source": "src_gui_app_py",
+      "target": "ext_sys",
+      "type": "external",
+      "symbols": [],
+      "line": 26,
+      "isExternal": true,
+      "externalPackage": "sys"
+    },
+    {
+      "id": "e_5",
+      "source": "src_gui_app_py",
+      "target": "ext_tkinter",
+      "type": "external",
+      "symbols": [
+        "tk"
+      ],
+      "line": 27,
+      "isExternal": true,
+      "externalPackage": "tkinter"
+    },
+    {
+      "id": "e_6",
+      "source": "src_gui_app_py",
+      "target": "src_pemdas_py",
+      "type": "import",
+      "symbols": [
+        "evaluate",
+        "format_result",
+        "ParseError"
+      ],
+      "line": 28,
+      "isExternal": false,
+      "externalPackage": null
+    },
+    {
+      "id": "e_7",
+      "source": "src_pemdas_py",
+      "target": "ext___future__",
+      "type": "external",
+      "symbols": [
+        "annotations"
+      ],
+      "line": 27,
+      "isExternal": true,
+      "externalPackage": "__future__"
+    },
+    {
+      "id": "e_8",
+      "source": "src_pemdas_py",
+      "target": "ext_re",
+      "type": "external",
+      "symbols": [],
+      "line": 28,
+      "isExternal": true,
+      "externalPackage": "re"
+    },
+    {
+      "id": "e_9",
+      "source": "src_pemdas_py",
+      "target": "ext_typing",
+      "type": "external",
+      "symbols": [
+        "Iterator"
+      ],
+      "line": 29,
+      "isExternal": true,
+      "externalPackage": "typing"
+    },
+    {
+      "id": "e_10",
+      "source": "test_test_pemdas_py",
+      "target": "ext_sys",
+      "type": "external",
+      "symbols": [],
+      "line": 8,
+      "isExternal": true,
+      "externalPackage": "sys"
+    },
+    {
+      "id": "e_11",
+      "source": "test_test_pemdas_py",
+      "target": "ext_os",
+      "type": "external",
+      "symbols": [],
+      "line": 9,
+      "isExternal": true,
+      "externalPackage": "os"
+    },
+    {
+      "id": "e_12",
+      "source": "test_test_pemdas_py",
+      "target": "ext_unittest",
+      "type": "external",
+      "symbols": [],
+      "line": 10,
+      "isExternal": true,
+      "externalPackage": "unittest"
+    },
+    {
+      "id": "e_13",
+      "source": "test_test_pemdas_py",
+      "target": "src_pemdas_py",
+      "type": "import",
+      "symbols": [
+        "evaluate",
+        "tokenise",
+        "format_result",
+        "ParseError"
+      ],
+      "line": 14,
+      "isExternal": false,
+      "externalPackage": null
+    }
+  ]
+}

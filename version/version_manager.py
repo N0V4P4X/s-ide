@@ -124,9 +124,8 @@ def apply_update(root_dir: str, tarball_path: str, bump_part: str = "patch") -> 
     if not os.path.isfile(tarball_path):
         raise ValueError(f"Tarball not found: {tarball_path}")
 
-    # 1. Safety archive — DISABLED: now using Git for version control
-    # archive_path = archive_version(root_dir)
-    archive_path = ""
+    # 1. Safety archive
+    archive_path = archive_version(root_dir)
 
     # 2. Extract (strip top-level directory component, sanitise paths)
     _extract_tarball(tarball_path, root_dir)

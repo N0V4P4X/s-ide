@@ -186,3 +186,11 @@ FileNotFoundError: [Errno 2] No such file or directory: '/home/n0v4p4x/DevOps/S-
 14:59:35 INFO     side.app                 Parse OK — 81 nodes, 438 edges in 604ms  (slowest: parse_files)
 14:59:35 INFO     side.app                 S-IDE is monitoring itself: /home/n0v4p4x/DevOps/s-ide-py
 14:59:35 DEBUG    side.app                 MetricsWatcher started for /home/n0v4p4x/DevOps/s-ide-py
+15:58:05 INFO     side                     session started — log → /home/n0v4p4x/DevOps/s-ide-py/logs/s-ide.log
+15:58:06 INFO     side.app                 S-IDE starting
+15:58:06 INFO     side.app                 Loading project: /home/n0v4p4x/DevOps/s-ide-py
+15:58:06 DEBUG    side.app                 parse_project thread started
+15:58:07 INFO     side.app                 Parse OK — 84 nodes, 462 edges in 949ms  (slowest: parse_files)
+15:58:07 INFO     side.app                 S-IDE is monitoring itself: /home/n0v4p4x/DevOps/s-ide-py
+15:58:07 DEBUG    side.app                 MetricsWatcher started for /home/n0v4p4x/DevOps/s-ide-py
+15:58:56 INFO     side.app                 S-IDE shutting down

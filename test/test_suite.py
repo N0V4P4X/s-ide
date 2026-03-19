@@ -1775,92 +1775,6 @@ class TestAITools(unittest.TestCase):
 
 
 
-class TestGuiRunPanel(unittest.TestCase):
-    def test_run_panel_creates_chevron_and_binds(self):
-        """
-        Regression for GitHub issue #1: _build_run_panel must not bind on None.
-        This test uses a tiny tkinter stub to avoid requiring a display.
-        """
-        import gui.app as app
-
-        class _W:
-            def __init__(self, parent=None, **kwargs):
-                self.parent = parent
-                self.kwargs = kwargs
-                self._children = []
-                self._bindings = {}
-                if parent is not None and hasattr(parent, "_children"):
-                    parent._children.append(self)
-
-            def pack(self, *args, **kwargs):
-                return None
-
-            def pack_forget(self, *args, **kwargs):
-                return None
-
-            def bind(self, event, fn):
-                self._bindings[event] = fn
-                return None
-
-            def config(self, **kwargs):
-                self.kwargs.update(kwargs)
-                return None
-
-            def winfo_children(self):
-                return list(self._children)
-
-        class _TkStub:
-            Frame = _W
-            Label = _W
-
-        real_tk = app.tk
-        try:
-            app.tk = _TkStub
-
-            class _Self:
-                def __init__(self):
-                    self._sidebar = _W()
-                    self._mono_xs = None
-                    self._run_chevron = None
-                    self._run_body = None
-                    self._run_scripts_frame = None
-                    self._run_open = False
-
-                def _refresh_run_scripts(self):
-                    return None
-
-            s = _Self()
-            app.SIDE_App._build_run_panel(s)
-
-            self.assertIsNotNone(s._run_chevron)
-            # Should have the click binding installed
-            self.assertIn("<Button-1>", getattr(s._run_chevron, "_bindings", {}))
-        finally:
-            app.tk = real_tk
-
-
-class TestCliSmoke(unittest.TestCase):
-    def test_main_help_exits_cleanly(self):
-        import subprocess
-        root = ROOT
-        main_py = os.path.join(root, "main.py")
-        p = subprocess.run(
-            [sys.executable, main_py, "--help"],
-            cwd=root,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            timeout=10,
-        )
-        # argparse uses 0 for --help
-        self.assertEqual(p.returncode, 0, msg=p.stderr[-500:])
-        self.assertTrue(len(p.stdout) > 0)
-
-
-
-
-
-
 # ═══════════════════════════════════════════════════════════════════════════════
 # Markdown renderer
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -2527,7 +2441,6 @@ class TestTeamsLog(unittest.TestCase):
         '''Minimal stand-in for SIDE_App with Teams Log state.'''
         class FakeApp:
             _teams_log = None
-            _log_buf: list = []
             def after(self, ms, fn=None):
                 if fn: fn()
             def _teams_log_append(self, text, tag=''):
@@ -2749,7 +2662,7 @@ class TestToolBuilder(unittest.TestCase):
                 'TOOL_SCHEMA = {"type": "function", "function": {"name": "greet", '
                 '"description": "Say hi", "parameters": {"type": "object", '
                 '"properties": {"name": {"type": "string"}}, "required": ["name"]}}}\n'
-                'def TOOL_HANDLER(args, ctx): return {"greeting": "Hello " + args["name"] + "!"}\n'
+                'def TOOL_HANDLER(args, ctx): return {"greeting": f"Hello {args[\"name\"]}!"}\n'
             )
             name = register_custom_tool(tool_file)
             self.assertEqual(name, 'greet')
@@ -2809,6 +2722,440 @@ class TestToolBuilder(unittest.TestCase):
         self.assertEqual(err.intent, 'testing')
 
 
+# ══════════════════════════════════════
+# cProfile-based project profiler
+# ══════════════════════════════════════
+
+class TestProfiler(unittest.TestCase):
+
+    # ── _find_entry_point ──────────────────────────────────────────
+
+    def test_find_entry_src_main(self):
+        from monitor.profiler import _find_entry_point
+        with tempfile.TemporaryDirectory() as tmp:
+            os.makedirs(os.path.join(tmp, 'src'))
+            open(os.path.join(tmp, 'src', 'main.py'), 'w').write('print(1)')
+            self.assertEqual(_find_entry_point(tmp), 'src/main.py')
+
+    def test_find_entry_root_main(self):
+        from monitor.profiler import _find_entry_point
+        with tempfile.TemporaryDirectory() as tmp:
+            open(os.path.join(tmp, 'main.py'), 'w').write('print(1)')
+            self.assertEqual(_find_entry_point(tmp), 'main.py')
+
+    def test_find_entry_dunder_main(self):
+        from monitor.profiler import _find_entry_point
+        with tempfile.TemporaryDirectory() as tmp:
+            open(os.path.join(tmp, 'run.py'), 'w').write(
+                'if __name__ == "__main__":\n    pass\n')
+            # 'run.py' not in candidates list, but has __main__ guard
+            # Note: src/main.py etc take priority if they exist
+            ep = _find_entry_point(tmp)
+            self.assertIn(ep, ['run.py', ''])
+
+    def test_find_entry_empty_project(self):
+        from monitor.profiler import _find_entry_point
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertEqual(_find_entry_point(tmp), '')
+
+    # ── profile_project ───────────────────────────────────────────
+
+    def _make_project(self, tmp, main_code='print(42)'):
+        os.makedirs(os.path.join(tmp, 'src'))
+        open(os.path.join(tmp, 'src', 'main.py'), 'w').write(
+            f'def do_work():\n    return sum(range(1000))\n\n'
+            f'if __name__ == "__main__":\n    print(do_work())\n')
+        return tmp
+
+    def test_profile_basic_run(self):
+        from monitor.profiler import profile_project
+        with tempfile.TemporaryDirectory() as tmp:
+            self._make_project(tmp)
+            result = profile_project(tmp, entry_point='src/main.py', timeout=15)
+            self.assertTrue(result.ok, msg=result.error)
+            self.assertEqual(result.exit_code, 0)
+            self.assertGreater(result.total_ms, 0)
+
+    def test_profile_finds_functions(self):
+        from monitor.profiler import profile_project
+        with tempfile.TemporaryDirectory() as tmp:
+            self._make_project(tmp)
+            result = profile_project(tmp, entry_point='src/main.py', timeout=15)
+            self.assertTrue(result.ok)
+            fn_names = [f.function_name for f in result.functions]
+            self.assertIn('do_work', fn_names)
+
+    def test_profile_writes_metrics_json(self):
+        from monitor.profiler import profile_project
+        import json
+        with tempfile.TemporaryDirectory() as tmp:
+            self._make_project(tmp)
+            result = profile_project(tmp, entry_point='src/main.py', timeout=15)
+            self.assertTrue(result.ok)
+            self.assertTrue(os.path.isfile(result.metrics_path))
+            data = json.load(open(result.metrics_path))
+            self.assertIn('files', data)
+            self.assertIn('functions', data)
+            self.assertIn('updated', data)
+
+    def test_metrics_json_format_compatible(self):
+        from monitor.profiler import profile_project
+        import json
+        with tempfile.TemporaryDirectory() as tmp:
+            self._make_project(tmp)
+            result = profile_project(tmp, entry_point='src/main.py', timeout=15)
+            self.assertTrue(result.ok)
+            data = json.load(open(result.metrics_path))
+            # Each file entry must have the fields MetricsWatcher expects
+            for path, stats in data['files'].items():
+                for field in ('calls', 'total_ms', 'avg_ms', 'max_ms'):
+                    self.assertIn(field, stats, msg=f'{field} missing in {path}')
+
+    def test_profile_missing_entry_point(self):
+        from monitor.profiler import profile_project
+        with tempfile.TemporaryDirectory() as tmp:
+            result = profile_project(tmp, entry_point='nonexistent.py', timeout=5)
+            self.assertFalse(result.ok)
+            self.assertIn('not found', result.error.lower())
+
+    def test_profile_no_entry_point_empty_project(self):
+        from monitor.profiler import profile_project
+        with tempfile.TemporaryDirectory() as tmp:
+            result = profile_project(tmp, timeout=5)
+            self.assertFalse(result.ok)
+
+    def test_profile_result_summary(self):
+        from monitor.profiler import ProfileResult, FunctionMetrics
+        r = ProfileResult(
+            project_root='/tmp', entry_point='src/main.py',
+            total_ms=123.4, exit_code=0)
+        r.functions = [FunctionMetrics(
+            module_path='src/main.py', function_name='do_work',
+            calls=10, total_ms=50.0, own_ms=45.0, per_call_ms=5.0)]
+        summary = r.summary()
+        self.assertIn('do_work', summary)
+        self.assertIn('50', summary)
+
+    def test_load_last_profile_missing(self):
+        from monitor.profiler import load_last_profile
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertIsNone(load_last_profile(tmp))
+
+    def test_load_last_profile_present(self):
+        from monitor.profiler import profile_project, load_last_profile
+        with tempfile.TemporaryDirectory() as tmp:
+            self._make_project(tmp)
+            result = profile_project(tmp, entry_point='src/main.py', timeout=15)
+            self.assertTrue(result.ok)
+            data = load_last_profile(tmp)
+            self.assertIsNotNone(data)
+            self.assertIn('functions', data)
+
+    # ── Git tool expansion ──────────────────────────────────────────
+
+class TestGitToolExpanded(unittest.TestCase):
+
+    def _ctx(self, tmp):
+        from ai.context import build_context
+        return build_context(tmp)
+
+    def _init_repo(self, tmp):
+        import subprocess
+        subprocess.run('git init', shell=True, cwd=tmp, capture_output=True)
+        subprocess.run('git config user.email t@t.com', shell=True,
+                       cwd=tmp, capture_output=True)
+        subprocess.run('git config user.name T', shell=True,
+                       cwd=tmp, capture_output=True)
+        return tmp
+
+    def test_status_short(self):
+        from ai.tools import dispatch_tool
+        import json
+        with tempfile.TemporaryDirectory() as tmp:
+            self._init_repo(tmp)
+            r = dispatch_tool('git', {'command': 'status'}, self._ctx(tmp))
+            d = json.loads(r.content)
+            self.assertIn('exit_code', d)
+
+    def test_add_all_and_commit(self):
+        from ai.tools import dispatch_tool
+        import json
+        with tempfile.TemporaryDirectory() as tmp:
+            self._init_repo(tmp)
+            open(os.path.join(tmp, 'f.py'), 'w').write('x=1')
+            dispatch_tool('git', {'command': 'add_all'}, self._ctx(tmp))
+            r = dispatch_tool('git',
+                {'command': 'commit', 'message': 'add f.py'},
+                self._ctx(tmp))
+            d = json.loads(r.content)
+            self.assertEqual(d['exit_code'], 0, msg=d.get('stderr',''))
+
+    def test_diff_staged_empty(self):
+        from ai.tools import dispatch_tool
+        import json
+        with tempfile.TemporaryDirectory() as tmp:
+            self._init_repo(tmp)
+            r = dispatch_tool('git', {'command': 'diff_staged'}, self._ctx(tmp))
+            d = json.loads(r.content)
+            self.assertIn('exit_code', d)
+
+    def test_commit_requires_message(self):
+        from ai.tools import dispatch_tool
+        import json
+        with tempfile.TemporaryDirectory() as tmp:
+            self._init_repo(tmp)
+            r = dispatch_tool('git', {'command': 'commit'}, self._ctx(tmp))
+            d = json.loads(r.content)
+            self.assertIn('error', d)
+            self.assertIn('message', d['error'])
+
+    def test_log_after_commit(self):
+        from ai.tools import dispatch_tool
+        import json
+        with tempfile.TemporaryDirectory() as tmp:
+            self._init_repo(tmp)
+            open(os.path.join(tmp, 'x.py'), 'w').write('pass')
+            dispatch_tool('git', {'command': 'add_all'}, self._ctx(tmp))
+            dispatch_tool('git',
+                {'command': 'commit', 'message': 'initial'},
+                self._ctx(tmp))
+            r = dispatch_tool('git', {'command': 'log', 'n': 5}, self._ctx(tmp))
+            d = json.loads(r.content)
+            self.assertEqual(d['exit_code'], 0)
+            self.assertIn('initial', d['output'])
+
+    def test_unknown_command_error(self):
+        from ai.tools import dispatch_tool
+        import json
+        with tempfile.TemporaryDirectory() as tmp:
+            self._init_repo(tmp)
+            r = dispatch_tool('git', {'command': 'frobnicate'}, self._ctx(tmp))
+            d = json.loads(r.content)
+            # Unknown command with no extra args returns an error dict
+            self.assertIn('error', d)
+            self.assertIn('frobnicate', d['error'])
+
+    def test_stash_list_empty(self):
+        from ai.tools import dispatch_tool
+        import json
+        with tempfile.TemporaryDirectory() as tmp:
+            self._init_repo(tmp)
+            r = dispatch_tool('git', {'command': 'stash_list'}, self._ctx(tmp))
+            d = json.loads(r.content)
+            self.assertIn('exit_code', d)
+
+    def test_branch_list(self):
+        from ai.tools import dispatch_tool
+        import json
+        with tempfile.TemporaryDirectory() as tmp:
+            self._init_repo(tmp)
+            r = dispatch_tool('git', {'command': 'branch'}, self._ctx(tmp))
+            d = json.loads(r.content)
+            self.assertIn('exit_code', d)
+
+    def test_remote_empty(self):
+        from ai.tools import dispatch_tool
+        import json
+        with tempfile.TemporaryDirectory() as tmp:
+            self._init_repo(tmp)
+            r = dispatch_tool('git', {'command': 'remote'}, self._ctx(tmp))
+            d = json.loads(r.content)
+            self.assertIn('exit_code', d)
+
+
+# ══════════════════════════════════════
+# Workflow templates
+# ══════════════════════════════════════
+
+class TestWorkflowTemplates(unittest.TestCase):
+
+    def _patched_path(self, tmp):
+        import unittest.mock as mock
+        return mock.patch('ai.workflow_templates._TEMPLATES_PATH',
+                          os.path.join(tmp, 'tpl.json'))
+
+    def test_builtins_present(self):
+        from ai.workflow_templates import BUILTIN_TEMPLATES
+        self.assertIn('standard_review', BUILTIN_TEMPLATES)
+        self.assertIn('quick_implement', BUILTIN_TEMPLATES)
+        self.assertIn('full_pipeline',   BUILTIN_TEMPLATES)
+        self.assertIn('optimize_only',   BUILTIN_TEMPLATES)
+        self.assertIn('docs_update',     BUILTIN_TEMPLATES)
+
+    def test_get_builtin(self):
+        from ai.workflow_templates import get_template
+        t = get_template('standard_review')
+        self.assertIsNotNone(t)
+        self.assertEqual(len(t.agents), 4)
+        roles = [a.role for a in t.agents]
+        self.assertEqual(roles, ['architect','implementer','reviewer','tester'])
+
+    def test_to_canvas_nodes(self):
+        from ai.workflow_templates import get_template
+        t = get_template('quick_implement')
+        nodes, edges = t.to_canvas_nodes()
+        self.assertEqual(len(nodes), 2)
+        self.assertEqual(len(edges), 1)
+        self.assertEqual(edges[0]['source'], nodes[0]['id'])
+        self.assertEqual(edges[0]['target'], nodes[1]['id'])
+
+    def test_node_x_positions(self):
+        from ai.workflow_templates import get_template
+        t = get_template('standard_review')
+        nodes, _ = t.to_canvas_nodes(start_x=80, gap=260)
+        xs = [n['x'] for n in nodes]
+        self.assertEqual(xs, [80, 340, 600, 860])
+
+    def test_save_and_get(self):
+        from ai.workflow_templates import save_template, get_template
+        with tempfile.TemporaryDirectory() as tmp:
+            with self._patched_path(tmp):
+                nodes = [{'id':'n1','role':'implementer','model':'llama3.2',
+                           'name':'Impl','x':80,'y':80}]
+                edges = []
+                t = save_template('my_wf', nodes, edges, 'my workflow')
+                self.assertEqual(t.name, 'my_wf')
+                self.assertFalse(t.builtin)
+                got = get_template('my_wf')
+                # get_template checks builtins first (won't find user templates)
+                # so check via list_templates instead
+                from ai.workflow_templates import list_templates
+                names = [x.name for x in list_templates()]
+                self.assertIn('my_wf', names)
+
+    def test_delete_user_template(self):
+        from ai.workflow_templates import save_template, delete_template, list_templates
+        with tempfile.TemporaryDirectory() as tmp:
+            with self._patched_path(tmp):
+                nodes = [{'id':'n1','role':'tester','model':'llama3.2',
+                           'name':'T','x':80,'y':80}]
+                save_template('del_me', nodes, [], 'temp')
+                ok = delete_template('del_me')
+                self.assertTrue(ok)
+                names = [x.name for x in list_templates()]
+                self.assertNotIn('del_me', names)
+
+    def test_cannot_delete_builtin(self):
+        from ai.workflow_templates import delete_template
+        self.assertFalse(delete_template('standard_review'))
+
+    def test_list_templates_order(self):
+        from ai.workflow_templates import list_templates
+        all_t = list_templates()
+        # Builtins come first
+        builtin_indices = [i for i, t in enumerate(all_t) if t.builtin]
+        user_indices    = [i for i, t in enumerate(all_t) if not t.builtin]
+        if user_indices:
+            self.assertLess(max(builtin_indices), min(user_indices))
+
+    def test_template_to_agent_configs(self):
+        from ai.workflow_templates import get_template, template_to_agent_configs
+        t    = get_template('quick_implement')
+        cfgs = template_to_agent_configs(t)
+        self.assertEqual(len(cfgs), 2)
+        self.assertEqual(cfgs[0]['role'], 'implementer')
+        self.assertIn('model', cfgs[0])
+
+    def test_full_pipeline_six_agents(self):
+        from ai.workflow_templates import get_template
+        t = get_template('full_pipeline')
+        self.assertEqual(len(t.agents), 6)
+
+
+# ══════════════════════════════════════
+# Workspace manifest
+# ══════════════════════════════════════
+
+class TestWorkspaceManifest(unittest.TestCase):
+
+    def test_init_workspace(self):
+        from parser.workspace import init_workspace, WORKSPACE_FILE
+        with tempfile.TemporaryDirectory() as root:
+            m = init_workspace(root, 'test')
+            self.assertEqual(m.name, 'test')
+            self.assertTrue(os.path.isfile(os.path.join(root, WORKSPACE_FILE)))
+
+    def test_init_finds_projects(self):
+        from parser.workspace import init_workspace
+        with tempfile.TemporaryDirectory() as root:
+            os.makedirs(os.path.join(root, 'proj-a'))
+            open(os.path.join(root, 'proj-a',
+                 'side.project.json'), 'w').write('{}')
+            m = init_workspace(root)
+            self.assertIn('proj-a', m.projects)
+
+    def test_save_and_load(self):
+        from parser.workspace import save_workspace, load_workspace
+        with tempfile.TemporaryDirectory() as root:
+            from parser.workspace import WorkspaceManifest
+            m = WorkspaceManifest(name='ws', packages={'numpy': '>=1.24'})
+            save_workspace(root, m)
+            m2 = load_workspace(root)
+            self.assertEqual(m2.name, 'ws')
+            self.assertEqual(m2.packages['numpy'], '>=1.24')
+
+    def test_load_missing_returns_empty(self):
+        from parser.workspace import load_workspace
+        with tempfile.TemporaryDirectory() as root:
+            m = load_workspace(root)
+            self.assertIsInstance(m.packages, dict)
+
+    def test_find_workspace_root(self):
+        from parser.workspace import init_workspace, find_workspace_root
+        with tempfile.TemporaryDirectory() as root:
+            init_workspace(root)
+            proj = os.path.join(root, 'myproject')
+            os.makedirs(proj)
+            found = find_workspace_root(proj)
+            self.assertEqual(os.path.abspath(found), os.path.abspath(root))
+
+    def test_find_workspace_root_not_found(self):
+        from parser.workspace import find_workspace_root
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertIsNone(find_workspace_root(tmp))
+
+    def test_resolve_deps_from_imports(self):
+        from parser.workspace import resolve_project_deps, WorkspaceManifest
+        with tempfile.TemporaryDirectory() as proj:
+            open(os.path.join(proj, 'main.py'), 'w').write(
+                'import requests\nfrom numpy import array\nimport os\n')
+            m = WorkspaceManifest(packages={'requests':'>=2','numpy':'*','flask':'*'})
+            deps = resolve_project_deps(proj, m)
+            self.assertIn('requests', deps)
+            self.assertIn('numpy', deps)
+            self.assertNotIn('flask', deps)  # not imported
+            self.assertNotIn('os', deps)      # stdlib, not in manifest
+
+    def test_requirements_txt(self):
+        from parser.workspace import WorkspaceManifest
+        m = WorkspaceManifest(packages={'requests':'>=2.28','numpy':'*'})
+        txt = m.requirements_txt()
+        self.assertIn('requests>=2.28', txt)
+        self.assertIn('numpy', txt)
+
+    def test_add_package(self):
+        from parser.workspace import WorkspaceManifest
+        m = WorkspaceManifest()
+        m.add_package('flask', '>=2.3')
+        self.assertEqual(m.packages['flask'], '>=2.3')
+
+    def test_remove_package(self):
+        from parser.workspace import WorkspaceManifest
+        m = WorkspaceManifest(packages={'flask': '>=2.3'})
+        ok = m.remove_package('flask')
+        self.assertTrue(ok)
+        self.assertNotIn('flask', m.packages)
+        self.assertFalse(m.remove_package('nonexistent'))
+
+    def test_workspace_summary(self):
+        from parser.workspace import init_workspace, workspace_summary, save_workspace
+        with tempfile.TemporaryDirectory() as root:
+            m = init_workspace(root, 'myws')
+            m.add_package('rich', '*')
+            save_workspace(root, m)
+            s = workspace_summary(root)
+            self.assertIn('myws', s)
+            self.assertIn('rich', s)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

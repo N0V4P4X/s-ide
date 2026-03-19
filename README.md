@@ -1,8 +1,8 @@
-# S-IDE — v0.4.0
+# S-IDE — v0.5.0
 
 **Systematic Integrated Development Environment** — a project graph editor with an embedded AI development assistant, built entirely in Python.
 
-S-IDE parses your project into a live dependency graph, lets you navigate and inspect it visually, and gives a team of AI agents direct access to your codebase so they can read, analyse, plan, and execute development work.
+S-IDE parses any Python project into a live dependency graph, lets you navigate and inspect it visually, gives a team of AI agents direct tool access to your codebase, profiles execution with cProfile, and monitors live performance on node cards.
 
 ---
 
@@ -11,51 +11,41 @@ S-IDE parses your project into a live dependency graph, lets you navigate and in
 ```
 s-ide-py/
 ├── gui/
-│   ├── app.py               # Core shell, window mapping, topbar
-│   ├── ai_mixin.py          # AI assistant, manager integration
-│   ├── canvas_mixin.py      # Rendering, viewport, input, grid
-│   ├── dialogs_mixin.py     # Process, log, and build panels
-│   ├── inspector_mixin.py   # Slide-in node detail panel
+│   ├── app.py               # Main window, canvas, topbar, inspector
+│   ├── teams_canvas.py      # AI Teams workflow designer mixin
 │   ├── panels.py            # Bottom panel tab builders
-│   ├── markdown.py          # Markdown→Tk renderer (no display at import)
+│   ├── markdown.py          # Markdown→Tk renderer
 │   ├── editor.py            # Syntax-highlighted source editor
 │   ├── state.py             # Session persistence (~/.s-ide-state.json)
 │   ├── log.py               # Rotating log + in-memory ring
 │   └── server.py            # Optional HTTP+SSE bridge
 ├── ai/
 │   ├── client.py            # Ollama HTTP client, streaming, tool loop
-│   ├── tools.py             # 14 tool definitions + dispatch
-│   ├── context.py           # AppContext built from live graph
-│   └── standards.py         # System prompt: dev standards + tool rules
-├── parser/
-│   ├── project_parser.py    # Orchestrator: walk→parse→edges→layout→audit
-│   ├── walker.py            # Directory traversal + ignore patterns
-│   ├── project_config.py    # side.project.json read/write/bump
-│   ├── resolve_edges.py     # Import strings → graph edges
-│   ├── layout.py            # Topological x/y assignment
-│   ├── doc_check.py         # README staleness audit
-│   └── parsers/             # python, js, json, shell, toml/yaml
-├── graph/
-│   └── types.py             # FileNode, Edge, ProjectGraph, Definition
+│   ├── tools.py             # 18 tool definitions + permission-aware dispatch
+│   ├── context.py           # AppContext, role permissions
+│   ├── standards.py         # Base system prompt
+│   ├── manager.py           # Manager orchestrator + scaffold_new_project
+│   ├── teams.py             # TeamSession: turn-based multi-agent engine
+│   ├── playground.py        # Isolated Python sandbox
+│   ├── tool_builder.py      # Self-improving tool creation workflow
+│   └── roles/               # Role definitions (6 roles)
 ├── monitor/
+│   ├── profiler.py          # cProfile-based live project profiler ← use this
 │   ├── perf.py              # ParseTimer, ProcessMonitor, MetricsWatcher
-│   ├── instrument.py        # @timed → .side-metrics.json
-│   └── instrumenter.py      # Bulk-instrument a project
-├── build/
-│   ├── cleaner.py           # Tiered artifact removal
-│   ├── minifier.py          # Strip comments/docstrings, bundle modules
-│   ├── packager.py          # tarball / installer / portable
-│   └── sandbox.py           # Run in isolated temp copy
-├── process/
-│   └── process_manager.py   # Spawn/stop/suspend subprocesses
-├── version/
-│   └── version_manager.py   # Snapshot, restore, apply-update
-├── test/
-│   └── test_suite.py        # 184 tests, 33 classes, stdlib unittest
+│   ├── instrument.py        # @timed decorator (legacy)
+│   └── instrumenter.py      # Bulk instrumentation (legacy)
+├── parser/                  # Project analysis pipeline
+│   ├── project_parser.py    # Orchestrator: walk→parse→edges→layout→audit
+│   └── parsers/             # python, js, json, shell, toml/yaml
+├── graph/types.py           # FileNode, Edge, ProjectGraph, Definition
+├── build/                   # clean, minify, package, sandbox
+├── process/                 # Subprocess lifecycle management
+├── version/                 # Snapshot, restore, apply-update
+├── examples/calculator/     # Reference project: PEMDAS GUI + CLI calc
+├── test/test_suite.py       # 280 tests, 43 classes, stdlib unittest
 ├── CHANGELOG.md
-├── FUTURE.md                # Roadmap and long-term vision
-├── main.py                  # CLI
-└── update.py                # Self-update
+├── FUTURE.md
+└── update.py                # Self-update (version-sorted tarball selection)
 ```
 
 ---
@@ -63,51 +53,38 @@ s-ide-py/
 ## Quick start
 
 ```bash
-# Launch GUI
-python gui/app.py
-
-# Parse a project (CLI)
-python main.py parse /path/to/project
-
-# Health check loop (tests + parse + doc audit)
-python main.py self-check .
-
-# Build a distributable tarball
-python main.py build . --kind tarball --bump patch
-
-# Self-update from ~/Downloads/
-python update.py
+python gui/app.py                        # launch GUI
+python main.py parse /path/to/project   # parse from CLI
+python test/test_suite.py               # run tests
+python update.py                        # self-update from ~/Downloads/
 ```
 
-## Self-improvement
-
-S-IDE can validate and analyze itself via `self-check`. See [`SELF_IMPROVEMENT.md`](SELF_IMPROVEMENT.md) for the full loop (CI, strict docs mode, and safer self-updates).
-
-## GUI panels
+---
 
 ## GUI layout
 
 ```
-┌──────────────────────────────────────────────────────┐
-│ TOPBAR  logo · project · filter chips · search · zoom │
-├───────────────────────────────────────────┬───────────┤
-│  CANVAS                                   │ INSPECTOR │
-│  • node cards (one per file)              │ (on click)│
-│  • bezier import edges                    │           │
-│  • dashed doc→source links                │           │
-│  • live @timed overlays                   │           │
-├───────────────────────────────────────────┴───────────┤
-│  ▓ resize handle                                      │
-├───────────────────────────────────────────────────────┤
-│  BOTTOM PANEL  Projects│AI Chat│Plan│Playground│Terminal│
-└───────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────┐
+│ TOPBAR  logo · project · [PY JS CFG DOCS] · ⚡TEAMS · ⏱Profile│
+├───────────────────────────────────────────────┬──────────────┤
+│  CANVAS                                       │  INSPECTOR   │
+│  • node cards (one per source file)           │  (on click)  │
+│  • bezier import edges                        │              │
+│  • dashed doc→source links                   │              │
+│  • live @timed / cProfile overlays            │              │
+├───────────────────────────────────────────────┴──────────────┤
+│  ▓ resize handle                                              │
+├───────────────────────────────────────────────────────────────┤
+│  Projects │ AI Chat │ Plan │ Playground │ Terminal │ Teams Log │
+└───────────────────────────────────────────────────────────────┘
 ```
 
-Double-click a node → editor. Right-click → context menu. Filter chips are multi-select; docs and config hidden by default.
+**⚡ TEAMS** — switch canvas to AI Teams workflow designer  
+**⏱ Profile** — run cProfile on project entry point, update node overlays
 
 ---
 
-## AI assistant
+## AI assistant (18 tools)
 
 Requires [Ollama](https://ollama.ai) running locally.
 
@@ -115,21 +92,58 @@ Requires [Ollama](https://ollama.ai) running locally.
 ollama serve && ollama pull llama3.2
 ```
 
-14 tools: `read_file`, `list_files`, `get_file_summary`, `search_definitions`, `get_graph_overview`, `get_metrics`, `run_command`, `get_definition_source`, `write_file`, `create_plan`, `update_plan`, `write_agent_note`, `run_in_playground`, `git`.
+| Category | Tools |
+|---|---|
+| Read | `read_file`, `list_files`, `get_file_summary`, `search_definitions`, `get_graph_overview`, `get_definition_source` |
+| Run | `run_command`, `run_in_playground`, `get_metrics` |
+| Write | `write_file`, `create_plan`, `update_plan`, `write_agent_note` |
+| Session | `write_session_file`, `read_session_file`, `list_session_files` |
+| Git | `git` (22 commands: status, log, diff, add, commit, push, pull, branch, stash, blame, …) |
+| Profiling | `profile_project` |
 
-The system prompt enforces tool-first behaviour: the AI reads before answering, never guesses, and follows the project's development standards.
+The Manager bot surveys the project, writes a plan, and delegates complex tasks to a specialist team via `run_team` JSON. Bake sessions run autonomously for a time-boxed period. If the Manager calls a tool that doesn't exist, a team is offered to build it.
 
 ---
 
-## side.project.json
+## Live profiling
 
-Auto-created on first parse. Controls name, version, ignore patterns, run scripts, and version archive settings.
+```bash
+# Via GUI: click ⏱ Profile in topbar
+# Via Manager: "Profile the project"
+# Via code:
+from monitor.profiler import profile_project
+result = profile_project("/path/to/project")
+print(result.summary())
+```
+
+Results written to `.side-metrics.json`. Node cards update with colour-coded timing strips within ~1.5 seconds.
+
+---
+
+## AI Teams
+
+Click **⚡ TEAMS** to open the workflow designer. Build agent sequences by adding role cards and connecting them. Click **▶ Run Workflow** in the Plan tab to start.
+
+Teams Log tab shows full-verbosity event stream from all agents with timestamps. Session browser on the left lists past sessions — click to review plans, findings, and verdicts.
+
+---
+
+## Git integration
+
+The `git` tool supports 22 commands. Standard workflow:
+```
+git status → git diff → git add_all → git diff_staged → git commit (message=…)
+```
+
+Push/pull with optional `remote` and `branch` params. `checkout_new` for feature branches. `blame`, `reset`, `tag` for deeper operations.
 
 ---
 
 ## Self-update
 
-Drop `s-ide-v<version>.tar.gz` in `~/Downloads/` and run `python update.py`. Picks the highest-versioned tarball, archives current state first, then relaunches.
+```bash
+python update.py   # picks highest-versioned s-ide-*.tar.gz from ~/Downloads/
+```
 
 ---
 

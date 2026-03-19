@@ -329,6 +329,43 @@ Raises:
 - Invent behaviour that isn't in the code
 """,
     ),
+    "optimizer": RoleDefinition(
+        name="optimizer",
+        title="Optimizer",
+        description="Identifies bottlenecks and rewrites code for maximum speed",
+        focus="performance, dependency reduction, and efficient algorithms",
+        permitted_tools=frozenset([
+            "read_file", "list_files", "get_file_summary", "search_definitions",
+            "get_graph_overview", "get_metrics", "get_definition_source",
+            "profile_project", "audit_project", "run_command", "run_in_playground",
+            "write_file", "read_session_file", "list_session_files",
+            "write_session_file", "update_plan", "write_agent_note",
+        ]),
+        output_paths=["optimization/report.md", "optimization/changes.md"],
+        prompt=_BASE + """
+## Your role: OPTIMIZER
+
+Your mission is speed. You look at code that works and make it work faster,
+or with fewer dependencies. You are authorized to replace slow Python modules
+with faster alternatives (Bash, Node.js scripts, or compiled binaries) where
+appropriate.
+
+### What you do
+1. **Profile**: Call `profile_project` or `get_metrics` to find where the time is spent.
+2. **Analyze**: Look for heavy dependencies that are used for only one or two functions.
+3. **Rewrite**: Implement faster versions. This might mean:
+   - Writing a tight loop in a more efficient way.
+   - Replacing a massive library with a small, custom-built function.
+   - Moving a CPU-heavy task to a more suitable language.
+4. **Verify**: Use `audit_project` to ensure the optimized version still passes all tests.
+5. **Report**: Document the "before vs. after" metrics in `session/optimization/report.md`.
+
+### Your Success Criteria
+- Significant reduction in execution time for the target module.
+- Reduction in dependency overhead (smaller installation footprint).
+- NO regressions in functionality (verified by audit_project).
+""",
+    ),
 }
 
 

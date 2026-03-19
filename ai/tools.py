@@ -25,7 +25,7 @@ import subprocess
 import sys
 from typing import Any
 
-from .client import ToolResult
+from ai.client import ToolResult
 
 
 # ── Tool schemas (Ollama function-calling format) ─────────────────────────────
@@ -381,6 +381,23 @@ TOOLS: list[dict] = [
                     }
                 },
                 "required": ["command"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "clone_project",
+            "description": "Create an isolated copy of the current project for optimization experiments. Excludes .git, __pycache__, and other build artifacts.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "target_path": {
+                        "type": "string",
+                        "description": "Absolute or relative path where the project should be cloned. E.g. '../s-ide-optimized'"
+                    }
+                },
+                "required": ["target_path"]
             }
         }
     },
@@ -983,6 +1000,37 @@ def _audit_project(args: dict, ctx: Any) -> dict:
     }
 
 
+def _clone_project(args: dict, ctx: Any) -> ToolResult:
+    """Clone current project to target_path for optimization."""
+    target = args.get("target_path")
+    if not target:
+        return ToolResult(name="clone_project", ok=False, error="target_path required")
+    
+    if not os.path.isabs(target):
+        target = os.path.abspath(os.path.join(ctx.project_root, target))
+    
+    import shutil
+    def ignore_build(path: str, names: list[str]) -> list[str]:
+        to_ignore = ['.git', '__pycache__', 'venv', '.side', '.gemini']
+        return [str(n) for n in names if str(n) in to_ignore]
+
+    try:
+        if os.path.exists(target):
+            return ToolResult(name="clone_project", ok=False, error="Target already exists")
+        
+        shutil.copytree(ctx.project_root, target, ignore=ignore_build)
+        
+        # Notify GUI via a custom field in ToolResult if needed, 
+        # but for now we'll just return the path.
+        return ToolResult(
+            name="clone_project", 
+            ok=True, 
+            content=f"Project cloned to {target}. You can now start 'Optimization Teams' there."
+        )
+    except Exception as e:
+        return ToolResult(name="clone_project", ok=False, error=str(e))
+
+
 _HANDLERS = {
     "read_file":             _read_file,
     "list_files":            _list_files,
@@ -1003,4 +1051,5 @@ _HANDLERS = {
     "list_session_files":    _list_session_files,
     "profile_project":       _profile_project,
     "audit_project":         _audit_project,
+    "clone_project":         _clone_project,
 }

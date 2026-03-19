@@ -346,7 +346,7 @@ class SIDE_App(tk.Tk, TeamsCanvasMixin):
         self._zw_pct: Optional[tk.Label] = None
 
         # UI elements (buttons/vars)
-        self._lbl_project: Optional[tk.Label] = None
+        self._root_combo:    Optional[ttk.Combobox] = None
         self._doc_badge: Optional[tk.Label] = None
         self._doc_badge_var = tk.StringVar(value="")
         self._cat_btns: dict[str, tk.Label] = {}
@@ -1603,11 +1603,11 @@ class SIDE_App(tk.Tk, TeamsCanvasMixin):
                  sticky="ns", padx=4, pady=8)
         col[0] += 1
 
-        # Project name (clickable)
-        self._lbl_project = tk.Label(tb, text="—", bg=P["bg1"], fg=P["t2"],
-                                      font=self._mono_s, cursor="hand2")
-        self._lbl_project.grid(row=0, column=col[0], padx=(4, 10))
-        self._lbl_project.bind("<Button-1>", lambda _: self._open_project_dialog())
+        # Project switcher (Combobox for Dev/Opt versions)
+        self._root_var = tk.StringVar()
+        self._root_combo = ttk.Combobox(tb, textvariable=self._root_var, state="readonly", width=25)
+        self._root_combo.grid(row=0, column=col[0], padx=(4, 10))
+        self._root_combo.bind("<<ComboboxSelected>>", self._on_root_switch)
         col[0] += 1
 
         # Doc health badge
@@ -3730,6 +3730,28 @@ class SIDE_App(tk.Tk, TeamsCanvasMixin):
 
         threading.Thread(target=_parse, daemon=True).start()
 
+    def _add_project_root(self, path: str, switch=True):
+        """Register a new project root (e.g. an optimization clone)."""
+        path = os.path.abspath(path)
+        if not hasattr(self, '_all_roots'): self._all_roots = []
+        if path not in self._all_roots:
+            self._all_roots.append(path)
+            # Update combobox values
+            names = [os.path.basename(p) for p in self._all_roots]
+            if self._root_combo is not None:
+                self._root_combo['values'] = names
+        
+        if switch:
+            self._root_var.set(os.path.basename(path))
+            self._load_project(path)
+
+    def _on_root_switch(self, event=None):
+        name = self._root_var.get()
+        for p in getattr(self, '_all_roots', []):
+            if os.path.basename(p) == name:
+                self._load_project(p)
+                break
+
     def _apply_graph(self, gdict: dict, path: str):
         self.graph = gdict
         self.positions.clear()
@@ -3766,11 +3788,16 @@ class SIDE_App(tk.Tk, TeamsCanvasMixin):
             os.path.normcase(os.path.abspath(gdict["meta"]["root"])) ==
             os.path.normcase(os.path.abspath(_ROOT_DIR))
         )
-        display_name = ("◈ " + name) if self._is_self else name
-        self._lbl_project.config(
-            text=display_name,
-            fg=P["green"] if self._is_self else P["t1"],
-        )
+        
+        # Ensure path is in our roots list
+        if not hasattr(self, '_all_roots'): self._all_roots = []
+        if path not in self._all_roots:
+            self._all_roots.append(path)
+            if self._root_combo is not None:
+                self._root_combo['values'] = [os.path.basename(p) for p in self._all_roots]
+        
+        self._root_var.set(os.path.basename(path))
+        
         if self._is_self:
             self._log.info("S-IDE is monitoring itself: %s", _ROOT_DIR)
 

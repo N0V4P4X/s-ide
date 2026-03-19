@@ -1,1 +1,1 @@
-# gui package — import submodules directly
+from __future__ import annotations

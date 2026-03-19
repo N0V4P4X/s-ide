@@ -1,1 +1,1 @@
-from .app import SIDE_App, main
+# gui package — import submodules directly

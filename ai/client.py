@@ -34,7 +34,7 @@ import threading
 import urllib.request
 import urllib.error
 from dataclasses import dataclass, field
-from typing import Iterator, Callable
+from typing import Any, Iterator, Callable
 
 
 # ── Data types ────────────────────────────────────────────────────────────────
@@ -157,8 +157,9 @@ class OllamaClient:
                     try:
                         d = json.loads(line)
                         status = d.get("status", "")
-                        if on_progress:
-                            on_progress(status)
+                        op = on_progress
+                        if op is not None:
+                            op(status)
                         if d.get("error"):
                             return False
                     except json.JSONDecodeError:
@@ -242,8 +243,9 @@ class OllamaClient:
         messages:   list[ChatMessage],
         tools:      list[dict],
         dispatch_fn: Callable[[str, dict], ToolResult],
-        max_rounds: int = 10,  # Increased for better troubleshooting
+        max_rounds: int = 10,
         on_text:    Callable[[str], None] | None = None,
+        stop_event: threading.Event | None = None,   # threading.Event or None
     ) -> ChatResponse:
         """
         Agentic loop with real-time streaming and troubleshooting support.
@@ -256,7 +258,8 @@ class OllamaClient:
         def _strip_outer_quotes(s: str) -> str:
             s = s.strip()
             if len(s) >= 2 and ((s[0] == s[-1] == "'") or (s[0] == s[-1] == '"')):
-                return s[1:-1]
+                s_str: str = str(s)
+                return s_str[1:-1]
             return s
 
         def _parse_value(v: str) -> Any:
@@ -355,6 +358,9 @@ class OllamaClient:
             return calls
         
         for _ in range(max_rounds):
+            se = stop_event
+            if se is not None and se.is_set():
+                break
             payload: dict = {
                 "model":    model,
                 "messages": [m.to_dict() for m in msgs],
@@ -362,7 +368,9 @@ class OllamaClient:
             }
             if tools:
                 payload["tools"] = tools
-            url  = f"{self.host}/api/chat"
+            # Pin to local with explicit type to avoid 'host' undefined linter error
+            host_str: str = str(self.host)
+            url: str = f"{host_str}/api/chat"
             body = json.dumps(payload).encode()
             req  = urllib.request.Request(url, data=body,
                                            headers={"Content-Type": "application/json"})
@@ -372,15 +380,16 @@ class OllamaClient:
             
             try:
                 for d in self._stream_raw(req):
+                    ot = on_text
                     if d.get("error"):
-                        if on_text: on_text(f"\n[error: {d['error']}]")
+                        if ot is not None: ot(f"\n[error: {d['error']}]")
                         break
                     
                     msg = d.get("message", {})
                     content = msg.get("content", "")
                     if content:
                         curr_content += content
-                        if on_text: on_text(content)
+                        if ot is not None: ot(content)
                     
                     tcs = msg.get("tool_calls", [])
                     if tcs:
@@ -399,52 +408,77 @@ class OllamaClient:
                                 id=tc.get("id", "")
                             ))
             except Exception as e:
-                if on_text: on_text(f"\n[HTTP Error: {e}]")
+                ot = on_text
+                if ot is not None: ot(f"\n[HTTP Error: {e}]")
                 break
 
             # --- SIMULATION INTERCEPTOR ---
-            # If the model didn't use formal tools, but wrote something like `create_plan(steps=["X"])`
-            if not curr_tool_calls and "```python" in curr_content:
-                import re
-                # Look for calls like name(arg="val", arg2=["list"])
-                sim_matches = re.finditer(r'([a-z_]+)\(([^)]+)\)', curr_content)
-                for m in sim_matches:
-                    fn_name = m.group(1)
-                    raw_args = m.group(2)
-                    # Check if this name is in our tool list
-                    if any(t['function']['name'] == fn_name for t in tools):
-                        # Attempt to parse args (very loose)
-                        try:
-                            # Try to extract key-value pairs
-                            args = {}
-                            arg_parts = re.split(r',\s*(?=[a-z_]+=)', raw_args)
-                            for part in arg_parts:
-                                if '=' in part:
-                                    k, v = part.split('=', 1)
-                                    # Basic json-ification of the value
-                                    v = v.strip().strip("'").strip('"')
-                                    if v.startswith('[') and v.endswith(']'):
-                                        try: v = json.loads(v.replace("'", '"'))
-                                        except: pass
-                                    args[k.strip()] = v
-                            curr_tool_calls.append(ToolCall(name=fn_name, arguments=args, id=f"sim_{m.start()}"))
-                        except: pass
+            # --- SIMULATION INTERCEPTOR ---
+            # Catch all formats the model uses to fake tool calls.
+            import re as _re
+            _tool_names = {t['function']['name'] for t in tools if t.get('function', {}).get('name')}
 
-            # Fallback: some models write "Tool Call: ..." into plain text.
-            # If no formal tool_calls were returned, parse and dispatch them.
-            if not curr_tool_calls and "Tool Call" in curr_content:
-                try:
-                    curr_tool_calls = _extract_text_tool_calls(curr_content)
-                except Exception:
-                    curr_tool_calls = curr_tool_calls
+            def _parse_sim_args(raw_args):
+                args = {}
+                if not raw_args or '<' in raw_args or '>' in raw_args:
+                    return args
+                # Use regex to find k=v pairs, allowing for lists and strings
+                for part in _re.split(r',\s*(?=[a-z_]+=)', raw_args):
+                    if '=' in part:
+                        k, v = part.split('=', 1)
+                        v = v.strip().strip("'").strip('"')
+                        if v.startswith('[') and v.endswith(']'):
+                            try: v = json.loads(v.replace("'", '"'))
+                            except: pass
+                        args[k.strip()] = v
+                return args
 
-            # Fallback: some prompts wrap narrated tool use in <tool-calling> tags.
-            if not curr_tool_calls and "<tool-calling>" in curr_content:
-                try:
-                    curr_tool_calls = _extract_tag_tool_calls(curr_content)
-                except Exception:
-                    curr_tool_calls = curr_tool_calls
-            
+            if not curr_tool_calls:
+                # Pattern 0: <tool-calling> tags (from HEAD)
+                if "<tool-calling>" in curr_content:
+                    tag_re = _re.compile(r"<tool-calling>(.*?)</tool-calling>", _re.DOTALL | _re.IGNORECASE)
+                    for tm in tag_re.finditer(curr_content):
+                        seg = tm.group(1)
+                        for m in _re.finditer(r'([a-z_]+)\(([^)]*)\)', seg):
+                            fn, raw = m.group(1), m.group(2)
+                            if fn in _tool_names:
+                                curr_tool_calls.append(ToolCall(
+                                    name=fn, arguments=_parse_sim_args(raw),
+                                    id='sim_tag_' + fn))
+
+                # Pattern 1: [Tool Call: fn(args)] or [call fn(args)]
+                if not curr_tool_calls:
+                    for m in _re.finditer(
+                            r'\[(?:Tool Call|call):\s*([a-z_]+)\(([^)]*)\)\]',
+                            curr_content, _re.IGNORECASE):
+                        fn, raw = m.group(1), m.group(2)
+                        if fn in _tool_names and '<' not in raw and '>' not in raw:
+                            curr_tool_calls.append(ToolCall(
+                                name=fn, arguments=_parse_sim_args(raw),
+                                id='sim_br_' + fn))
+
+                # Pattern 2: ```python\n...fn(args)...\n```
+                if not curr_tool_calls:
+                    for block in _re.findall(
+                            r'```(?:python)?\s*(.*?)```', curr_content, _re.DOTALL):
+                        for m in _re.finditer(r'([a-z_]+)\(([^)]*)\)', block):
+                            fn, raw = m.group(1), m.group(2)
+                            if fn in _tool_names and not any(
+                                    tc.name == fn for tc in curr_tool_calls):
+                                curr_tool_calls.append(ToolCall(
+                                    name=fn, arguments=_parse_sim_args(raw),
+                                    id='sim_code_' + fn))
+                
+                # Pattern 3: prose fn(args) — last resort
+                if not curr_tool_calls:
+                    for m in _re.finditer(
+                            r'\b([a-z_]{4,})\(([^)]{0,200})\)', curr_content):
+                        fn, raw = m.group(1), m.group(2)
+                        if fn in _tool_names:
+                            curr_tool_calls.append(ToolCall(
+                                name=fn, arguments=_parse_sim_args(raw),
+                                id='sim_prose_' + fn))
+                            break  # one at a time to avoid false positives
             # Save the message from this round
             msgs.append(ChatMessage(
                 role="assistant",
@@ -467,14 +501,18 @@ class OllamaClient:
             
             # Execute tool calls and append results
             for tc in curr_tool_calls:
-                if on_text: on_text(f"\n[executing tool: {tc.name}...]\n")
+                ot = on_text
+                if ot is not None: ot(f"\n[executing tool: {tc.name}...]\n")
                 result = dispatch_fn(tc.name, tc.arguments)
-                if on_text:
+                ot = on_text
+                if ot is not None:
                     # Show actual content to make tool effects/debugging visible
-                    snippet = (result.content or "").strip()
-                    if len(snippet) > 500:
-                        snippet = snippet[:500] + "…"
-                    on_text(f"[tool result: {tc.name}] {snippet}\n")
+                    full_snippet: str = str(result.content or "").strip()
+                    if len(full_snippet) > 500:
+                        snippet: str = full_snippet[:500] + "…"
+                    else:
+                        snippet: str = full_snippet
+                    ot(f"[tool result: {tc.name}] {snippet}\n")
                 did_execute_tools = True
                 executed_tool_names.append(tc.name)
                 msgs.append(result.to_message())

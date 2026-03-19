@@ -101,17 +101,34 @@ def _fmt_size(b: int) -> str:
     return f"{b:.1f} TB"
 
 
+def _version_key(path: str):
+    """
+    Extract a sortable version tuple from a tarball name.
+    s-ide-v0.4.0.tar.gz → (0, 4, 0, 0)   (0 = no patch suffix)
+    s-ide-v0.4.0p1.tar.gz → (0, 4, 0, 1)
+    Falls back to mtime for unrecognised names.
+    """
+    import re
+    name = os.path.basename(path)
+    m = re.search(r'v?(\d+)\.(\d+)\.(\d+)(?:p(\d+))?', name)
+    if m:
+        return (int(m.group(1)), int(m.group(2)), int(m.group(3)),
+                int(m.group(4) or 0))
+    # fallback: use mtime as a large tuple so version-named files rank higher
+    return (-1, -1, -1, int(os.path.getmtime(path)))
+
+
 def find_newest_tarball(watch_dir: str) -> str | None:
     """
-    Return the absolute path of the newest s-ide-py-*.tar.gz in watch_dir,
-    or None if none found.
+    Return the absolute path of the highest-versioned s-ide*.tar.gz in
+    watch_dir, or None if none found.  Version is parsed from the filename;
+    unversioned files sort below any versioned file.
     """
     pattern = os.path.join(watch_dir, TARBALL_GLOB)
-    matches = glob.glob(pattern)
+    matches = [p for p in glob.glob(pattern) if os.path.getsize(p) > 0]
     if not matches:
         return None
-    # Sort by modification time, newest last
-    matches.sort(key=os.path.getmtime)
+    matches.sort(key=_version_key)
     return matches[-1]
 
 

@@ -1,28 +1,34 @@
 # version/
 
-Project versioning — snapshot, restore, and update via tarballs.
+Project versioning — snapshot, restore, and apply updates via tarballs.
 
 ## version_manager.py
 
-### Operations
-
 | Function | Description |
 |---|---|
-| `archive_version(root)` | Snapshot current project → `versions/v<ver>-<ts>.tar.gz`. Prunes old archives beyond `keep` limit. |
-| `apply_update(root, tarball, bump)` | Archive current state, extract tarball over project, bump version in `side.project.json`. Returns `(new_version, archive_path)`. |
-| `list_versions(root)` | List all snapshots in `versions/`, sorted newest-first. |
-| `compress_loose(root)` | Convert any uncompressed snapshot directories to `.tar.gz`. |
+| `archive_version(root)` | Snapshot current state → `versions/v<ver>-<ts>.tar.gz`. Prunes beyond `keep` limit. |
+| `apply_update(root, tarball, bump)` | Archive first, extract tarball, bump version. Returns `(new_version, archive_path)`. |
+| `list_versions(root)` | List snapshots, newest first. |
+| `compress_loose(root)` | Convert uncompressed snapshot dirs to `.tar.gz`. |
 
-### Tarball format
+Tarball format: standard `.tar.gz` with project dir name as top-level prefix. Path traversal sanitised on extraction.
 
-Standard `.tar.gz` with the project directory name as top-level prefix (`myproject/src/...`).
-Path traversal is sanitised on extraction (no `../` escapes).
-
-### Rollback
+## Rollback
 
 Every `apply_update` archives first. To roll back:
 
 ```bash
-python main.py versions .               # list snapshots
-tar -xzf versions/v0.1.3-20250101T120000.tar.gz --strip-components=1
+python main.py versions .                    # list snapshots
+tar -xzf versions/v0.3.9-20260318.tar.gz --strip-components=1
+```
+
+## update.py
+
+Picks the **highest-versioned** `s-ide-v*.tar.gz` from `~/Downloads/` (version parsed from filename, not modification time), archives current state, extracts update, bumps `side.project.json`, relaunches GUI.
+
+```bash
+python update.py                  # auto-pick from ~/Downloads/
+python update.py --no-relaunch    # don't relaunch after update
+python update.py --bump minor     # bump minor not patch
+python update.py --yes            # skip confirmation
 ```

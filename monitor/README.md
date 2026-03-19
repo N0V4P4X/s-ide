@@ -5,108 +5,73 @@ Runtime performance monitoring for S-IDE and any project it loads.
 ## perf.py
 
 ### ParseTimer
-Times each stage of `parse_project` with context managers. Results live in `graph.meta.perf` and are displayed as a bar chart in the BUILD panel.
+Times each stage of `parse_project`. Results stored in `graph.meta.perf` and displayed as a bar chart in the Build tab.
+
+```python
+from monitor.perf import ParseTimer
+with ParseTimer() as t:
+    with t.stage("parse_files"):
+        parse_all_files(nodes)
+    with t.stage("resolve_edges"):
+        edges = resolve(nodes)
+print(t.report())   # {"total_ms": 268, "slowest": "parse_files", "stages": [...]}
+```
 
 ### ProcessMonitor
-Samples CPU% and RSS memory for every `ManagedProcess` every 2 seconds using `psutil` (if installed) or `/proc/<pid>/status` on Linux. The PROC panel shows live sparklines per process.
+Samples CPU% and RSS memory for every `ManagedProcess` every 2 seconds. Uses `psutil` if installed, falls back to `/proc/<pid>/status` on Linux.
 
 ### MetricsWatcher
-Polls `<project_root>/.side-metrics.json` written by `monitor/instrument.py`. Runs as a background thread, detects file changes by mtime, and exposes per-file and per-function timing to the GUI for node-card overlays.
+Polls `<project>/.side-metrics.json` written by `instrument.py`. Background thread, detects changes by mtime, exposes per-file and per-function timing to the GUI for node-card overlays.
 
 ```python
 from monitor.perf import MetricsWatcher
 watcher = MetricsWatcher("/path/to/project")
 watcher.start()
-file_metrics = watcher.get_file_metrics()   # {rel_path: {calls, avg_ms, ...}}
-fn_metrics   = watcher.get_function_metrics()  # {rel_path::fn: {...}}
+watcher.get_file_metrics()      # {rel_path: {calls, avg_ms, max_ms, …}}
+watcher.get_function_metrics()  # {rel_path::fn: {…}}
 watcher.stop()
 ```
 
----
-
 ## instrument.py
 
-Lightweight instrumentation that **any project** can import to push live timing data back to S-IDE.
-
-### How it works
-
-1. Your project imports `monitor.instrument` and decorates functions with `@timed`
-2. Every call records elapsed milliseconds in memory
-3. Every 5 seconds (configurable), data is flushed to `.side-metrics.json` in your project root
-4. S-IDE's `MetricsWatcher` detects the file change and updates node cards within ~1.5 seconds
-
-### Setup in your project
+Lightweight instrumentation that any project can import.
 
 ```python
-# In your project's entry point (main.py, __init__.py, etc.)
 from monitor.instrument import init, timed, timed_block
 
-# Point at your project root (optional — defaults to cwd)
-init("/path/to/your/project")
-
-# Decorate functions you want to time
-@timed
-def parse_file(path):
-    ...
+init("/path/to/your/project")   # optional, defaults to cwd
 
 @timed
-def build_index(records):
+def parse_file(path: str) -> dict:
     ...
 
-# Or time a block
 with timed_block("database_query", __file__):
     results = db.execute(query)
 ```
 
-### What you'll see in S-IDE
+Data is flushed to `.side-metrics.json` every 5 seconds. S-IDE detects the change and updates node cards within ~1.5 seconds.
 
-Each node card for a timed file shows:
+**Node card display:**
+- Colour strip: green (<10ms avg), amber (<100ms), red (>100ms), grey (stale)
+- Badge: `42× 28ms avg`
+- Inspector: full breakdown per function
 
-- **Colour-coded bottom strip**: green (fast, <10ms avg), amber (<100ms), red (>100ms), grey (stale >8s)
-- **Badge**: `42× 28ms avg` — call count and average time
-- **Inspector panel** (click the node): full breakdown with calls/avg/max/last + per-function table
+## instrumenter.py
 
-### Instrumenting S-IDE itself
-
-S-IDE already instruments its own parser via `ParseTimer`. To see live timing while S-IDE is running and monitoring itself:
-
-```python
-# Add to any parser file, e.g. parser/project_parser.py
-from monitor.instrument import init, timed
-init(__file__)   # finds project root automatically
-
-@timed
-def parse_project(root_dir, save_json=True):
-    ...
-```
-
-### API
+Bulk-instruments a project directory — adds `@timed` to every public function.
 
 ```python
-init(project_root, flush_interval=5.0)  # call once at startup
-timed                                    # decorator
-timed_block(label, filepath="")         # context manager
-trace_module(__file__)                   # record module load
-flush()                                  # force immediate write
-reset()                                  # clear all data
-get_snapshot()                           # dict without flushing
+from monitor.instrumenter import Instrumenter, InstrumentOptions
+result = Instrumenter("/path/to/project", InstrumentOptions(
+    public_only=True,
+    add_tests=True,
+    backup=True,         # enables rollback
+    preview=False,
+)).run()
+print(result.summary())
+# Rollback:
+from monitor.instrumenter import rollback
+rollback("/path/to/project")
 ```
 
-### .side-metrics.json format
-
-```json
-{
-  "pid": 12345,
-  "updated": 1700000000.0,
-  "files": {
-    "src/parser.py": {
-      "calls": 42, "total_ms": 1234.5,
-      "avg_ms": 29.4, "max_ms": 201.0,
-      "last_ms": 28.1, "last_ts": 1700000000.0
-    }
-  },
-  "functions": {
-    "src/parser.py::parse_file": { ... }
-  }
-}
-```
+Options: `public_only`, `top_level_only`, `skip_dunders`, `min_lines`, `add_tests`, `backup`, `preview`.

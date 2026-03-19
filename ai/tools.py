@@ -249,6 +249,87 @@ TOOLS: list[dict] = [
             }
         }
     },
+    {
+        "type": "function",
+        "function": {
+            "name": "write_session_file",
+            "description": (
+                "Write a file to the session workspace (.side/session/). "
+                "This is the ONLY write tool available to Reviewer, Tester, and Documentarian roles. "
+                "Use it to save review reports, test results, documentation drafts, and agent notes. "
+                "Files here are NOT part of the project source — they are scratch space for agents."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "path": {
+                        "type": "string",
+                        "description": "Relative path within session workspace, e.g. 'review/findings.md'"
+                    },
+                    "content": {
+                        "type": "string",
+                        "description": "File content to write"
+                    }
+                },
+                "required": ["path", "content"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "read_session_file",
+            "description": "Read a file from the session workspace written by this or a prior agent.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "path": {
+                        "type": "string",
+                        "description": "Relative path within session workspace"
+                    }
+                },
+                "required": ["path"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "list_session_files",
+            "description": "List all files in the session workspace to see what prior agents have written.",
+            "parameters": {
+                "type": "object",
+                "properties": {}
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "git",
+            "description": (
+                "Run a git operation on the project repository. "
+                "Use status to see changes, log for history, diff for diffs, "
+                "branch to list branches, commit to commit staged changes."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "command": {
+                        "type": "string",
+                        "enum": ["status", "log", "diff", "branch", "add",
+                                 "commit", "checkout", "stash", "stash_pop", "show"],
+                        "description": "Git sub-command to run"
+                    },
+                    "args": {
+                        "type": "string",
+                        "description": "Extra arguments, e.g. a filename for diff or '-m message' for commit"
+                    }
+                },
+                "required": ["command"]
+            }
+        }
+    },
 ]
 
 
@@ -257,6 +338,7 @@ TOOLS: list[dict] = [
 def dispatch_tool(name: str, args: dict, context: "AppContext") -> ToolResult:  # type: ignore
     """
     Route a tool call to the appropriate handler.
+    Checks role-based permissions before dispatching.
     context is the AppContext from ai/context.py.
     """
     # Ollama may send tool arguments as a JSON string; normalise to a dict
@@ -275,6 +357,18 @@ def dispatch_tool(name: str, args: dict, context: "AppContext") -> ToolResult:  
                 tool_call_id="",
                 name=name,
                 content=json.dumps({"error": f"Unknown tool: {name}"}),
+            )
+        # Permission check (after existence check so unknown tools give clear error)
+        if not context.can_use(name):
+            return ToolResult(
+                tool_call_id="",
+                name=name,
+                content=json.dumps({
+                    "error": (
+                        f"Tool '{name}' is not permitted for role '{context.role}'. "
+                        f"Use write_session_file to save output to the session workspace instead."
+                    )
+                }),
             )
         result = handler(args, context)
         return ToolResult(
@@ -566,15 +660,120 @@ def _write_agent_note(args: dict, ctx: Any) -> str:
         return f"Error writing note: {e}"
 
 
-def _run_in_playground(args: dict, ctx: Any) -> str:
-    # This requires reaching back to the GUI. 
-    # For now, we save to a scratch file that the GUI can check
-    path = os.path.join(ctx.project_root, ".side", "playground_queued.py")
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    with open(path, "w") as f:
-        f.write(args.get("code", ""))
-    return "Code queued for playground. USER: Click RUN in Playground tab if not auto-triggered."
+def _run_in_playground(args: dict, ctx: Any) -> dict:
+    """Run a Python snippet in an isolated sandbox copy of the project."""
+    code  = args.get("code", "").strip()
+    setup = args.get("setup", "")
+    if not code:
+        return {"error": "code is required"}
+    if not ctx.project_root:
+        return {"error": "No project root — cannot create sandbox"}
+    from ai.playground import run_snippet
+    return run_snippet(code, ctx.project_root)
 
+
+
+
+def _write_session_file(args: dict, ctx: Any) -> dict:
+    """
+    Write a file to the session workspace (.side/session/).
+    Safe for all roles — does NOT touch project source files.
+    Used by Reviewer, Tester, Documentarian to save reports and drafts.
+    """
+    path    = args.get("path", "").lstrip("/")
+    content = args.get("content", "")
+    if not path:
+        return {"error": "path is required"}
+    if not ctx.session_dir:
+        return {"error": "No session workspace configured"}
+    # Prevent escape from session dir
+    full = os.path.realpath(os.path.join(ctx.session_dir, path))
+    if not full.startswith(os.path.realpath(ctx.session_dir)):
+        return {"error": "Path escapes session workspace"}
+    os.makedirs(os.path.dirname(full), exist_ok=True)
+    try:
+        with open(full, "w", encoding="utf-8") as f:
+            f.write(content)
+        rel = os.path.relpath(full, ctx.session_dir)
+        return {"written": rel, "bytes": len(content.encode())}
+    except Exception as e:
+        return {"error": str(e)}
+
+
+def _read_session_file(args: dict, ctx: Any) -> str:
+    """Read a file from the session workspace."""
+    path = args.get("path", "").lstrip("/")
+    if not path or not ctx.session_dir:
+        return json.dumps({"error": "path and session_dir required"})
+    full = os.path.realpath(os.path.join(ctx.session_dir, path))
+    if not full.startswith(os.path.realpath(ctx.session_dir)):
+        return json.dumps({"error": "Path escapes session workspace"})
+    if not os.path.isfile(full):
+        return json.dumps({"error": f"Not found: {path}"})
+    try:
+        content = open(full, encoding="utf-8", errors="replace").read()
+        if len(content) > 8000:
+            content = content[:8000] + f"\n... [truncated, {len(content)} chars total]"
+        return content
+    except Exception as e:
+        return json.dumps({"error": str(e)})
+
+
+def _list_session_files(args: dict, ctx: Any) -> dict:
+    """List files in the session workspace."""
+    if not ctx.session_dir or not os.path.isdir(ctx.session_dir):
+        return {"files": [], "note": "Session workspace is empty or not created yet"}
+    files = []
+    for root, dirs, fnames in os.walk(ctx.session_dir):
+        dirs[:] = [d for d in dirs if not d.startswith(".")]
+        for f in fnames:
+            full = os.path.join(root, f)
+            rel  = os.path.relpath(full, ctx.session_dir)
+            files.append({
+                "path":    rel,
+                "bytes":   os.path.getsize(full),
+                "modified": os.path.getmtime(full),
+            })
+    files.sort(key=lambda x: x["modified"], reverse=True)
+    return {"files": files, "count": len(files), "workspace": ctx.session_dir}
+
+
+def _git(args: dict, ctx: Any) -> dict:
+    """Run a safe git command in the project root."""
+    if not ctx.project_root:
+        return {"error": "No project root set"}
+    cmd_name = args.get("command", "status")
+    extra    = args.get("args", "").strip()
+    safe_cmds = {
+        "status":    "status --short",
+        "log":       "log --oneline -20",
+        "diff":      f"diff {extra}".strip(),
+        "branch":    "branch -v",
+        "add":       f"add {extra}" if extra else None,
+        "commit":    f"commit {extra}" if extra else None,
+        "checkout":  f"checkout {extra}" if extra else None,
+        "stash":     "stash",
+        "stash_pop": "stash pop",
+        "show":      f"show {extra}".strip(),
+    }
+    git_args = safe_cmds.get(cmd_name)
+    if git_args is None:
+        return {"error": f"Command '{cmd_name}' requires args"}
+    try:
+        result = subprocess.run(
+            f"git {git_args}", shell=True, cwd=ctx.project_root,
+            capture_output=True, text=True, timeout=15,
+        )
+        return {
+            "command":   f"git {git_args}",
+            "exit_code": result.returncode,
+            "output":    result.stdout[-4000:] if result.stdout else "",
+            "stderr":    result.stderr[-500:]  if result.stderr else "",
+        }
+    except subprocess.TimeoutExpired:
+        return {"error": "git command timed out"}
+    except Exception as e:
+        return {"error": str(e)}
 
 _HANDLERS = {
     "read_file":             _read_file,
@@ -590,4 +789,8 @@ _HANDLERS = {
     "update_plan":           _update_plan,
     "write_agent_note":      _write_agent_note,
     "run_in_playground":     _run_in_playground,
+    "git":                   _git,
+    "write_session_file":    _write_session_file,
+    "read_session_file":     _read_session_file,
+    "list_session_files":    _list_session_files,
 }

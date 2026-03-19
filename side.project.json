@@ -1,17 +1,12 @@
 {
   "name": "s-ide-py",
-  "version": "0.2.0",
-  "description": "S-IDE Python core",
+  "version": "0.4.8",
+  "description": "S-IDE \u2014 project graph editor with AI development assistant",
   "ignore": [
     "dist",
     "logs",
     ".nodegraph.json"
   ],
-  "versions": {
-    "dir": "versions",
-    "compress": true,
-    "keep": 20
-  },
   "run": {
     "gui": "python gui/app.py",
     "test": "python test/test_suite.py",
@@ -19,5 +14,11 @@
     "build": "python main.py build . --kind tarball",
     "clean": "python main.py build . --no-minify --kind tarball",
     "server": "python gui/server.py"
-  }
+  },
+  "versions": {
+    "dir": "versions",
+    "compress": true,
+    "keep": 20
+  },
+  "meta": {}
 }

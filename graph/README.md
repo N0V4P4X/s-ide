@@ -1,41 +1,61 @@
 # graph/
 
-Core data model types for the S-IDE project graph.
+Core data model. All types shared between the parser, GUI, build pipeline, and AI tools.
 
 ## types.py
 
-All dataclasses shared between the parser, GUI, and build pipeline.
-
 | Type | Description |
 |---|---|
-| `FileNode` | One source file — id, path, category, imports, exports, definitions, tags, position |
-| `Edge` | Directed dependency between two FileNodes (or a FileNode and an external package) |
-| `ProjectGraph` | Top-level container: `meta` + `nodes` + `edges`. Call `.to_dict()` for JSON output. |
-| `GraphMeta` | Project config, language stats, doc audit summary, parse timing, **per-stage perf** |
-| `ImportRecord` | A single import statement extracted from source |
-| `ExportRecord` | A single exported symbol |
-| `Definition` | A named definition (function, class, variable) |
-| `DocAudit` / `DocWarning` | README health check results |
-| `Position` | x/y canvas position assigned by the layout engine |
+| `FileNode` | One source file: id, path, category, imports, exports, definitions, tags, errors, position |
+| `Edge` | Directed dependency: source→target, type, symbols, line, isExternal |
+| `ProjectGraph` | Container: meta + nodes + edges. `.to_dict()` → JSON-safe dict |
+| `GraphMeta` | Project config, language stats, doc audit, parse timing, perf data |
+| `ImportRecord` | One import statement |
+| `ExportRecord` | One exported symbol |
+| `Definition` | One named definition (function, class) with full data flow |
+| `Position` | x/y canvas position |
 
-### GraphMeta.perf
+## Definition — data flow fields
 
-After every parse, `meta.perf` contains per-stage timing from `ParseTimer`:
+The Python parser populates these on every function and class definition:
+
+```python
+@dataclass
+class Definition:
+    name:        str
+    kind:        str           # "function", "method", "class", "dunder"
+    line:        int
+    end_line:    int
+    indent:      int
+    is_async:    bool
+    decorators:  list[str]
+    bases:       list[str]     # class bases
+    # Data flow:
+    args:        list          # [(name, type_hint_str), ...]
+    return_type: str
+    calls:       list[str]     # function names called in body
+    raises:      list[str]     # exception types raised
+    complexity:  int           # cyclomatic complexity estimate
+```
+
+## GraphMeta.perf
 
 ```json
 {
   "total_ms": 268,
   "slowest": "parse_files",
   "stages": [
-    {"name": "config",       "ms": 0.5},
-    {"name": "walk",         "ms": 3.6},
-    {"name": "parse_files",  "ms": 254.3},
-    {"name": "resolve_edges","ms": 1.2},
-    {"name": "layout",       "ms": 0.1},
-    {"name": "doc_audit",    "ms": 0.1},
-    {"name": "write_json",   "ms": 8.2}
+    {"name": "config",        "ms": 0.5},
+    {"name": "walk",          "ms": 3.6},
+    {"name": "parse_files",   "ms": 254.3},
+    {"name": "resolve_edges", "ms": 1.2},
+    {"name": "layout",        "ms": 0.1},
+    {"name": "doc_audit",     "ms": 0.1},
+    {"name": "write_json",    "ms": 8.2}
   ]
 }
 ```
 
-This is embedded in `.nodegraph.json` and displayed in the BUILD panel timing chart.
+## Layer rule
+
+`graph/types.py` imports nothing from other S-IDE modules. It is the foundation layer. All other modules may import from it; it imports from none of them.

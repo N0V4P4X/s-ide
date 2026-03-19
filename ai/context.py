@@ -21,11 +21,42 @@ from .client import ChatMessage
 from .standards import get_system_prompt
 
 
+# Tools available to every role. Role-specific subsets are applied at
+# dispatch time when ctx.permitted_tools is non-empty.
+ALL_TOOLS = frozenset([
+    "read_file", "list_files", "get_file_summary", "search_definitions",
+    "get_graph_overview", "get_metrics", "run_command",
+    "get_definition_source", "write_file", "create_plan", "update_plan",
+    "write_agent_note", "run_in_playground", "git",
+    "write_session_file", "read_session_file", "list_session_files",
+])
+
+# Read-only tools — safe for any role
+READ_TOOLS = frozenset([
+    "read_file", "list_files", "get_file_summary", "search_definitions",
+    "get_graph_overview", "get_metrics", "get_definition_source", "git",
+    "read_session_file", "list_session_files",
+])
+
+# Default permitted tools per role
+ROLE_TOOLS: dict[str, frozenset] = {
+    "chat":           ALL_TOOLS,
+    "architect":      READ_TOOLS | {"write_session_file", "create_plan",
+                                     "update_plan", "write_agent_note"},
+    "implementer":    ALL_TOOLS,
+    "reviewer":       READ_TOOLS | {"write_session_file", "write_agent_note"},
+    "tester":         READ_TOOLS | {"run_command", "run_in_playground",
+                                     "write_session_file", "write_agent_note"},
+    "optimizer":      ALL_TOOLS,
+    "documentarian":  READ_TOOLS | {"write_session_file", "write_agent_note"},
+}
+
+
 @dataclass
 class AppContext:
     """
     Live project state passed to every tool call.
-    Constructed from the GUI's current state.
+    Constructed from the GUI's current state or a TeamSession.
     """
     project_root:    str  = ""
     project_name:    str  = ""
@@ -33,6 +64,26 @@ class AppContext:
     focused_node:    dict | None = None   # node the user last clicked
     focused_file:    str  = ""            # relative path of focused file
     metrics_path:    str  = ""            # path to .side-metrics.json if present
+    # Agent team fields
+    role:            str  = "chat"        # agent role (governs tool access)
+    agent_name:      str  = ""            # display name for this agent
+    session_root:    str  = ""            # .side/session/<session_id>/
+    permitted_tools: frozenset = field(   # empty = use role default
+        default_factory=frozenset)
+
+    def can_use(self, tool_name: str) -> bool:
+        """Return True if this context's role may call the named tool."""
+        allowed = self.permitted_tools or ROLE_TOOLS.get(self.role, ALL_TOOLS)
+        return tool_name in allowed
+
+    @property
+    def session_dir(self) -> str:
+        """Absolute path to this session's scratch workspace."""
+        if self.session_root:
+            return self.session_root
+        if self.project_root:
+            return os.path.join(self.project_root, ".side", "session", "default")
+        return ""
 
 
 def build_context(
@@ -40,8 +91,11 @@ def build_context(
     graph:         dict | None = None,
     focused_node:  dict | None = None,
     focused_file:  str = "",
+    role:          str = "chat",
+    agent_name:    str = "",
+    session_root:  str = "",
 ) -> AppContext:
-    """Construct an AppContext from GUI state."""
+    """Construct an AppContext from GUI state or team session config."""
     name = ""
     if graph:
         name = graph.get("meta", {}).get("project", {}).get("name", "")
@@ -53,6 +107,9 @@ def build_context(
         focused_node=focused_node,
         focused_file=focused_file,
         metrics_path=metrics_path if os.path.isfile(metrics_path) else "",
+        role=role,
+        agent_name=agent_name,
+        session_root=session_root,
     )
 
 
@@ -115,6 +172,28 @@ def build_system_message(ctx: AppContext, mode: str = "chat") -> ChatMessage:
                 system += f"\nLive metrics active — slowest files: {summary}"
         except Exception:
             pass
+
+    # Role and session context
+    if ctx.role and ctx.role != "chat":
+        system += f"\n\n## Your role: {ctx.role.upper()}"
+        if ctx.agent_name:
+            system += f" ({ctx.agent_name})"
+            allowed = ctx.permitted_tools or ROLE_TOOLS.get(ctx.role, ALL_TOOLS)
+        system += f"\nYou may use these tools: {', '.join(sorted(allowed))}"
+        if "write_file" not in allowed:
+            system += (
+                "\n\nIMPORTANT: You cannot write to project source files directly. "
+                "Use write_session_file to write reports, notes, and documentation "
+                "drafts to the session workspace. The Architect or a human will "
+                "promote approved outputs to the real project tree."
+            )
+        if ctx.session_dir:
+            system += f"\nSession workspace: {ctx.session_dir}"
+            system += (
+                "\nUse write_session_file(path, content) to save your work. "
+                "Use list_session_files() to see what prior agents wrote. "
+                "Use read_session_file(path) to read them."
+            )
 
     return ChatMessage(role="system", content=system)
 

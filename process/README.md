@@ -1,27 +1,8 @@
 # process/
 
-Subprocess lifecycle management for projects running inside S-IDE.
+Subprocess lifecycle management.
 
 ## process_manager.py
-
-`ProcessManager` — registry of all active processes for an IDE session.
-`ManagedProcess` — wraps a single subprocess.
-
-### Features
-
-- **Start**: `mgr.start(name, command, cwd)` — spawns via `subprocess.Popen`, returns a `ManagedProcess`
-- **Stop**: SIGTERM → 3s grace → SIGKILL
-- **Suspend / Resume**: SIGSTOP / SIGCONT on POSIX; Windows thread suspend via ctypes
-- **Log buffer**: last 500 lines of stdout+stderr, per-process ring buffer
-- **Callbacks**: `proc.on_stdout(cb)`, `proc.on_stderr(cb)`, `proc.on_exit(cb)` — called from reader threads, keep them non-blocking
-- **Pipe cleanup**: reader threads close stdout/stderr on process exit to avoid ResourceWarning
-
-### Thread model
-
-Each process gets three daemon threads: stdout reader, stderr reader, waiter.
-All state mutations are protected by `self._lock`.
-
-### Usage
 
 ```python
 from process.process_manager import ProcessManager
@@ -29,9 +10,15 @@ from process.process_manager import ProcessManager
 mgr  = ProcessManager()
 proc = mgr.start(name="dev", command="python main.py", cwd="/my/project")
 proc.on_stdout(lambda line: print("OUT:", line))
+proc.on_stderr(lambda line: print("ERR:", line))
+proc.on_exit(lambda code: print("exited:", code))
 
 mgr.suspend(proc.id)
 mgr.resume(proc.id)
-mgr.stop(proc.id)
-mgr.stop_all()   # call on IDE shutdown
+mgr.stop(proc.id)     # SIGTERM → 3s grace → SIGKILL
+mgr.stop_all()        # call on IDE shutdown
 ```
+
+Each process gets three daemon threads: stdout reader, stderr reader, waiter. All state protected by `self._lock`. Last 500 lines of output kept in a per-process ring buffer.
+
+`proc.info()` returns `{"id", "name", "command", "status", "pid", "exit_code", "cpu_percent", "rss_mb"}`.

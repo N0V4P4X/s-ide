@@ -1,0 +1,16 @@
+{
+  "name": "calculator",
+  "version": "0.1.0",
+  "description": "PEMDAS-correct calculator with GUI and CLI interfaces",
+  "ignore": ["__pycache__", "*.pyc", ".side", "dist"],
+  "run": {
+    "gui":  "python src/gui_app.py",
+    "cli":  "python src/cli.py",
+    "test": "python -m unittest discover test/ -v"
+  },
+  "versions": {
+    "dir": "versions",
+    "compress": true,
+    "keep": 10
+  }
+}

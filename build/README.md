@@ -1,57 +1,67 @@
 # build/
 
-Clean, minify, and package S-IDE projects for distribution.
+Clean, minify, and package projects for distribution.
 
 ## Modules
 
-### cleaner.py — `clean_project(root, opts)`
+### cleaner.py
 
-Removes dev artifacts in tiers you can pick independently:
+```python
+from build.cleaner import clean_project, CleanOptions
+clean_project(".", CleanOptions(tiers=["cache", "logs"]))
+```
 
-| Tier | What gets removed |
+| Tier | Removes |
 |---|---|
 | `cache` | `__pycache__`, `*.pyc`, `.mypy_cache`, `.pytest_cache` |
 | `logs` | `logs/`, `*.log` |
 | `build` | `dist/`, `build/`, `*.egg-info/`, `.nodegraph.json` |
 | `dev` | test data, scratch dirs, `.coverage`, `htmlcov/` |
-| `all` | everything above |
 
-`dry_run=True` reports what would be removed without deleting anything.
+`CleanOptions(dry_run=True)` reports without deleting.
 
-### minifier.py — `minify_project(src, dst, opts)`
+### minifier.py
 
-Strips comments, docstrings, and blank lines. Per-language:
-- **Python**: uses `ast` for accurate docstring removal, preserves `# noqa` / `# type: ignore`
-- **JS/TS**: regex on comment-stripped source
+```python
+from build.minifier import minify_project, MinifyOptions
+minify_project(src=".", dst="dist/", opts=MinifyOptions(strip_docstrings=True))
+```
+
+- **Python**: AST-based docstring removal, preserves `# noqa`/`# type: ignore`
+- **JS/TS**: regex comment stripping
 - **JSON**: `json.dumps` with no whitespace
-- **Shell**: strips `#` comments, blank lines, keeps shebang
+- **Shell**: strips `#` comments, keeps shebang
 
-`bundle_modules(graph, src, out_path)` combines Python modules into a single file in topological dependency order.
+`bundle_modules(graph, src, out_path)` combines Python modules into a single file in topological dependency order — the foundation for Phase 3 optimization output.
 
-### packager.py — `package_project(root, out_dir, opts)`
+### packager.py
 
-Three output kinds:
+```python
+from build.packager import package_project, PackageOptions
+result = package_project(".", "dist", PackageOptions(kind="tarball", minify=True))
+print(result.summary())
+```
 
 | Kind | Output |
 |---|---|
-| `tarball` | `.tar.gz` of minified source — compatible with S-IDE update system |
-| `installer` | `.tar.gz` (Linux/macOS) or `.zip` (Windows) with launcher scripts |
-| `portable` | Self-contained directory, optionally with bundled `.venv` |
+| `tarball` | `.tar.gz` — compatible with S-IDE update system |
+| `installer` | `.tar.gz`/`.zip` with launcher scripts |
+| `portable` | Self-contained directory, optionally with `.venv` |
 
-Writes a `build-manifest.json` in `out_dir` tracking the last 20 builds.
+Writes `build-manifest.json` tracking the last 20 builds.
 
-## Full pipeline example
+### sandbox.py
 
-```bash
-# Via CLI
-python main.py build . --kind tarball --bump minor
+Runs a project in an isolated temp copy, applies clean/minify transforms, captures logs.
 
-# Or programmatically
-from build import clean_project, minify_project, package_project
-from build import CleanOptions, MinifyOptions, PackageOptions
-
-clean_project(".", CleanOptions(tiers=["cache", "logs"]))
-result = package_project(".", "dist",
-    PackageOptions(kind="tarball", minify=True, clean=False))
-print(result.summary())
+```python
+from build.sandbox import SandboxRun, SandboxOptions
+sb = SandboxRun(root, SandboxOptions(mode="clean", keep_log_runs=3))
+sb.prepare()     # copy to tempdir, apply transforms
+sb.start("python main.py")
+sb.cleanup()     # copy logs to logs/sandbox/<ts>/, delete tempdir
 ```
+
+## Phase 3 role
+
+The build pipeline is the execution layer for the optimization workflow described in `FUTURE.md`. `minifier.py` handles mechanical stripping; `bundler` handles import resolution; `sandbox.py` provides isolated verification runs. The optimizer connects these with measurement and verification gates.

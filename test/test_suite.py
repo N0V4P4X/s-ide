@@ -1773,6 +1773,8 @@ class TestAITools(unittest.TestCase):
             self.assertGreater(len(msg.content), 100)
 
 
+
+
 class TestGuiRunPanel(unittest.TestCase):
     def test_run_panel_creates_chevron_and_binds(self):
         """
@@ -1853,6 +1855,959 @@ class TestCliSmoke(unittest.TestCase):
         # argparse uses 0 for --help
         self.assertEqual(p.returncode, 0, msg=p.stderr[-500:])
         self.assertTrue(len(p.stdout) > 0)
+
+
+
+
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Markdown renderer
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class TestMarkdownRenderer(unittest.TestCase):
+
+    def _mock(self):
+        class T:
+            def __init__(self): self.buf = []
+            def config(self, **kw): pass
+            def insert(self, pos, text, tag=""): self.buf.append((text, tag))
+            def see(self, pos): pass
+            def winfo_exists(self): return True
+            @property
+            def text(self): return "".join(t for t, _ in self.buf)
+            def tags(self, frag): return [tag for t, tag in self.buf if frag in t]
+        class A:
+            _ai_conv = T()
+        return A()
+
+    def test_h1(self):
+        from gui.panels import ai_append_markdown
+        a = self._mock(); ai_append_markdown(a, "# Title")
+        self.assertIn("Title", a._ai_conv.text)
+        self.assertIn("h1", a._ai_conv.tags("Title"))
+
+    def test_h2(self):
+        from gui.panels import ai_append_markdown
+        a = self._mock(); ai_append_markdown(a, "## Section")
+        self.assertIn("h2", a._ai_conv.tags("Section"))
+
+    def test_bold(self):
+        from gui.panels import _insert_inline
+        a = self._mock()
+        _insert_inline(a._ai_conv, "This is **bold** text")
+        self.assertIn("strong", a._ai_conv.tags("bold"))
+
+    def test_italic(self):
+        from gui.panels import _insert_inline
+        a = self._mock()
+        _insert_inline(a._ai_conv, "This is *italic* text")
+        self.assertIn("em", a._ai_conv.tags("italic"))
+
+    def test_inline_code(self):
+        from gui.panels import _insert_inline
+        a = self._mock()
+        _insert_inline(a._ai_conv, "Use `print()` here")
+        self.assertIn("code", a._ai_conv.tags("print()"))
+
+    def test_code_block(self):
+        from gui.panels import ai_append_markdown
+        a = self._mock(); ai_append_markdown(a, "```\nx = 1\n```")
+        self.assertIn("x = 1", a._ai_conv.text)
+        self.assertIn("code", a._ai_conv.tags("x = 1"))
+
+    def test_bullet(self):
+        from gui.panels import ai_append_markdown
+        a = self._mock(); ai_append_markdown(a, "- item one")
+        self.assertIn("\u2022", a._ai_conv.text)
+        self.assertIn("item one", a._ai_conv.text)
+
+    def test_numbered_list(self):
+        from gui.panels import ai_append_markdown
+        a = self._mock(); ai_append_markdown(a, "1. First\n2. Second")
+        self.assertIn("First", a._ai_conv.text)
+
+    def test_hr(self):
+        from gui.panels import ai_append_markdown
+        a = self._mock(); ai_append_markdown(a, "---")
+        self.assertIn("\u2500", a._ai_conv.text)
+
+    def test_unclosed_code_flushed(self):
+        from gui.panels import ai_append_markdown
+        a = self._mock(); ai_append_markdown(a, "```\nsome code")
+        self.assertIn("some code", a._ai_conv.text)
+
+    def test_mixed(self):
+        from gui.panels import ai_append_markdown
+        a = self._mock()
+        ai_append_markdown(a, "# H\n\n**bold** and `code`.\n\n- item\n\n```\nblock\n```")
+        t = a._ai_conv.text
+        for s in ["H", "bold", "code", "item", "block"]:
+            self.assertIn(s, t)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SessionState
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class TestSessionState(unittest.TestCase):
+
+    def _state(self, tmp):
+        import importlib.util
+        spec = importlib.util.spec_from_file_location('gui_state', 'gui/state.py')
+        sm = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(sm)
+        orig = sm._STATE_PATH
+        sm._STATE_PATH = os.path.join(tmp, 's.json')
+        return sm.SessionState(), sm, orig
+
+    def test_project_roundtrip(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            s, sm, orig = self._state(tmp)
+            s.add_project("myapp", "/home/user/myapp")
+            s2 = sm.SessionState()
+            self.assertIn("/home/user/myapp", [p["path"] for p in s2.projects])
+            sm._STATE_PATH = orig
+
+    def test_ai_history(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            s, sm, orig = self._state(tmp)
+            s.set_ai_history("/p", [{"role": "user", "content": "hi"},
+                                     {"role": "assistant", "content": "hello"}])
+            s2 = sm.SessionState()
+            self.assertEqual(s2.get_ai_history("/p")[0]["content"], "hi")
+            sm._STATE_PATH = orig
+
+    def test_terminal_history(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            s, sm, orig = self._state(tmp)
+            s.add_terminal_command("/p", "git status")
+            s2 = sm.SessionState()
+            self.assertIn("git status", s2.get_terminal_history("/p"))
+            sm._STATE_PATH = orig
+
+    def test_viewport(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            s, sm, orig = self._state(tmp)
+            s.set_viewport("/p", 10.0, 20.0, 1.5)
+            s.flush_viewport("/p")
+            s2 = sm.SessionState()
+            self.assertAlmostEqual(s2.get_viewport("/p")["x"], 10.0)
+            sm._STATE_PATH = orig
+
+    def test_bottom_panel(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            s, sm, orig = self._state(tmp)
+            s.bottom_height = 300
+            s.bottom_tab = "ai"
+            s.save()
+            s2 = sm.SessionState()
+            self.assertEqual(s2.bottom_height, 300)
+            self.assertEqual(s2.bottom_tab, "ai")
+            sm._STATE_PATH = orig
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Git tool
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class TestGitTool(unittest.TestCase):
+
+    def _ctx(self, tmp):
+        from ai.context import AppContext
+        return AppContext(project_root=tmp, project_name="t")
+
+    def test_no_root(self):
+        from ai.tools import dispatch_tool
+        from ai.context import AppContext
+        r = dispatch_tool("git", {"command": "status"}, AppContext())
+        self.assertIn("error", r.content.lower())
+
+    def test_status_in_repo(self):
+        import subprocess, json
+        with tempfile.TemporaryDirectory() as tmp:
+            subprocess.run("git init", shell=True, cwd=tmp, capture_output=True)
+            from ai.tools import dispatch_tool
+            r = dispatch_tool("git", {"command": "status"}, self._ctx(tmp))
+            d = json.loads(r.content)
+            # git may return exit_code (success) or error (no upstream)
+            self.assertTrue("exit_code" in d or "error" in d)
+
+    def test_log_after_commit(self):
+        import subprocess, json
+        with tempfile.TemporaryDirectory() as tmp:
+            subprocess.run("git init", shell=True, cwd=tmp, capture_output=True)
+            # Use -c flags so config doesn't need to persist between calls
+            open(os.path.join(tmp, "f.txt"), "w").write("x")
+            subprocess.run(
+                "git add . && git -c user.email=t@t.com -c user.name=T commit -m init",
+                shell=True, cwd=tmp, capture_output=True)
+            from ai.tools import dispatch_tool
+            r = dispatch_tool("git", {"command": "log"}, self._ctx(tmp))
+            d = json.loads(r.content)
+            self.assertIn("exit_code", d)
+            if d["exit_code"] == 0:
+                self.assertIn("init", d["output"])
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Filter logic
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class TestFilterLogic(unittest.TestCase):
+
+    def _nodes(self):
+        return [
+            {"id": "a", "category": "python",     "isExternal": False},
+            {"id": "b", "category": "javascript", "isExternal": False},
+            {"id": "c", "category": "docs",       "isExternal": False},
+            {"id": "d", "category": "config",     "isExternal": False},
+            {"id": "e", "category": "python",     "isExternal": True},
+        ]
+
+    def _vis(self, nodes, filter_cats, hidden_cats, show_ext=False):
+        return [n for n in nodes
+                if (show_ext or not n.get("isExternal"))
+                and (n.get("category") not in hidden_cats
+                     or n.get("category") in filter_cats)
+                and (not filter_cats or n.get("category") in filter_cats)]
+
+    def test_docs_hidden_by_default(self):
+        v = self._vis(self._nodes(), set(), {"docs", "config"})
+        self.assertFalse(any(n["category"] == "docs" for n in v))
+
+    def test_python_visible_by_default(self):
+        v = self._vis(self._nodes(), set(), {"docs", "config"})
+        self.assertTrue(any(n["category"] == "python" for n in v))
+
+    def test_ext_hidden_by_default(self):
+        v = self._vis(self._nodes(), set(), {"docs", "config"}, show_ext=False)
+        self.assertFalse(any(n["isExternal"] for n in v))
+
+    def test_selecting_docs_shows_them(self):
+        v = self._vis(self._nodes(), {"docs"}, set())
+        self.assertTrue(any(n["category"] == "docs" for n in v))
+
+    def test_multi_select_py_js(self):
+        v = self._vis(self._nodes(), {"python", "javascript"}, {"docs", "config"})
+        cats = {n["category"] for n in v}
+        self.assertEqual(cats, {"python", "javascript"})
+
+    def test_all_clears(self):
+        v = self._vis(self._nodes(), set(), {"docs", "config"})
+        cats = {n["category"] for n in v}
+        self.assertIn("python", cats)
+        self.assertNotIn("docs", cats)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Doc links — directory matching
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class TestDocLinks(unittest.TestCase):
+
+    def _same(self, a, b):
+        return os.path.dirname(a) == os.path.dirname(b)
+
+    def test_readme_links_sibling(self):
+        self.assertTrue(self._same("gui/README.md", "gui/app.py"))
+
+    def test_readme_not_subdir(self):
+        self.assertFalse(self._same("README.md", "gui/app.py"))
+
+    def test_root_readme_root_file(self):
+        self.assertTrue(self._same("README.md", "main.py"))
+
+    def test_nested_readme(self):
+        self.assertTrue(self._same("parser/README.md", "parser/walker.py"))
+
+    def test_cross_dir_no_link(self):
+        self.assertFalse(self._same("parser/README.md", "gui/app.py"))
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Agent roles and session workspace
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class TestAgentRoles(unittest.TestCase):
+
+    def _ctx(self, tmp, role="chat", session_root=None):
+        from ai.context import build_context
+        return build_context(tmp, role=role,
+                             session_root=session_root or os.path.join(tmp, "session"))
+
+    def test_chat_role_has_all_tools(self):
+        from ai.context import ALL_TOOLS
+        with tempfile.TemporaryDirectory() as tmp:
+            ctx = self._ctx(tmp, "chat")
+            for tool in ["write_file", "read_file", "git", "run_command"]:
+                self.assertTrue(ctx.can_use(tool), f"chat should have {tool}")
+
+    def test_reviewer_cannot_write_file(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            ctx = self._ctx(tmp, "reviewer")
+            self.assertFalse(ctx.can_use("write_file"))
+
+    def test_reviewer_can_write_session_file(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            ctx = self._ctx(tmp, "reviewer")
+            self.assertTrue(ctx.can_use("write_session_file"))
+
+    def test_tester_cannot_write_file(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            ctx = self._ctx(tmp, "tester")
+            self.assertFalse(ctx.can_use("write_file"))
+
+    def test_tester_can_run_command(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            ctx = self._ctx(tmp, "tester")
+            self.assertTrue(ctx.can_use("run_command"))
+            self.assertTrue(ctx.can_use("run_in_playground"))
+
+    def test_documentarian_cannot_write_file_or_run(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            ctx = self._ctx(tmp, "documentarian")
+            self.assertFalse(ctx.can_use("write_file"))
+            self.assertFalse(ctx.can_use("run_command"))
+            self.assertTrue(ctx.can_use("write_session_file"))
+
+    def test_implementer_has_full_write_access(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            ctx = self._ctx(tmp, "implementer")
+            self.assertTrue(ctx.can_use("write_file"))
+            self.assertTrue(ctx.can_use("run_command"))
+            self.assertTrue(ctx.can_use("git"))
+
+    def test_dispatch_blocks_forbidden_tool(self):
+        from ai.tools import dispatch_tool
+        import json
+        with tempfile.TemporaryDirectory() as tmp:
+            ctx = self._ctx(tmp, "reviewer")
+            result = dispatch_tool("write_file", {"path": "x.py", "content": "x"}, ctx)
+            d = json.loads(result.content)
+            self.assertIn("error", d)
+            self.assertIn("not permitted", d["error"])
+
+    def test_dispatch_allows_session_write(self):
+        from ai.tools import dispatch_tool
+        import json
+        with tempfile.TemporaryDirectory() as tmp:
+            ctx = self._ctx(tmp, "reviewer")
+            result = dispatch_tool("write_session_file",
+                                   {"path": "review/notes.md", "content": "# hi"}, ctx)
+            d = json.loads(result.content)
+            self.assertIn("written", d)
+
+    def test_session_file_roundtrip(self):
+        from ai.tools import dispatch_tool
+        import json
+        with tempfile.TemporaryDirectory() as tmp:
+            ctx = self._ctx(tmp, "reviewer")
+            dispatch_tool("write_session_file",
+                          {"path": "notes.md", "content": "hello world"}, ctx)
+            result = dispatch_tool("read_session_file", {"path": "notes.md"}, ctx)
+            self.assertIn("hello world", result.content)
+
+    def test_list_session_files(self):
+        from ai.tools import dispatch_tool
+        import json
+        with tempfile.TemporaryDirectory() as tmp:
+            ctx = self._ctx(tmp, "tester")
+            dispatch_tool("write_session_file",
+                          {"path": "test/results.md", "content": "PASS"}, ctx)
+            dispatch_tool("write_session_file",
+                          {"path": "test/cases.py", "content": "def test_x(): pass"}, ctx)
+            result = dispatch_tool("list_session_files", {}, ctx)
+            d = json.loads(result.content)
+            self.assertEqual(d["count"], 2)
+
+    def test_session_file_cannot_escape(self):
+        from ai.tools import dispatch_tool
+        import json
+        with tempfile.TemporaryDirectory() as tmp:
+            ctx = self._ctx(tmp, "reviewer")
+            result = dispatch_tool("write_session_file",
+                                   {"path": "../../evil.py", "content": "x"}, ctx)
+            d = json.loads(result.content)
+            self.assertIn("error", d)
+            self.assertIn("escapes", d["error"])
+
+    def test_role_prompts_exist_for_all_roles(self):
+        from ai.roles import get_role_prompt
+        for role in ["architect", "implementer", "reviewer",
+                     "tester", "optimizer", "documentarian"]:
+            p = get_role_prompt(role)
+            self.assertGreater(len(p), 200, f"{role} prompt too short")
+            self.assertIn("session", p.lower(), f"{role} missing session info")
+
+    def test_unknown_role_returns_base_prompt(self):
+        from ai.roles import get_role_prompt
+        from ai.standards import get_system_prompt
+        p = get_role_prompt("nonexistent_role")
+        base = get_system_prompt("chat")
+        self.assertEqual(p, base)
+
+    def test_session_dir_property(self):
+        from ai.context import build_context
+        with tempfile.TemporaryDirectory() as tmp:
+            ctx = build_context(tmp, role="reviewer")
+            self.assertIn(".side", ctx.session_dir)
+            self.assertIn("session", ctx.session_dir)
+
+
+# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═
+# AI Teams engine
+# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═
+
+class TestTeamSession(unittest.TestCase):
+
+    def test_agent_config_defaults(self):
+        from ai.teams import AgentConfig
+        a = AgentConfig(role='reviewer')
+        self.assertEqual(a.name, 'Reviewer')
+        self.assertEqual(a.model, 'llama3.2')
+        self.assertEqual(a.max_rounds, 8)
+
+    def test_agent_config_custom_name(self):
+        from ai.teams import AgentConfig
+        a = AgentConfig(role='tester', name='Bob')
+        self.assertEqual(a.name, 'Bob')
+
+    def test_session_creates_workspace(self):
+        from ai.teams import TeamSession, AgentConfig
+        with tempfile.TemporaryDirectory() as tmp:
+            s = TeamSession(tmp, 'Fix the bug', [AgentConfig('reviewer')])
+            self.assertTrue(os.path.isdir(s.session_dir))
+
+    def test_session_writes_task_brief(self):
+        from ai.teams import TeamSession, AgentConfig
+        with tempfile.TemporaryDirectory() as tmp:
+            s = TeamSession(tmp, 'Add type hints', [AgentConfig('implementer')])
+            s._write_task_brief()
+            brief = open(os.path.join(s.session_dir, 'TASK.md')).read()
+            self.assertIn('Add type hints', brief)
+            self.assertIn('implementer', brief)
+
+    def test_workflow_result_summary(self):
+        from ai.teams import WorkflowResult, AgentTurn
+        r = WorkflowResult(session_id='abc', task='test task',
+                           project_root='/tmp', session_dir='/tmp/s')
+        r.turns.append(AgentTurn(
+            agent='Reviewer', role='reviewer', model='llama3.2',
+            response='ok', tool_calls=[], session_files=['review/notes.md'],
+            duration_s=2.3))
+        self.assertIn('Reviewer', r.summary())
+
+    def test_list_sessions_empty(self):
+        from ai.teams import list_sessions
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertEqual(list_sessions(tmp), [])
+
+    def test_list_sessions_finds_session(self):
+        from ai.teams import TeamSession, AgentConfig, list_sessions
+        with tempfile.TemporaryDirectory() as tmp:
+            s = TeamSession(tmp, 'Task one', [AgentConfig('architect')])
+            s._write_task_brief()
+            sessions = list_sessions(tmp)
+            self.assertEqual(len(sessions), 1)
+            self.assertEqual(sessions[0]['id'], s.session_id)
+
+    def test_events_emitted(self):
+        from ai.teams import TeamSession, AgentConfig
+        events = []
+        with tempfile.TemporaryDirectory() as tmp:
+            s = TeamSession(tmp, 'task', [], on_event=events.append)
+            s._emit('start', AgentConfig('architect'), 'starting')
+            self.assertEqual(len(events), 1)
+            self.assertEqual(events[0].type, 'start')
+
+
+# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═
+# Playground
+# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═# ═
+
+class TestPlayground(unittest.TestCase):
+
+    def test_simple_snippet(self):
+        from ai.playground import Playground
+        with tempfile.TemporaryDirectory() as tmp:
+            pg = Playground(tmp)
+            result = pg.run('print(42)')
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn('42', result.stdout)
+
+    def test_timeout(self):
+        from ai.playground import Playground
+        with tempfile.TemporaryDirectory() as tmp:
+            pg = Playground(tmp)
+            pg.TIMEOUT_S = 1
+            result = pg.run('import time; time.sleep(5)')
+            self.assertTrue(result.timed_out)
+
+    def test_exception_captured(self):
+        from ai.playground import Playground
+        with tempfile.TemporaryDirectory() as tmp:
+            pg = Playground(tmp)
+            result = pg.run('raise ValueError("test error")')
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn('ValueError', result.stderr)
+
+    def test_project_files_accessible(self):
+        from ai.playground import Playground
+        with tempfile.TemporaryDirectory() as tmp:
+            open(os.path.join(tmp, 'mymod.py'), 'w').write('VALUE = 42\n')
+            pg = Playground(tmp)
+            result = pg.run('import mymod; print(mymod.VALUE)')
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn('42', result.stdout)
+
+    def test_result_dict(self):
+        from ai.playground import Playground
+        with tempfile.TemporaryDirectory() as tmp:
+            pg = Playground(tmp)
+            d = pg.run('x = 1 + 1').to_dict()
+            self.assertIn('exit_code', d)
+            self.assertIn('ok', d)
+
+    def test_run_snippet_dispatch(self):
+        from ai.playground import run_snippet
+        with tempfile.TemporaryDirectory() as tmp:
+            d = run_snippet('print("dispatch works")', tmp)
+            self.assertTrue(d['ok'])
+            self.assertIn('dispatch works', d['stdout'])
+
+    def test_run_in_playground_tool(self):
+        from ai.tools import dispatch_tool
+        from ai.context import build_context
+        import json
+        with tempfile.TemporaryDirectory() as tmp:
+            ctx = build_context(tmp, role='tester')
+            result = dispatch_tool('run_in_playground', {'code': 'print(2+2)'}, ctx)
+            d = json.loads(result.content)
+            self.assertTrue(d['ok'])
+            self.assertIn('4', d['stdout'])
+
+
+# ══════════════════════════════════════
+# Teams canvas mixin
+# ══════════════════════════════════════
+
+class TestTeamsCanvas(unittest.TestCase):
+    '''Tests for TeamsCanvasMixin logic without a Tk window.'''
+
+    def _mixin(self):
+        '''Create a minimal mock object with the mixin methods attached.'''
+        from gui.teams_canvas import TeamsCanvasMixin
+        class FakeApp(TeamsCanvasMixin):
+            vp_x = vp_y = 0.0
+            vp_z = 1.0
+            def _w2s(self, wx, wy): return (wx + self.vp_x, wy + self.vp_y)
+            def _s2w(self, sx, sy): return (sx - self.vp_x, sy - self.vp_y)
+            def _redraw(self): pass
+            def _fit_view(self): pass
+        app = FakeApp()
+        app._teams_init()
+        return app
+
+    def test_init_defaults(self):
+        app = self._mixin()
+        self.assertEqual(app.canvas_mode, 'graph')
+        self.assertEqual(app._tw_nodes, [])
+        self.assertEqual(app._tw_edges, [])
+        self.assertIsNone(app._tw_sel)
+        self.assertFalse(app._tw_running)
+
+    def test_new_node_creates_entry(self):
+        app = self._mixin()
+        nid = app._tw_new_node('reviewer', x=10, y=20)
+        self.assertEqual(len(app._tw_nodes), 1)
+        self.assertEqual(app._tw_nodes[0]['role'], 'reviewer')
+        self.assertAlmostEqual(app._tw_nodes[0]['x'], 10)
+
+    def test_new_node_increments_counter(self):
+        app = self._mixin()
+        id1 = app._tw_new_node('architect')
+        id2 = app._tw_new_node('implementer')
+        self.assertNotEqual(id1, id2)
+
+    def test_node_by_id(self):
+        app = self._mixin()
+        nid = app._tw_new_node('tester')
+        node = app._tw_node_by_id(nid)
+        self.assertIsNotNone(node)
+        self.assertEqual(node['role'], 'tester')
+
+    def test_node_by_id_missing(self):
+        app = self._mixin()
+        self.assertIsNone(app._tw_node_by_id('nonexistent'))
+
+    def test_delete_node(self):
+        app = self._mixin()
+        nid = app._tw_new_node('reviewer')
+        app._tw_delete_node(nid)
+        self.assertEqual(app._tw_nodes, [])
+
+    def test_delete_node_clears_edges(self):
+        app = self._mixin()
+        a = app._tw_new_node('architect')
+        b = app._tw_new_node('implementer')
+        app._tw_edges.append({'id': 'e1', 'source': a, 'target': b})
+        app._tw_delete_node(a)
+        self.assertEqual(app._tw_edges, [])
+
+    def test_delete_node_clears_selection(self):
+        app = self._mixin()
+        nid = app._tw_new_node('tester')
+        app._tw_sel = nid
+        app._tw_delete_node(nid)
+        self.assertIsNone(app._tw_sel)
+
+    def test_default_workflow_creates_4_nodes(self):
+        app = self._mixin()
+        app._tw_add_default_workflow()
+        self.assertEqual(len(app._tw_nodes), 4)
+        self.assertEqual(len(app._tw_edges), 3)
+
+    def test_default_workflow_roles(self):
+        app = self._mixin()
+        app._tw_add_default_workflow()
+        roles = [n['role'] for n in app._tw_nodes]
+        self.assertEqual(roles, ['architect', 'implementer', 'reviewer', 'tester'])
+
+    def test_order_by_edges_linear(self):
+        app = self._mixin()
+        app._tw_add_default_workflow()
+        ordered = app._tw_order_by_edges()
+        roles = [n['role'] for n in ordered]
+        self.assertEqual(roles, ['architect', 'implementer', 'reviewer', 'tester'])
+
+    def test_order_by_edges_empty(self):
+        app = self._mixin()
+        app._tw_new_node('architect', x=100)
+        app._tw_new_node('implementer', x=50)
+        # No edges — fall back to x-position sort
+        ordered = app._tw_order_by_edges()
+        self.assertEqual(ordered[0]['role'], 'implementer')  # x=50 comes first
+
+    def test_auto_connect(self):
+        app = self._mixin()
+        app._tw_new_node('architect', x=0)
+        app._tw_new_node('implementer', x=100)
+        app._tw_new_node('reviewer', x=200)
+        app._tw_auto_connect()
+        self.assertEqual(len(app._tw_edges), 2)
+
+    def test_hit_test_no_boxes(self):
+        app = self._mixin()
+        result = app._tw_hit_test(0, 0)
+        self.assertIsNone(result)
+
+    def test_hit_test_hits_node(self):
+        app = self._mixin()
+        nid = app._tw_new_node('reviewer', x=10, y=10)
+        # Manually set hit boxes (normally done by _tw_rebuild_hit_boxes after draw)
+        app._tw_hit_boxes = {nid: (10, 10, 210, 120)}
+        self.assertEqual(app._tw_hit_test(50, 50), nid)
+        self.assertIsNone(app._tw_hit_test(300, 300))
+
+    def test_role_colours_defined(self):
+        from gui.teams_canvas import ROLE_COLOURS
+        for role in ['architect','implementer','reviewer','tester','optimizer','documentarian']:
+            self.assertIn(role, ROLE_COLOURS)
+
+
+# ══════════════════════════════════════
+# Teams Log panel
+# ══════════════════════════════════════
+
+class TestTeamsLog(unittest.TestCase):
+    '''Tests for Teams Log tab wiring in app.py (headless).'''
+
+    def _mock_app(self):
+        '''Minimal stand-in for SIDE_App with Teams Log state.'''
+        class FakeApp:
+            _teams_log = None
+            _log_buf: list = []
+            def after(self, ms, fn=None):
+                if fn: fn()
+            def _teams_log_append(self, text, tag=''):
+                self._log_buf.append((text, tag))
+            def _teams_log_clear(self):
+                self._log_buf.clear()
+        app = FakeApp()
+        app._log_buf = []
+        return app
+
+    def test_append_stores_text(self):
+        app = self._mock_app()
+        app._teams_log_append('hello\n', 'tool')
+        self.assertEqual(len(app._log_buf), 1)
+        self.assertIn('hello', app._log_buf[0][0])
+
+    def test_clear_empties_buf(self):
+        app = self._mock_app()
+        app._teams_log_append('line1\n')
+        app._teams_log_append('line2\n')
+        app._teams_log_clear()
+        self.assertEqual(app._log_buf, [])
+
+    def test_tag_passed_through(self):
+        app = self._mock_app()
+        app._teams_log_append('error msg\n', 'error')
+        self.assertEqual(app._log_buf[0][1], 'error')
+
+    def test_tw_on_event_routes_to_log(self):
+        '''_tw_on_event should call _teams_log_append for all event types.'''
+        from gui.teams_canvas import TeamsCanvasMixin
+        class FakeApp(TeamsCanvasMixin):
+            vp_x = vp_y = 0.0; vp_z = 1.0
+            _log_calls = []
+            _ai_appends = []
+            def _w2s(self, wx, wy): return (wx, wy)
+            def _s2w(self, sx, sy): return (sx, sy)
+            def _redraw(self): pass
+            def _select_bottom_tab(self, name): pass
+            def _teams_log_append(self, text, tag=''): self._log_calls.append((text, tag))
+            def after(self, ms, fn=None):
+                if fn: fn()
+        from ai.teams import TeamEvent
+        app = FakeApp()
+        app._teams_init()
+        evt = TeamEvent(type='tool', agent='Reviewer', role='reviewer',
+                        message='read_file(path=gui/app.py)')
+        # Patch ai_append so we can call _tw_on_event without full GUI
+        import unittest.mock as mock
+        with mock.patch('gui.panels.ai_append'):
+            app._tw_on_event(evt)
+        self.assertTrue(any('Reviewer' in t for t, _ in app._log_calls))
+
+
+# ══════════════════════════════════════
+# Manager scaffold and project creation
+# ══════════════════════════════════════
+
+class TestManagerScaffold(unittest.TestCase):
+
+    def test_scaffold_creates_files(self):
+        from ai.manager import scaffold_new_project
+        with tempfile.TemporaryDirectory() as tmp:
+            root = scaffold_new_project(tmp, 'my-app', 'A test app')
+            self.assertTrue(os.path.isfile(os.path.join(root, 'side.project.json')))
+            self.assertTrue(os.path.isfile(os.path.join(root, 'README.md')))
+            self.assertTrue(os.path.isfile(os.path.join(root, 'src', 'main.py')))
+            self.assertTrue(os.path.isfile(os.path.join(root, 'test', 'test_main.py')))
+
+    def test_scaffold_project_json(self):
+        from ai.manager import scaffold_new_project
+        import json
+        with tempfile.TemporaryDirectory() as tmp:
+            root = scaffold_new_project(tmp, 'Hello World', 'desc')
+            cfg = json.load(open(os.path.join(root, 'side.project.json')))
+            self.assertEqual(cfg['name'], 'hello-world')
+            self.assertEqual(cfg['version'], '0.1.0')
+            self.assertIn('run', cfg)
+            self.assertIn('test', cfg['run'])
+
+    def test_scaffold_readme_has_content(self):
+        from ai.manager import scaffold_new_project
+        with tempfile.TemporaryDirectory() as tmp:
+            root = scaffold_new_project(tmp, 'calc', 'A calculator')
+            readme = open(os.path.join(root, 'README.md')).read()
+            self.assertIn('calc', readme)
+            self.assertIn('Quick start', readme)
+
+    def test_scaffold_test_file_runnable(self):
+        from ai.manager import scaffold_new_project
+        import subprocess
+        with tempfile.TemporaryDirectory() as tmp:
+            root = scaffold_new_project(tmp, 'test-proj', '')
+            result = subprocess.run(
+                ['python', '-m', 'unittest', 'discover', 'test/'],
+                cwd=root, capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0)
+
+    def test_scaffold_slug_from_name(self):
+        from ai.manager import scaffold_new_project
+        import json
+        with tempfile.TemporaryDirectory() as tmp:
+            root = scaffold_new_project(tmp, 'My Cool App', '')
+            self.assertTrue(root.endswith('my-cool-app'))
+
+    def test_manager_prompt_has_run_team(self):
+        from ai.manager import MANAGER_PROMPT
+        self.assertIn('run_team', MANAGER_PROMPT)
+
+    def test_manager_prompt_has_bake(self):
+        from ai.manager import MANAGER_PROMPT
+        self.assertIn('bake', MANAGER_PROMPT.lower())
+
+    def test_manager_prompt_has_new_project(self):
+        from ai.manager import MANAGER_PROMPT
+        self.assertIn('side.project.json', MANAGER_PROMPT)
+
+
+# ══════════════════════════════════════
+# Calculator example project
+# ══════════════════════════════════════
+
+class TestCalculatorExample(unittest.TestCase):
+    '''Integration tests for examples/calculator — runs its own test suite.'''
+
+    CALC_DIR = os.path.join(os.path.dirname(__file__), '..', 'examples', 'calculator')
+
+    def test_example_project_exists(self):
+        self.assertTrue(os.path.isdir(self.CALC_DIR))
+
+    def test_example_has_side_project_json(self):
+        self.assertTrue(os.path.isfile(os.path.join(self.CALC_DIR, 'side.project.json')))
+
+    def test_example_has_readme(self):
+        self.assertTrue(os.path.isfile(os.path.join(self.CALC_DIR, 'README.md')))
+
+    def test_pemdas_module_importable(self):
+        import sys
+        sys.path.insert(0, os.path.join(self.CALC_DIR))
+        try:
+            from src.pemdas import evaluate, ParseError
+            self.assertAlmostEqual(evaluate('3 + 4 * 2'), 11)
+        finally:
+            sys.path.pop(0)
+
+    def test_pemdas_right_assoc_exp(self):
+        import sys
+        sys.path.insert(0, os.path.join(self.CALC_DIR))
+        try:
+            from src.pemdas import evaluate
+            self.assertAlmostEqual(evaluate('2 ** 3 ** 2'), 512)
+        finally:
+            sys.path.pop(0)
+
+    def test_pemdas_parens(self):
+        import sys
+        sys.path.insert(0, os.path.join(self.CALC_DIR))
+        try:
+            from src.pemdas import evaluate
+            self.assertAlmostEqual(evaluate('(3 + 4) * 2'), 14)
+        finally:
+            sys.path.pop(0)
+
+    def test_calculator_suite_passes(self):
+        '''Run the calculator's own test suite as a subprocess.'''
+        import subprocess
+        result = subprocess.run(
+            ['python', '-m', 'unittest', 'discover', 'test/', '-v'],
+            cwd=self.CALC_DIR, capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0,
+            msg=f'Calculator tests failed:\n{result.stderr}')
+
+
+# ══════════════════════════════════════
+# Tool builder — self-improving tool creation
+# ══════════════════════════════════════
+
+class TestToolBuilder(unittest.TestCase):
+
+    def test_infer_spec_from_error(self):
+        from ai.tool_builder import ToolMissingError, infer_tool_spec
+        err = ToolMissingError(
+            tool_name='search_web',
+            tool_args={'query': 'python tkinter', 'max_results': 5},
+            intent='I need to find documentation online')
+        with tempfile.TemporaryDirectory() as tmp:
+            spec = infer_tool_spec(err, tmp)
+            self.assertEqual(spec.tool_name, 'search_web')
+            self.assertIn('query', spec.args_schema)
+            self.assertEqual(spec.args_schema['query']['type'], 'string')
+            self.assertEqual(spec.args_schema['max_results']['type'], 'integer')
+            self.assertIn('.side/tools/search_web.py', spec.file_path)
+
+    def test_spec_to_team_task(self):
+        from ai.tool_builder import ToolMissingError, infer_tool_spec
+        err = ToolMissingError('my_tool', {'x': 'hello'}, 'needed for X')
+        with tempfile.TemporaryDirectory() as tmp:
+            spec = infer_tool_spec(err, tmp)
+            task = spec.to_team_task()
+            self.assertIn('my_tool', task)
+            self.assertIn('TOOL_SCHEMA', task)
+            self.assertIn('TOOL_HANDLER', task)
+            self.assertIn('.side/tools', task)
+
+    def test_spec_summary(self):
+        from ai.tool_builder import ToolMissingError, infer_tool_spec
+        err = ToolMissingError('calc_tax', {'amount': 100.0}, 'for invoice')
+        with tempfile.TemporaryDirectory() as tmp:
+            spec = infer_tool_spec(err, tmp)
+            summary = spec.summary()
+            self.assertIn('calc_tax', summary)
+            self.assertIn('amount', summary)
+
+    def test_register_custom_tool(self):
+        from ai.tool_builder import register_custom_tool, dispatch_custom, is_custom_tool
+        with tempfile.TemporaryDirectory() as tmp:
+            tool_file = os.path.join(tmp, 'greet.py')
+            open(tool_file, 'w').write(
+                'TOOL_SCHEMA = {"type": "function", "function": {"name": "greet", '
+                '"description": "Say hi", "parameters": {"type": "object", '
+                '"properties": {"name": {"type": "string"}}, "required": ["name"]}}}\n'
+                'def TOOL_HANDLER(args, ctx): return {"greeting": "Hello " + args["name"] + "!"}\n'
+            )
+            name = register_custom_tool(tool_file)
+            self.assertEqual(name, 'greet')
+            self.assertTrue(is_custom_tool('greet'))
+            result = dispatch_custom('greet', {'name': 'World'}, None)
+            self.assertEqual(result['greeting'], 'Hello World!')
+
+    def test_register_missing_schema_raises(self):
+        from ai.tool_builder import register_custom_tool
+        with tempfile.TemporaryDirectory() as tmp:
+            tool_file = os.path.join(tmp, 'bad.py')
+            open(tool_file, 'w').write('# no schema here\n')
+            with self.assertRaises(ValueError):
+                register_custom_tool(tool_file)
+
+    def test_load_all_custom_tools_empty(self):
+        from ai.tool_builder import load_all_custom_tools
+        with tempfile.TemporaryDirectory() as tmp:
+            result = load_all_custom_tools(tmp)
+            self.assertEqual(result, [])
+
+    def test_load_all_custom_tools_finds_files(self):
+        from ai.tool_builder import load_all_custom_tools, is_custom_tool
+        with tempfile.TemporaryDirectory() as tmp:
+            tools_dir = os.path.join(tmp, '.side', 'tools')
+            os.makedirs(tools_dir)
+            open(os.path.join(tools_dir, 'my_adder.py'), 'w').write(
+                'TOOL_SCHEMA = {"type": "function", "function": {"name": "my_adder", '
+                '"description": "Add", "parameters": {"type": "object", '
+                '"properties": {}, "required": []}}}\n'
+                'def TOOL_HANDLER(args, ctx): return {"result": 42}\n'
+            )
+            names = load_all_custom_tools(tmp)
+            self.assertIn('my_adder', names)
+            self.assertTrue(is_custom_tool('my_adder'))
+
+    def test_get_custom_schemas(self):
+        from ai.tool_builder import register_custom_tool, get_custom_schemas
+        with tempfile.TemporaryDirectory() as tmp:
+            tool_file = os.path.join(tmp, 'schema_test.py')
+            open(tool_file, 'w').write(
+                'TOOL_SCHEMA = {"type": "function", "function": {"name": "schema_test", '
+                '"description": "Test", "parameters": {"type": "object", '
+                '"properties": {}, "required": []}}}\n'
+                'def TOOL_HANDLER(args, ctx): return {}\n'
+            )
+            register_custom_tool(tool_file)
+            schemas = get_custom_schemas()
+            names = [s['function']['name'] for s in schemas]
+            self.assertIn('schema_test', names)
+
+    def test_tool_missing_error_dataclass(self):
+        from ai.tool_builder import ToolMissingError
+        err = ToolMissingError(tool_name='foo', tool_args={'x': 1}, intent='testing')
+        self.assertEqual(err.tool_name, 'foo')
+        self.assertEqual(err.tool_args['x'], 1)
+        self.assertEqual(err.intent, 'testing')
+
 
 
 if __name__ == "__main__":

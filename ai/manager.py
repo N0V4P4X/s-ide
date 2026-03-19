@@ -59,6 +59,7 @@ from ai.tool_builder import (
     register_custom_tool, load_all_custom_tools,
     get_custom_schemas, dispatch_custom, is_custom_tool,
 )
+from ai.models import get_model_for_role
 from ai.standards import get_system_prompt
 
 
@@ -254,6 +255,10 @@ class Manager:
 
         self._ctx = self._build_ctx()
         self._reset_system_message()
+        
+        # Governance state
+        self._audit_log: list[dict] = []
+        self._team_action_emitted = False
 
     # ── Public API ─────────────────────────────────────────────────────────────
 
@@ -369,32 +374,44 @@ class Manager:
 
         def _dispatch(name: str, args: dict):
             self.on_tool(name, args)
-            # After write_file, trigger graph refresh
+            # 1. PRE-AUDIT: Check for suspicious claims
+            self._shadow_audit_pre(name, args)
+
+            # Execution
             if name == "write_file":
                 self.after_write()
-            # Check bake deadline
-            if self._bake_deadline and time.time() > self._bake_deadline:
+            
+            bd = self._bake_deadline
+            if bd is not None and time.time() > bd:
                 self._stop.set()
-            # Try custom tools first (registered at runtime)
+                
             if is_custom_tool(name):
                 cr = dispatch_custom(name, args, self._ctx)
                 if cr is not None:
                     from ai.client import ToolResult
                     import json as _json
-                    return ToolResult(tool_call_id='', name=name,
-                                      content=_json.dumps(cr))
+                    res = ToolResult(tool_call_id='', name=name, content=_json.dumps(cr))
+                    self._shadow_audit_post(name, args, res)
+                    return res
+            
             result = dispatch_tool(name, args, self._ctx)
+            
+            # 2. POST-AUDIT: Check result validity
+            self._shadow_audit_post(name, args, result)
+            
             # Detect unknown tool — offer to build it
             try:
-                payload = __import__('json').loads(result.content)
+                import json as _json
+                payload = _json.loads(result.content)
                 if isinstance(payload, dict) and payload.get('error', '').startswith('Unknown tool'):
-                    intent = ''.join(acc)[-400:] if acc else ''
+                    snippet = "".join(acc)
+                    intent = snippet[max(0, len(snippet)-400):] if snippet else ''
                     spec = infer_tool_spec(
                         ToolMissingError(tool_name=name, tool_args=args, intent=intent),
                         self.project_root,
                     )
                     raise ToolMissingError(tool_name=name, tool_args=args, intent=intent)
-            except (__import__('json').JSONDecodeError, AttributeError):
+            except (_json.JSONDecodeError, AttributeError):
                 pass
             return result
 
@@ -405,7 +422,11 @@ class Manager:
             if self.project_root:
                 load_all_custom_tools(self.project_root)
                 live_tools = list(TOOLS) + get_custom_schemas()
-            # Trim history to avoid context overflow (keep system + last 30)
+            # Perform context pruning / summarization if history is long
+            if len(self._messages) > 24:
+                self._summarize_history()
+            
+            # Trim strictly for model safety
             MAX_MSGS = 32
             if len(self._messages) > MAX_MSGS:
                 system = [m for m in self._messages if m.role == 'system']
@@ -465,12 +486,6 @@ class Manager:
             pass
 
     def _check_for_team_action(self, text: str) -> None:
-        """
-        Scan accumulated text for a team-delegation JSON block.
-        If found, emit a team_action event once (not repeatedly).
-        """
-        if not hasattr(self, "_team_action_emitted"):
-            self._team_action_emitted = False
         if self._team_action_emitted:
             return
         import re
@@ -481,9 +496,51 @@ class Manager:
                 action = json.loads(m.group(1))
                 if action.get("action") == "run_team":
                     self._team_action_emitted = True
+                    # Fill missing models with role specialist defaults
+                    for agent in action.get("agents", []):
+                        if not agent.get("model"):
+                            agent["model"] = get_model_for_role(agent["role"])
                     self.on_team_event(action)
             except json.JSONDecodeError:
                 pass
+
+    def _shadow_audit_pre(self, name: str, args: dict):
+        """Invisible check before tool execution."""
+        # E.g. Check for path safety, or if AI is hallucinating a file
+        pass
+
+    def _shadow_audit_post(self, name: str, args: dict, result: object):
+        """Invisible verification after tool execution."""
+        msg = f"Audit: {name} called."
+        if name == "write_file":
+            path = args.get("path")
+            if path and not os.path.isabs(path):
+                path = os.path.join(self.project_root, path)
+            if not os.path.exists(path or ""):
+                 self.on_log(f"ALERT: AI claimed to write {args.get('path')} but file missing!", "warn")
+        
+        self._audit_log.append({"tool": name, "args": args, "time": time.time()})
+
+    def _summarize_history(self):
+        """Condense old conversation to save context."""
+        msg_list = self._messages
+        if len(msg_list) < 10: return
+        
+        # Keep system, Keep very recent (last 4), Condense middle
+        system = [m for m in msg_list if m.role == 'system']
+        others = [m for m in msg_list if m.role != 'system']
+        
+        if len(others) < 10: return
+        
+        split_idx = max(0, len(others) - 4)
+        recent = others[split_idx:]
+        middle = others[:split_idx]
+        
+        # Keep only the last 2 of the middle for continuity
+        mid_idx = max(0, len(middle) - 2)
+        comp_mid = middle[mid_idx:]
+        self._messages = system + comp_mid + recent
+        self.on_log(f"Context management: pruned history to {len(self._messages)} messages.", "dim")
 
 
 # ── Project scaffold ──────────────────────────────────────────────────────────

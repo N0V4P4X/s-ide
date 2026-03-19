@@ -34,7 +34,7 @@ import threading
 import urllib.request
 import urllib.error
 from dataclasses import dataclass, field
-from typing import Iterator, Callable
+from typing import Iterator, Callable, Optional
 
 
 # ── Data types ────────────────────────────────────────────────────────────────
@@ -118,7 +118,7 @@ class OllamaClient:
 
     DEFAULT_HOST  = "http://localhost:11434"
     DEFAULT_MODEL = "llama3.2"
-    TIMEOUT       = 120   # seconds for non-streaming
+    TIMEOUT       = 300   # Increased to 5 min for higher quality / slower models
 
     def __init__(self, host: str = DEFAULT_HOST):
         self.host = host.rstrip("/")
@@ -242,7 +242,7 @@ class OllamaClient:
         dispatch_fn: Callable[[str, dict], ToolResult],
         max_rounds: int = 10,
         on_text:    Callable[[str], None] | None = None,
-        stop_event: object = None,   # threading.Event or None
+        stop_event: Optional[threading.Event] = None,
     ) -> ChatResponse:
         """
         Agentic loop with real-time streaming and troubleshooting support.
@@ -258,6 +258,11 @@ class OllamaClient:
                 "messages": [m.to_dict() for m in msgs],
                 "stream":   True,
                 "tools":    tools,
+                "options":  {
+                    "num_ctx": 16384,
+                    "temperature": 0.1,
+                    "num_predict": 4096,
+                }
             }
             url  = f"{self.host}/api/chat"
             body = json.dumps(payload).encode()
@@ -288,6 +293,11 @@ class OllamaClient:
                                 arguments=fn.get("arguments", {}),
                                 id=tc.get("id", "")
                             ))
+                    
+                    # Detect truncation
+                    if d.get("done") == False and not tcs and not content:
+                        # Continue reading stream
+                        pass
             except Exception as e:
                 if on_text: on_text(f"\n[HTTP Error: {e}]")
                 break

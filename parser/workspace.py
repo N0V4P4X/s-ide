@@ -178,8 +178,7 @@ def load_workspace(workspace_root: str) -> WorkspaceManifest:
             projects = find_projects_in_workspace(workspace_root),
         )
     try:
-        with open(path, encoding="utf-8") as f:
-            data = json.load(f)
+        data = json.load(open(path, encoding="utf-8"))
         return WorkspaceManifest.from_dict(data)
     except (json.JSONDecodeError, OSError):
         return WorkspaceManifest()

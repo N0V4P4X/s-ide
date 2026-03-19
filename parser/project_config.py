@@ -113,9 +113,8 @@ def init_project_config(root_dir: str) -> dict:
     try:
         import re
         pyproject = os.path.join(root_dir, "pyproject.toml")
-        if os.path.isfile(pyproject):
-            with open(pyproject, encoding="UTF-8") as f:
-                text = f.read()
+        if os.path.exists(pyproject):
+            text = open(pyproject).read()
             m = re.search(r'^version\s*=\s*["\']([^"\']+)["\']', text, re.MULTILINE)
             if m:
                 version = m.group(1)
@@ -126,9 +125,8 @@ def init_project_config(root_dir: str) -> dict:
     if version == "0.1.0":
         try:
             pkg = os.path.join(root_dir, "package.json")
-            if os.path.isfile(pkg):
-                with open(pkg, encoding="utf-8") as f:
-                    data = json.load(f)
+            if os.path.exists(pkg):
+                data = json.load(open(pkg))
                 if data.get("version"):
                     version = data["version"]
         except Exception:

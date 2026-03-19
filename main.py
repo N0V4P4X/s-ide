@@ -54,7 +54,7 @@ def _require_dir(path: str) -> str:
     return abs_path
 
 
-def _fmt_size(n: float) -> str:
+def _fmt_size(n: int) -> str:
     for unit in ("B", "KB", "MB", "GB"):
         if n < 1024:
             return f"{n:.1f} {unit}"
@@ -177,55 +177,6 @@ def cmd_compress(args: argparse.Namespace) -> None:
             print(f"  [OK]   {r['name']} → {r['tarball']}")
 
 
-def cmd_self_check(args: argparse.Namespace) -> None:
-    """Run all self-checks: tests, parse, doc audit."""
-    import subprocess
-    from parser.project_parser import parse_project
-
-    root = _require_dir(args.project)
-    print(f"[s-ide] Self-checking: {root}")
-
-    # 1. Run tests
-    print("\n[s-ide] 1/3: Running unit tests...")
-    test_res = subprocess.run([sys.executable, "test/test_suite.py", "-q"], cwd=root)
-    if test_res.returncode != 0:
-        print(f"[s-ide] FAILED: Unit tests exited with code {test_res.returncode}")
-        sys.exit(1)
-    print("[s-ide] OK: Tests passed.")
-
-    # 2. Parse & Graph metadata
-    print("\n[s-ide] 2/3: Parsing graph & auditing docs...")
-    graph = parse_project(root)
-    d = graph.to_dict()
-    m = d["meta"]
-    
-    # Write graph for persistence
-    out_path = os.path.join(root, ".nodegraph.json")
-    with open(out_path, "w", encoding="utf-8") as f:
-        json.dump(d, f, indent=2)
-    print(f"[s-ide] OK: Parsing complete ({m['parseTime']} ms) → {out_path}")
-
-    # 3. Doc audit report
-    print("\n[s-ide] 3/3: Document report:")
-    h = m["docs"]["healthy"]
-    s = m["docs"]["summary"]
-    print(f"  Missing READMEs: {s['missingReadmes']}")
-    print(f"  Stale READMEs:   {s['staleReadmes']}")
-    print(f"  Empty modules:   {s['emptyModules']}")
-    
-    if not h:
-        print("[s-ide] Doc health issues detected.")
-        if args.strict_docs:
-            print("[s-ide] FAILED: Strict-docs requirement not met.")
-            sys.exit(1)
-        else:
-            print("[s-ide] OK: Continuing (non-fatal docs).")
-    else:
-        print("[s-ide] OK: All docs are healthy.")
-
-    print("\n[s-ide] SUMMARY: ALL CHECKS PASSED.")
-
-
 def cmd_build(args: argparse.Namespace) -> None:
     """Run the full build pipeline: clean, minify, package."""
     from build.packager import package_project, PackageOptions
@@ -313,12 +264,6 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--bump", choices=["major", "minor", "patch"], default=None,
                     help="Bump version after build")
 
-    # self-check
-    sp = sub.add_parser("self-check", help="Run tests, parse, and doc audit for the project itself")
-    sp.add_argument("project", help="Path to project directory")
-    sp.add_argument("--strict-docs", action="store_true", help="Fail if any doc warnings exist")
-    sp.add_argument("--json", action="store_true", help="Output results in JSON (for CI)")
-
     return p
 
 
@@ -334,10 +279,9 @@ def main() -> None:
         "versions": cmd_versions,
         "archive":  cmd_archive,
         "update":   cmd_update,
-        "run":        cmd_run,
-        "compress":   cmd_compress,
-        "build":      cmd_build,
-        "self-check": cmd_self_check,
+        "run":      cmd_run,
+        "compress": cmd_compress,
+        "build":    cmd_build,
     }
     handlers[args.command](args)
 

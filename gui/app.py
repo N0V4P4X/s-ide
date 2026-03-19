@@ -250,6 +250,7 @@ class SIDE_App(tk.Tk, TeamsCanvasMixin):
         # ── State ─────────────────────────────────────────────────────────────
         self.graph: Optional[dict] = None           # current ProjectGraph dict
         self.positions: dict       = {}             # node_id → (x, y)
+        self._layout_mode: str     = "clustered"    # clustered | compact
         self.projects:  List[Dict[str, Any]] = []             # [{name, path}]
         self.processes: dict[str, Any] = {}         # proc_id → ManagedProcess
 
@@ -272,7 +273,9 @@ class SIDE_App(tk.Tk, TeamsCanvasMixin):
         self.search_q    = ""
 
         # Drag/pan state
-        self._drag: Optional[dict] = None   # {id, ox, oy, sx, sy}
+        self._drag: Optional[dict] = None   # {id, anchors, ox, oy, sx, sy}
+        self._tooltip_after: Optional[str] = None  # after() id for tooltip
+        self._tooltip_win: Optional[tk.Toplevel] = None
         self._pan:  Optional[dict] = None   # {sx, sy, ox, oy}
 
         # AI panel state
@@ -287,7 +290,9 @@ class SIDE_App(tk.Tk, TeamsCanvasMixin):
         self._ai_messages: list[CM] = []
         self._ai_available: bool = False
         self._ai_state: dict = {
-            'in_thought': False, 'in_code': False, 'in_bold': False, 'buffer': ""
+            'mode': 'normal', 'block_content': '', 'block_lang': '',
+            'in_bold': False, 'buffer': '',
+            'in_thought': False, 'in_code': False,
         }
         self._ai_conv: Optional[tk.Text] = None
         self._ai_input: Optional[tk.Entry] = None
@@ -448,6 +453,7 @@ class SIDE_App(tk.Tk, TeamsCanvasMixin):
         self._sess_list: Optional[tk.Listbox] = None
         self._sess_data: list = []
         self._profile_btn: Optional[tk.Label] = None
+        self._layout_btn:  Optional[tk.Label] = None
         self._teams_init()
         self._build_ui()
         self._bind_keys()
@@ -822,6 +828,82 @@ class SIDE_App(tk.Tk, TeamsCanvasMixin):
 
     # ── Bake ───────────────────────────────────────────────────────────────────
 
+    def _toggle_layout_mode(self) -> None:
+        """
+        Toggle between two layout modes:
+          compact  — original flat topo-sort waterfall (pretty, dense)
+          clustered — directory-grouped grid (readable, spread)
+        The button label always shows what you'll switch TO.
+        """
+        if self._layout_mode == "clustered":
+            self._layout_mode = "compact"
+            label = "⊟ Spread"   # next click goes back to spread
+        else:
+            self._layout_mode = "clustered"
+            label = "⊞ Compact"  # next click goes back to compact
+        btn = getattr(self, "_layout_btn", None)
+        if btn:
+            btn.config(text=label)
+        if not self.graph:
+            return
+        self._relayout()
+
+    def _relayout(self) -> None:
+        """Re-run the layout engine on the current graph and update positions."""
+        if not self.graph:
+            return
+        import sys as _sys
+        _sys.path.insert(0, '.')
+        from graph.types import FileNode, Edge, Position
+        import parser.layout as _lay
+
+        # Select algorithm based on current mode
+        if self._layout_mode == "compact":
+            layout_fn = _lay.assign_positions_flat   # original waterfall
+        else:
+            layout_fn = _lay.assign_positions        # clustered grid
+
+        nodes_raw = self.graph.get("nodes", [])
+        edges_raw = self.graph.get("edges", [])
+
+        # Build lightweight FileNode stubs
+        file_nodes = []
+        for nd in nodes_raw:
+            pos = nd.get("position") or {}
+            fn = FileNode(
+                id=nd["id"], label=nd.get("label", nd["id"]),
+                path=nd.get("path", nd["id"]),
+                full_path=nd.get("path", nd["id"]),
+                category=nd.get("category", "module"),
+                ext=nd.get("ext", ".py"),
+                tags=nd.get("tags") or [],
+            )
+            fn.position = Position(x=float(pos.get("x", 0)),
+                                   y=float(pos.get("y", 0)))
+            file_nodes.append(fn)
+
+        edge_objs = []
+        for e in edges_raw:
+            try:
+                edge_objs.append(Edge(
+                    id=e["id"], source=e["source"], target=e["target"],
+                    type=e.get("type", "import"),
+                    is_external=e.get("isExternal", False),
+                ))
+            except Exception:
+                pass
+
+        layout_fn(file_nodes, edge_objs)
+
+        # Apply new positions
+        id_to_fn = {fn.id: fn for fn in file_nodes}
+        for nid, fn in id_to_fn.items():
+            if fn.position:
+                self.positions[nid] = (fn.position.x, fn.position.y)
+
+        self._hit_boxes = {}
+        self._fit_view()
+
     def _run_profiler(self) -> None:
         """Run cProfile on the project entry point, write .side-metrics.json."""
         if not self.graph:
@@ -1164,94 +1246,252 @@ class SIDE_App(tk.Tk, TeamsCanvasMixin):
             self._manager.send(prompt)
 
 
-    def _ai_append_content(self, text):
-        """Robust stateful streaming append with debug logging and regex."""
-        # Debug log raw chunk
-        try:
-            with open('/tmp/side_ai_raw.log', 'a') as f:
-                f.write(f"--- CHUNK ({len(text)}) ---\n{text}\n")
-        except: pass
+    def _ai_append_content(self, text: str) -> None:
+        """
+        Stream text into the AI chat with collapsible sections.
 
+        Recognised block markers:
+          <thought>…</thought>  → collapsible ▶ Thinking… panel
+          ```[lang]\n…\n```    → collapsible ▶ Code panel with copy button
+          [executing tool: X]  → collapsible ▶ Tool call line
+          [tool result: X]     → appended to the most recent tool block
+        """
         self._ai_state['buffer'] += text
-        
+
         while True:
-            buf = str(self._ai_state['buffer'])
-            if not buf: break
-            
-            if not self._ai_state['in_thought'] and not self._ai_state['in_code']:
-                # Looking for start of thought or code
-                match_t = re.search(r'<thought>', buf, re.I)
-                match_c = re.search(r'```', buf)
-                
-                if match_t and (not match_c or match_t.start() < match_c.start()):
-                    pre = buf[0:match_t.start()]
-                    if pre: self._ai_append_md_flat(str(pre))
-                    self._ai_append("\n[THOUGHT: ", 'thought')
-                    self._ai_state['in_thought'] = True
-                    self._ai_state['buffer'] = buf[match_t.end():]
-                    continue
-                elif match_c:
-                    pre = buf[0:match_c.start()]
-                    if pre: self._ai_append_md_flat(pre)
-                    self._ai_state['in_code'] = True
-                    self._ai_append("\n", 'ai')
-                    self._ai_state['buffer'] = buf[match_c.end():]
-                    continue
-                
-                # NO MATCH FOUND in current buffer.
-                # BUT: if it ends with '<' or '`', it might be a partial tag.
-                if any(buf.lower().endswith(t) for t in ['<','<t','<th','<tho','<thou','<thoug','<thought', '`', '``']):
-                    # Keep the partial tag in buffer, print everything else
-                    idx = buf.rfind('<') if '<' in buf else buf.rfind('`')
+            buf = self._ai_state['buffer']
+            if not buf:
+                break
+
+            mode = self._ai_state.get('mode', 'normal')
+
+            # ── Normal mode: look for block openers ──────────────────────────
+            if mode == 'normal':
+                # Possible openers and their positions
+                t_open = buf.find('<thought>')
+                t_open_i = buf.lower().find('<thought>') if t_open < 0 else t_open
+                c_open  = buf.find('```')
+                # tool lines are flushed whole, handled by _ai_append directly
+
+                # Partial-tag guard: don't flush if buffer ends mid-tag
+                tail = buf[-12:].lower()
+                partial = any(tail.endswith(p) for p in
+                    ['<','<t','<th','<tho','<thou','<thoug','<thought',
+                     '`','``','</',  '</t','</th','</tho','</thou','</thoug'])
+                if partial and t_open_i < 0 and c_open < 0:
+                    idx = max(buf.lower().rfind('<'), buf.rfind('`'))
                     pre = buf[:idx]
-                    if pre: self._ai_append_md_flat(pre)
+                    if pre:
+                        self._ai_append_md_flat(pre)
                     self._ai_state['buffer'] = buf[idx:]
                     break
-                else:
+
+                # Find earliest opener
+                candidates = []
+                if t_open_i >= 0:
+                    candidates.append((t_open_i, 'thought'))
+                if c_open >= 0:
+                    candidates.append((c_open, 'code'))
+
+                if not candidates:
                     self._ai_append_md_flat(buf)
-                    self._ai_state['buffer'] = ""
+                    self._ai_state['buffer'] = ''
                     break
-            
-            elif self._ai_state['in_thought']:
-                match_te = re.search(r'</thought>', buf, re.I)
-                if match_te:
-                    content = buf[:match_te.start()]
-                    if content: self._ai_append(content.strip(), 'thought')
-                    self._ai_append("]\n", 'thought')
-                    self._ai_state['in_thought'] = False
-                    self._ai_state['buffer'] = buf[match_te.end():]
+
+                pos, kind = min(candidates, key=lambda x: x[0])
+                pre = buf[:pos]
+                if pre:
+                    self._ai_append_md_flat(pre)
+
+                if kind == 'thought':
+                    self._ai_state['mode']         = 'thought'
+                    self._ai_state['block_content'] = ''
+                    self._ai_state['buffer']        = buf[pos + len('<thought>'):]
+                else:  # code
+                    # Grab optional language hint on same line
+                    rest = buf[pos + 3:]
+                    nl   = rest.find('\n')
+                    lang = rest[:nl].strip() if nl >= 0 else ''
+                    self._ai_state['mode']         = 'code'
+                    self._ai_state['block_content'] = ''
+                    self._ai_state['block_lang']    = lang
+                    self._ai_state['buffer']        = rest[nl+1:] if nl >= 0 else ''
+                continue
+
+            # ── Thought mode ─────────────────────────────────────────────────
+            elif mode == 'thought':
+                close = buf.lower().find('</thought>')
+                if close >= 0:
+                    self._ai_state['block_content'] += buf[:close]
+                    content = self._ai_state['block_content'].strip()
+                    self._flush_collapsible('thought', content)
+                    self._ai_state['mode']   = 'normal'
+                    self._ai_state['buffer'] = buf[close + len('</thought>'):]
                     continue
-                else:
-                    # Partial tag check for </thought>
-                    if any(buf.lower().endswith(t) for t in ['<','</','</t','</th','</tho','</thou','</thoug','</thought']):
-                        # Print everything up to the potential start of the closing tag
+                # Guard partial closing tag
+                tail = buf[-12:].lower()
+                if any(tail.endswith(p) for p in
+                       ['<','</','</t','</th','</tho','</thou','</thoug','</thought']):
+                    idx = buf.lower().rfind('</')
+                    if idx < 0:
                         idx = buf.lower().rfind('<')
-                        pre = buf[:idx]
-                        if pre: self._ai_append(pre, 'thought')
-                        self._ai_state['buffer'] = buf[idx:]
-                        break
-                    self._ai_append(buf, 'thought')
-                    self._ai_state['buffer'] = ""
+                    self._ai_state['block_content'] += buf[:idx]
+                    self._ai_state['buffer'] = buf[idx:]
                     break
-            
-            elif self._ai_state['in_code']:
-                match_ce = re.search(r'```', buf)
-                if match_ce:
-                    content = buf[:match_ce.start()]
-                    if content: self._ai_append(content, 'block')
-                    self._ai_state['in_code'] = False
-                    self._ai_state['buffer'] = buf[match_ce.end():]
+                self._ai_state['block_content'] += buf
+                self._ai_state['buffer'] = ''
+                break
+
+            # ── Code mode ────────────────────────────────────────────────────
+            elif mode == 'code':
+                close = buf.find('```')
+                if close >= 0:
+                    self._ai_state['block_content'] += buf[:close]
+                    content = self._ai_state['block_content']
+                    lang    = self._ai_state.get('block_lang', '')
+                    self._flush_collapsible('code', content, lang=lang)
+                    self._ai_state['mode']   = 'normal'
+                    self._ai_state['buffer'] = buf[close + 3:]
                     continue
-                else:
-                    if any(buf.endswith(t) for t in ['`', '``']):
-                        idx = buf.rfind('`')
-                        pre = buf[:idx]
-                        if pre: self._ai_append(pre, 'block')
-                        self._ai_state['buffer'] = buf[idx:]
-                        break
-                    self._ai_append(buf, 'block')
-                    self._ai_state['buffer'] = ""
+                tail = buf[-3:]
+                if tail.endswith('`') or tail.endswith('``'):
+                    idx = buf.rfind('`')
+                    self._ai_state['block_content'] += buf[:idx]
+                    self._ai_state['buffer'] = buf[idx:]
                     break
+                self._ai_state['block_content'] += buf
+                self._ai_state['buffer'] = ''
+                break
+
+            else:
+                break
+
+    def _flush_collapsible(self, kind: str, content: str, lang: str = '') -> None:
+        """
+        Embed a collapsible block widget in the conversation text widget.
+
+        Uses tk.Text.window_create() to place a tk.Frame inline.
+        The frame has a toggle button that shows/hides the content area.
+        """
+        w = getattr(self, '_ai_conv', None)
+        if not w:
+            return
+        try:
+            if not w.winfo_exists():
+                return
+        except Exception:
+            return
+
+        from gui.app import P
+        mono = self._mono_xs.actual()['family']
+
+        if kind == 'thought':
+            header_text = '▶ Thinking…'
+            header_color = P['t3']
+            bg_color     = P['bg1']
+            fg_color     = P['t2']
+            header_fg    = P['t2']
+            default_open = False
+        elif kind == 'code':
+            label = f'▶ {lang}' if lang else '▶ Code'
+            header_text  = label
+            header_color = P['bg3']
+            bg_color     = P['bg2']
+            fg_color     = P['t1']
+            header_fg    = P['amber']
+            default_open = True
+        else:
+            header_text  = f'▶ {kind}'
+            header_color = P['bg2']
+            bg_color     = P['bg1']
+            fg_color     = P['t2']
+            header_fg    = P['t2']
+            default_open = False
+
+        # Outer frame, embedded inline in the text widget
+        outer = tk.Frame(w, bg=header_color,
+                         highlightbackground=P['line2'],
+                         highlightthickness=1)
+        outer.pack_propagate(False)
+
+        # Header row — click to toggle
+        hdr = tk.Frame(outer, bg=header_color)
+        hdr.pack(fill='x')
+
+        toggle_var = tk.StringVar(value=('▼ ' if default_open else '▶ ') +
+                                  header_text.lstrip('▶ '))
+        toggle_lbl = tk.Label(hdr, textvariable=toggle_var,
+                               bg=header_color, fg=header_fg,
+                               font=(mono, 9, 'bold'),
+                               padx=8, pady=3, cursor='hand2', anchor='w')
+        toggle_lbl.pack(side='left', fill='x', expand=True)
+
+        # Copy button for code blocks
+        if kind == 'code':
+            def _copy():
+                self.clipboard_clear()
+                self.clipboard_append(content)
+            copy_lbl = tk.Label(hdr, text='copy', bg=header_color, fg=P['t3'],
+                                 font=(mono, 8), padx=6, cursor='hand2')
+            copy_lbl.pack(side='right', padx=2)
+            copy_lbl.bind('<Button-1>', lambda _: _copy())
+
+        # Content area
+        content_f = tk.Frame(outer, bg=bg_color)
+
+        txt = tk.Text(content_f, bg=bg_color, fg=fg_color,
+                      font=(mono, 9 if kind == 'thought' else 10),
+                      bd=0, padx=8, pady=4, wrap='word',
+                      state='normal', height=1,
+                      highlightthickness=0)
+        txt.insert('1.0', content.strip())
+        txt.config(state='disabled')
+        # Auto-size height
+        line_count = int(txt.index('end-1c').split('.')[0])
+        txt.config(height=min(line_count, 20))
+        txt.pack(fill='both', expand=True)
+
+        is_open = [default_open]
+
+        def _toggle(_evt=None):
+            if is_open[0]:
+                content_f.pack_forget()
+                toggle_var.set('▶ ' + header_text.lstrip('▶▼ '))
+                outer.config(height=28)
+            else:
+                content_f.pack(fill='both', expand=True, padx=2, pady=(0, 4))
+                toggle_var.set('▼ ' + header_text.lstrip('▶▼ '))
+                outer.config(height=min(line_count * 18 + 36, 320))
+            is_open[0] = not is_open[0]
+            try:
+                w.config(state='normal')
+                # Force text widget to re-measure the embedded window
+                w.update_idletasks()
+                w.config(state='disabled')
+            except Exception:
+                pass
+
+        toggle_lbl.bind('<Button-1>', _toggle)
+        hdr.bind('<Button-1>', _toggle)
+
+        if default_open:
+            content_f.pack(fill='both', expand=True, padx=2, pady=(0, 4))
+            outer.config(width=600,
+                          height=min(line_count * 18 + 36, 320))
+        else:
+            outer.config(width=600, height=28)
+
+        # Insert into text widget
+        try:
+            w.config(state='normal')
+            w.insert('end', '\n')
+            w.window_create('end', window=outer, padx=2, pady=2)
+            w.insert('end', '\n')
+            w.see('end')
+            w.config(state='disabled')
+        except Exception:
+            pass
+
 
     def _ai_append_md_flat(self, text):
         """Append text while handling bold and inline code styling."""
@@ -1273,10 +1513,14 @@ class SIDE_App(tk.Tk, TeamsCanvasMixin):
 
     def _ai_reset_stream_state(self):
         self._ai_state = {
+            'mode': 'normal',          # normal | thought | code
+            'block_content': '',       # accumulator for current block
+            'block_lang': '',          # language hint for code blocks
+            'in_bold': False,          # inline bold state
+            'buffer': '',              # partial-tag lookahead buffer
+            # legacy keys kept for any code that checks them
             'in_thought': False,
             'in_code': False,
-            'in_bold': False,
-            'buffer': ""
         }
 
 
@@ -1442,6 +1686,15 @@ class SIDE_App(tk.Tk, TeamsCanvasMixin):
                                       highlightbackground=P["line2"], highlightthickness=1)
         self._profile_btn.grid(row=0, column=col[0], padx=(2, 6), pady=8)
         self._profile_btn.bind("<Button-1>", lambda _: self._run_profiler())
+        col[0] += 1
+
+        # Layout mode toggle
+        self._layout_btn = tk.Label(tb, text="⊞ Compact", bg=P["bg3"], fg=P["t2"],
+                                     font=self._mono_xs, padx=7, pady=3,
+                                     cursor="hand2",
+                                     highlightbackground=P["line2"], highlightthickness=1)
+        self._layout_btn.grid(row=0, column=col[0], padx=(2, 6), pady=8)
+        self._layout_btn.bind("<Button-1>", lambda _: self._toggle_layout_mode())
         col[0] += 1
 
 
@@ -2247,10 +2500,10 @@ class SIDE_App(tk.Tk, TeamsCanvasMixin):
         self._zw_pct.pack(fill="x")
         _zw_btn("−", lambda: self._zoom_by(0.8))
         tk.Frame(zw, bg=P["bg0"], height=4).pack()
-        _zw_btn("◁", lambda: self._pan_step(-120, 0))
-        _zw_btn("△", lambda: self._pan_step(0, -120))
-        _zw_btn("▽", lambda: self._pan_step(0, 120))
-        _zw_btn("▷", lambda: self._pan_step(120, 0))
+        _zw_btn("◁", lambda: self._pan_step(120, 0))    # push graph left
+        _zw_btn("△", lambda: self._pan_step(0, 120))    # push graph up
+        _zw_btn("▽", lambda: self._pan_step(0, -120))   # push graph down
+        _zw_btn("▷", lambda: self._pan_step(-120, 0))   # push graph right
 
     def _build_inspector(self, parent):
         self._inspector = tk.Frame(parent, bg=P["bg1"], width=0)
@@ -2436,8 +2689,83 @@ class SIDE_App(tk.Tk, TeamsCanvasMixin):
             self.hov_edge = new_hov_edge
             cursor = "hand2" if (new_hov_node or new_hov_edge) else "fleur"
             self._canvas.config(cursor=cursor)
+            # Cancel pending tooltip; schedule new one if over a node
+            self._hide_tooltip()
+            if new_hov_node:
+                nid = new_hov_node
+                self._tooltip_after = self.after(
+                    500, lambda n=nid: self._show_tooltip(n, sx, sy))
             # Use scheduled (coalesced) redraw for hover — 16ms throttle
             self._schedule_redraw()
+        elif not new_hov_node:
+            self._hide_tooltip()
+
+    def _show_tooltip(self, node_id: str, sx: int, sy: int) -> None:
+        """Show a small floating label with the node's label and path."""
+        self._hide_tooltip()
+        node = next((n for n in self._vis_nodes() if n["id"] == node_id), None)
+        if not node:
+            return
+        label  = node.get("label", node_id)
+        path   = node.get("path", "")
+        cat    = node.get("category", "")
+        lines  = node.get("lines", 0)
+        parts  = [label]
+        if path and path != label:
+            parts.append(path)
+        if cat:
+            suffix = f"{cat}"
+            if lines:
+                suffix += f" · {lines}L"
+            parts.append(suffix)
+        text = "\n".join(parts)
+
+        win = tk.Toplevel(self)
+        win.overrideredirect(True)
+        win.attributes("-topmost", True)
+        try:
+            win.attributes("-alpha", 0.92)
+        except Exception:
+            pass
+        win.configure(bg=P["bg2"])
+
+        mono = self._mono_xs.actual()["family"]
+        lbl = tk.Label(win, text=text, bg=P["bg2"], fg=P["t0"],
+                       font=(mono, 9), justify="left",
+                       padx=10, pady=6,
+                       highlightbackground=P["line2"], highlightthickness=1)
+        lbl.pack()
+
+        # Position just below and right of cursor, keep on screen
+        rx = self.winfo_rootx() + sx + 18
+        ry = self.winfo_rooty() + sy + 18
+        sw = self.winfo_screenwidth()
+        sh = self.winfo_screenheight()
+        win.update_idletasks()
+        ww = win.winfo_reqwidth()
+        wh = win.winfo_reqheight()
+        if rx + ww > sw - 10:
+            rx = rx - ww - 36
+        if ry + wh > sh - 10:
+            ry = ry - wh - 36
+        win.geometry(f"+{rx}+{ry}")
+        self._tooltip_win = win
+
+    def _hide_tooltip(self) -> None:
+        """Destroy the current tooltip window."""
+        if self._tooltip_after:
+            try:
+                self.after_cancel(self._tooltip_after)
+            except Exception:
+                pass
+            self._tooltip_after = None
+        win = getattr(self, "_tooltip_win", None)
+        if win:
+            try:
+                win.destroy()
+            except Exception:
+                pass
+            self._tooltip_win = None
 
     def _bind_keys(self):
         self.bind("<f>", lambda _: self._fit_view())
@@ -3177,16 +3505,30 @@ class SIDE_App(tk.Tk, TeamsCanvasMixin):
         self._redraw()
 
     def _node_click(self, event, node_id):
-        self.sel_nodes = {node_id}
-        self.sel_edges.clear()
-        node = next((n for n in self._vis_nodes() if n["id"] == node_id), None)
-        if node:
-            self._inspect_node(node)
-        wx, wy = self._npos(node_id)
+        ctrl = bool(event.state & 0x4)   # Ctrl held
+        if ctrl:
+            # Toggle this node in the multi-selection
+            if node_id in self.sel_nodes:
+                self.sel_nodes.discard(node_id)
+            else:
+                self.sel_nodes.add(node_id)
+        else:
+            self.sel_nodes = {node_id}
+            self.sel_edges.clear()
+            node = next((n for n in self._vis_nodes() if n["id"] == node_id), None)
+            if node:
+                self._inspect_node(node)
+        # Start drag — records anchor positions for ALL selected nodes
+        anchors = {}
+        for nid in self.sel_nodes:
+            wx, wy = self._npos(nid)
+            anchors[nid] = (wx, wy)
         self._drag = {
-            "id": node_id,
-            "ox": wx, "oy": wy,
-            "sx": event.x, "sy": event.y,
+            "id":      node_id,       # primary (the one clicked)
+            "anchors": anchors,        # {nid: (ox, oy)} for all selected
+            "ox":      anchors.get(node_id, (0, 0))[0],
+            "oy":      anchors.get(node_id, (0, 0))[1],
+            "sx":      event.x, "sy": event.y,
         }
         self._redraw()
 
@@ -3197,8 +3539,11 @@ class SIDE_App(tk.Tk, TeamsCanvasMixin):
             d = self._drag
             dwx = (event.x - d["sx"]) / self.vp_z
             dwy = (event.y - d["sy"]) / self.vp_z
-            self.positions[d["id"]] = (d["ox"] + dwx, d["oy"] + dwy)
-            # Invalidate hit boxes — dragged node moved in screen space
+            # Move all selected nodes by the same delta
+            anchors = d.get("anchors") or {d["id"]: (d["ox"], d["oy"])}
+            for nid, (ox, oy) in anchors.items():
+                self.positions[nid] = (ox + dwx, oy + dwy)
+            # Invalidate hit boxes — nodes moved in screen space
             self._hit_boxes = {}
             # Partial redraw: just edges + nodes (skip grid for perf)
             self._canvas.delete("edge")
@@ -3222,6 +3567,7 @@ class SIDE_App(tk.Tk, TeamsCanvasMixin):
         self._canvas.config(cursor="fleur")
 
     def _pan_start(self, event):
+        self._hide_tooltip()
         self._pan = {"sx": event.x, "sy": event.y,
                      "ox": self.vp_x, "oy": self.vp_y}
         self._canvas.config(cursor="fleur")

@@ -1,38 +1,127 @@
 """
 parser/layout.py
 ================
-Assigns 2D canvas positions to FileNodes for the node editor's
-initial auto-layout. The user can re-arrange nodes freely after load;
-these are just starting positions.
+Assigns 2D canvas positions to FileNodes for the node graph's initial
+auto-layout. Positions are starting points only — the user can rearrange
+freely.
 
-Algorithm: Layered Topological Layout
---------------------------------------
-1. Build an adjacency structure from edges.
-2. Assign each node a 'depth' (layer) via a modified BFS/topo-sort.
-   Nodes with no incoming edges start at depth 0.
-3. Within each layer, spread nodes vertically with consistent gaps.
-4. Nodes in cycles or unreachable from layer-0 are placed in an
-   'orphan' row above the main graph.
+Algorithm: Clustered Directory Layout
+---------------------------------------
+1. Group nodes by their top-level directory (ai/, gui/, parser/, etc.).
+2. Lay clusters out in a grid, sized by cluster population.
+3. Within each cluster, run a layered topo-sort on the intra-cluster
+   dependency edges, falling back to a simple grid for isolated nodes.
+4. Place orphans (no edges, no clear cluster) in a tidy row at the bottom.
 
-Constants NODE_W, NODE_H, LAYER_GAP, NODE_GAP control spacing and
-can be tuned to match the renderer's node card dimensions.
+This produces a human-readable map where related modules live near each
+other and import arrows flow left-to-right within a cluster, with
+inter-cluster arrows visible as long crossing lines.
+
+Constants
+---------
+NODE_W, NODE_H      : rendered card dimensions
+CLUSTER_PAD         : internal padding inside a cluster bounding box
+CLUSTER_GAP         : gap between cluster bounding boxes
+LAYER_GAP           : horizontal gap between dependency layers inside a cluster
+NODE_GAP            : vertical gap between nodes within a layer
 """
 
 from __future__ import annotations
-from collections import deque
+
+import math
+from collections import defaultdict, deque
 from graph.types import FileNode, Edge, Position
 
-# ── Layout constants ──────────────────────────────────────────────────────────
-NODE_W    = 240   # node card width  (pixels / canvas units)
-NODE_H    = 160   # node card height
-LAYER_GAP = 340   # horizontal gap between layers
-NODE_GAP  = 210   # vertical gap between nodes in the same layer
+
+# Layout constants
+NODE_W      = 240
+NODE_H      = 160
+CLUSTER_PAD = 80
+CLUSTER_GAP = 160
+LAYER_GAP   = 340
+NODE_GAP    = 220
 
 
 def assign_positions(nodes: list[FileNode], edges: list[Edge]) -> None:
+    """Mutate each FileNode's .position field in-place."""
+    if not nodes:
+        return
+
+    node_ids = {n.id for n in nodes}
+    int_edges = [
+        e for e in edges
+        if not e.is_external
+        and e.source in node_ids
+        and e.target in node_ids
+    ]
+
+    # Group into clusters by top-level directory
+    clusters: dict[str, list[FileNode]] = defaultdict(list)
+    for node in nodes:
+        clusters[_cluster_key(node)].append(node)
+
+    sorted_clusters = sorted(
+        clusters.items(),
+        key=lambda kv: (-len(kv[1]), kv[0]),
+    )
+
+    cluster_bounds = []
+    cluster_layouts = []
+
+    for _key, cnodes in sorted_clusters:
+        cids = {n.id for n in cnodes}
+        cedges = [e for e in int_edges if e.source in cids and e.target in cids]
+        layout = _layout_cluster(cnodes, cedges)
+        cluster_layouts.append(layout)
+
+        if layout:
+            xs = [p[0] for p in layout.values()]
+            ys = [p[1] for p in layout.values()]
+            w = max(xs) - min(xs) + NODE_W + CLUSTER_PAD * 2
+            h = max(ys) - min(ys) + NODE_H + CLUSTER_PAD * 2
+        else:
+            w = NODE_W + CLUSTER_PAD * 2
+            h = NODE_H + CLUSTER_PAD * 2
+        cluster_bounds.append((0.0, 0.0, w, h))
+
+    origins = _grid_arrange(cluster_bounds)
+
+    for (_key, cnodes), layout, (ox, oy) in zip(
+            sorted_clusters, cluster_layouts, origins):
+        nmap = {n.id: n for n in cnodes}
+        if layout:
+            min_x = min(p[0] for p in layout.values())
+            min_y = min(p[1] for p in layout.values())
+        else:
+            min_x = min_y = 0.0
+
+        for nid, (lx, ly) in layout.items():
+            node = nmap.get(nid)
+            if node:
+                node.position = Position(
+                    x=float(ox + CLUSTER_PAD + (lx - min_x)),
+                    y=float(oy + CLUSTER_PAD + (ly - min_y)),
+                )
+
+        orphan_x = ox + CLUSTER_PAD
+        for node in cnodes:
+            if node.position is None:
+                node.position = Position(x=float(orphan_x),
+                                          y=float(oy + CLUSTER_PAD))
+                orphan_x += NODE_W + 40
+
+
+
+def assign_positions_flat(nodes: list[FileNode], edges: list[Edge]) -> None:
     """
-    Mutates each FileNode's .position field in-place.
-    Only considers internal edges (ignores external package edges).
+    Original vertical topo-sort layout — all nodes in one global graph.
+
+    Columns = import depth layers (left to right).
+    Rows    = nodes within each column, sorted by category, spread vertically.
+    Entrypoints float to the top, config/docs sink to the bottom.
+
+    This is the compact "waterfall" view: visually dense, good for seeing
+    the full call-graph shape at a glance. Not clustered by directory.
     """
     if not nodes:
         return
@@ -40,7 +129,6 @@ def assign_positions(nodes: list[FileNode], edges: list[Edge]) -> None:
     node_ids = {n.id for n in nodes}
     node_map = {n.id: n for n in nodes}
 
-    # Count incoming internal edges per node
     in_degree: dict[str, int] = {n.id: 0 for n in nodes}
     adjacency: dict[str, list[str]] = {n.id: [] for n in nodes}
 
@@ -59,52 +147,141 @@ def assign_positions(nodes: list[FileNode], edges: list[Edge]) -> None:
     visited: set[str] = set()
 
     while queue:
-        node_id = queue.popleft()
-        if node_id in visited:
+        nid = queue.popleft()
+        if nid in visited:
             continue
-        visited.add(node_id)
-        current_depth = depths[node_id]
-        for target in adjacency.get(node_id, []):
-            new_depth = current_depth + 1
-            if new_depth > depths.get(target, 0):
-                depths[target] = new_depth
+        visited.add(nid)
+        for target in adjacency.get(nid, []):
+            nd = depths[nid] + 1
+            if nd > depths.get(target, 0):
+                depths[target] = nd
             queue.append(target)
 
-    # Group nodes by depth (layer)
+    # Group by depth
     layers: dict[int, list[str]] = {}
-    for node_id, depth in depths.items():
-        if node_id not in visited:
-            continue   # handle below as orphan
-        layers.setdefault(depth, []).append(node_id)
+    for nid, d in depths.items():
+        if nid in visited:
+            layers.setdefault(d, []).append(nid)
 
-    # Assign positions layer by layer
+    FLAT_LAYER_GAP = 340
+    FLAT_NODE_GAP  = 210
+
     for depth, layer_ids in sorted(layers.items()):
-        # Sort within layer: config files to bottom, entrypoints to top
-        def _sort_key(nid: str) -> int:
+        layer_ids = sorted(layer_ids, key=lambda n: _sort_key(node_map.get(n)))
+        total_h = (len(layer_ids) - 1) * FLAT_NODE_GAP
+        for i, nid in enumerate(layer_ids):
             node = node_map.get(nid)
-            if not node:
-                return 0
-            if "entrypoint" in node.tags:
-                return -100
-            if node.category == "config":
-                return 100
-            if node.category == "docs":
-                return 90
-            return 0
-
-        layer_ids.sort(key=_sort_key)
-        total_height = len(layer_ids) * NODE_GAP
-        for i, node_id in enumerate(layer_ids):
-            node = node_map.get(node_id)
             if node:
                 node.position = Position(
-                    x=float(depth * LAYER_GAP),
-                    y=float(i * NODE_GAP - total_height / 2),
+                    x=float(depth * FLAT_LAYER_GAP),
+                    y=float(i * FLAT_NODE_GAP - total_h / 2),
                 )
 
-    # Place unvisited nodes (cycle members, isolated) in orphan row
+    # Orphans (cycle members, isolated) in a row above the main graph
     orphan_x = 0.0
     for node in nodes:
         if node.position is None:
             node.position = Position(x=orphan_x, y=float(-(NODE_H * 4)))
             orphan_x += NODE_W + 40
+
+def _cluster_key(node: FileNode) -> str:
+    path = (getattr(node, "path", "") or getattr(node, "id", ""))
+    path = path.replace("\\", "/").lstrip("./")
+    parts = path.split("/")
+    return parts[0] if len(parts) > 1 else "root"
+
+
+def _layout_cluster(
+    nodes: list[FileNode], edges: list[Edge]
+) -> dict[str, tuple[float, float]]:
+    if not nodes:
+        return {}
+    if len(nodes) == 1:
+        return {nodes[0].id: (0.0, 0.0)}
+
+    node_ids = {n.id for n in nodes}
+    nmap     = {n.id: n for n in nodes}
+    in_deg   = {n.id: 0 for n in nodes}
+    adj      = {n.id: [] for n in nodes}
+
+    for e in edges:
+        if e.source in node_ids and e.target in node_ids:
+            in_deg[e.target] = in_deg.get(e.target, 0) + 1
+            adj[e.source].append(e.target)
+
+    depths  = {n.id: 0 for n in nodes}
+    queue   = deque(n.id for n in nodes if in_deg.get(n.id, 0) == 0)
+    visited: set[str] = set()
+
+    while queue:
+        nid = queue.popleft()
+        if nid in visited:
+            continue
+        visited.add(nid)
+        for target in adj.get(nid, []):
+            nd = depths[nid] + 1
+            if nd > depths.get(target, 0):
+                depths[target] = nd
+            queue.append(target)
+
+    layers: dict[int, list[str]] = {}
+    for nid, d in depths.items():
+        if nid in visited:
+            layers.setdefault(d, []).append(nid)
+
+    positions: dict[str, tuple[float, float]] = {}
+    for depth, layer_ids in sorted(layers.items()):
+        layer_ids = sorted(layer_ids, key=lambda n: _sort_key(nmap.get(n)))
+        total_h = (len(layer_ids) - 1) * NODE_GAP
+        for i, nid in enumerate(layer_ids):
+            positions[nid] = (
+                float(depth * LAYER_GAP),
+                float(i * NODE_GAP - total_h / 2),
+            )
+
+    ox, oy = 0.0, -float(NODE_H * 3)
+    for node in nodes:
+        if node.id not in positions:
+            positions[node.id] = (ox, oy)
+            ox += NODE_W + 40
+
+    return positions
+
+
+def _sort_key(node: "FileNode | None") -> int:
+    if not node:
+        return 0
+    tags = getattr(node, "tags", []) or []
+    cat  = getattr(node, "category", "") or ""
+    if "entrypoint" in tags:
+        return -100
+    if cat == "config":
+        return 100
+    if cat == "docs":
+        return 90
+    return 0
+
+
+def _grid_arrange(
+    bounds: list[tuple[float, float, float, float]]
+) -> list[tuple[float, float]]:
+    if not bounds:
+        return []
+    n    = len(bounds)
+    rows = max(1, round(math.sqrt(n / 1.6)))
+    cols = max(1, math.ceil(n / rows))
+
+    origins = []
+    cx = cy = row_h = 0.0
+    col = 0
+    for _x, _y, w, h in bounds:
+        origins.append((cx, cy))
+        row_h = max(row_h, h)
+        cx += w + CLUSTER_GAP
+        col += 1
+        if col >= cols:
+            col = 0
+            cx  = 0.0
+            cy += row_h + CLUSTER_GAP
+            row_h = 0.0
+    return origins

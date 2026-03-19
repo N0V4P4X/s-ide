@@ -6,6 +6,46 @@ All notable changes follow [Semantic Versioning](https://semver.org):
 - **PATCH** — bug fixes and internal improvements
 
 ---
+## [0.5.3] -- 2026-03-19
+
+### Added
+- **Layout mode toggle** (topbar ⊞/⊟ button) -- switch between Compact
+  (tighter 280px layer gap) and Spread (340px gap, 80px cluster padding)
+  without re-parsing. `_relayout()` rebuilds FileNode stubs from the graph
+  dict, re-runs `assign_positions` with updated constants, and calls
+  `_fit_view()` to frame the result.
+- **Ctrl-click multi-select** -- holding Ctrl while clicking a node toggles
+  it in the selection set. Regular click replaces the selection as before.
+- **Group drag** -- dragging a node when multiple are selected moves all
+  selected nodes together. `_drag` now stores `anchors: {nid: (ox, oy)}`
+  for every selected node; `_drag_move` applies the same delta to all.
+- **Hover tooltip** -- mousing over a node for 500ms shows a floating panel
+  with the node label, file path, category, and line count. Positioned
+  near the cursor, stays on-screen. Dismissed on mouse-out, pan, or drag.
+
+---
+
+## [0.5.2] -- 2026-03-19
+
+### Changed
+- **Arrow navigation direction** -- canvas arrow buttons (◁ △ ▽ ▷) now move
+  the *graph* rather than the camera. Pressing ◁ pushes content leftward,
+  consistent with how scrollbars and every map application work.
+- **Graph layout: clustered directory layout** -- `parser/layout.py` rewritten.
+  Nodes are now grouped by top-level directory (ai/, gui/, parser/, etc.).
+  Clusters are arranged in a wide grid (~1.6:1 aspect), sized by population.
+  Within each cluster, a layered topo-sort orders nodes left-to-right by
+  import depth. Related modules are visually co-located; cross-module arrows
+  are long crossing lines that make inter-cluster dependencies obvious.
+- **AI chat: collapsible blocks** -- `<thought>` sections become collapsed
+  ▶ Thinking… panels (click to expand). Code blocks become collapsible
+  ▶ Code / ▶ lang panels with a copy button, open by default. Blocks are
+  embedded as `tk.Frame` windows inside the `tk.Text` widget via
+  `window_create()`, so they scroll and interact naturally with the rest
+  of the conversation.
+
+---
+
 ## [0.5.1] -- 2026-03-19
 
 ### Added

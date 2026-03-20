@@ -33,10 +33,12 @@ import math
 import threading
 import datetime
 import time
+import traceback
+import shutil
 import tkinter as tk
 import tkinter.font as tkfont
 from tkinter import ttk, filedialog, messagebox
-from typing import Optional, Any, Union, List, Dict, Set, Tuple
+from typing import Optional, Any, Union, List, Dict, Set, Tuple, Callable
 from dataclasses import dataclass, field
 
 # ── Path bootstrap ────────────────────────────────────────────────────────────
@@ -65,10 +67,12 @@ try:
     from ..monitor.perf import MetricsWatcher, ParseTimer, ProcessMonitor
     from ..monitor.instrumenter import rollback_available, rollback, Instrumenter, InstrumentOptions
     from ..monitor.profiler import profile_project as _profile_project_fn, load_last_profile
-    from ..ai.client import OllamaClient, ChatMessage as CM
+    from ..ai.client import OllamaClient, ChatMessage as CM, ToolResult
     from ..ai.tools import TOOLS, dispatch_tool
     from ..ai.context import build_context, build_system_message
     from ..ai.manager import Manager, scaffold_new_project
+    from ..ai.tool_builder import build_tool_with_team
+    from ..ai.teams import TeamSession, AgentConfig, list_sessions
     from ..process.process_manager import ProcessManager
     from ..build.sandbox import SandboxRun, SandboxOptions
     from ..parser.project_parser import parse_project
@@ -78,14 +82,17 @@ try:
     from ..build.packager import package_project, PackageOptions
     from ..parser.project_config import load_project_config, save_project_config, bump_version
     from ..build.cleaner import clean_project, CleanOptions
+    from ..graph.types import FileNode, Edge, Position
 except (ImportError, ValueError):
     from monitor.perf import MetricsWatcher, ParseTimer, ProcessMonitor
     from monitor.instrumenter import rollback_available, rollback, Instrumenter, InstrumentOptions
     from monitor.profiler import profile_project as _profile_project_fn, load_last_profile
-    from ai.client import OllamaClient, ChatMessage as CM
+    from ai.client import OllamaClient, ChatMessage as CM, ToolResult
     from ai.tools import TOOLS, dispatch_tool
     from ai.context import build_context, build_system_message
     from ai.manager import Manager, scaffold_new_project
+    from ai.tool_builder import build_tool_with_team
+    from ai.teams import TeamSession, AgentConfig, list_sessions
     from process.process_manager import ProcessManager
     from build.sandbox import SandboxRun, SandboxOptions
     from parser.project_parser import parse_project
@@ -95,6 +102,10 @@ except (ImportError, ValueError):
     from build.packager import package_project, PackageOptions
     from parser.project_config import load_project_config, save_project_config, bump_version
     from build.cleaner import clean_project, CleanOptions
+    try:
+        from graph.types import FileNode, Edge, Position
+    except ImportError:
+        FileNode = Any; Edge = Any; Position = Any
 
 
 # ── Colour palette ────────────────────────────────────────────────────────────
@@ -294,8 +305,8 @@ class SIDE_App(tk.Tk, TeamsCanvasMixin):
             'in_bold': False, 'buffer': '',
             'in_thought': False, 'in_code': False,
         }
-        self._ai_conv: Optional[tk.Text] = None
-        self._ai_input: Optional[tk.Entry] = None
+        self._ai_conv: tk.Text | None = None
+        self._ai_input: tk.Entry | None = None
         
         # Redraw throttling
         self._redraw_queued = False
@@ -747,7 +758,6 @@ class SIDE_App(tk.Tk, TeamsCanvasMixin):
                 on_tool_missing = lambda spec: self.after(0,
                     lambda s=spec: self._on_tool_missing(s)),
             )
-
     def _on_manager_done(self) -> None:
         """Called when Manager finishes a turn."""
         self._refresh_plan()
@@ -826,8 +836,25 @@ class SIDE_App(tk.Tk, TeamsCanvasMixin):
             # Live TeamEvent — log to Teams Log and AI chat summary
             tag = ("tool"  if evt.type in ("handoff", "start") else
                    "error" if evt.type == "error" else "dim")
-            self._ai_append(f"  [{evt.agent}] {evt.message}\n", tag)
-            self._teams_log_append(f"[{evt.agent}] {evt.message}\n", tag)
+
+            is_text = (evt.type == "text")
+            was_text = getattr(self, "_team_last_was_text", False)
+
+            if not is_text and was_text:
+                self._ai_append("\n", "")
+                self._teams_log_append("\n", "")
+
+            self._team_last_was_text = is_text
+
+            if is_text:
+                if not was_text:
+                    self._ai_append(f"  [{evt.agent}] ", tag)
+                    self._teams_log_append(f"[{evt.agent}] ", tag)
+                self._ai_append(evt.message, tag)
+                self._teams_log_append(evt.message, tag)
+            else:
+                self._ai_append(f"  [{evt.agent}] {evt.message}\n", tag)
+                self._teams_log_append(f"[{evt.agent}] {evt.message}\n", tag)
 
     # ── Bake ───────────────────────────────────────────────────────────────────
 
@@ -922,7 +949,6 @@ class SIDE_App(tk.Tk, TeamsCanvasMixin):
         if btn:
             btn.config(text="⏱ ...", fg=P["amber"])
         self._ai_append("\n⏱ Profiling project...\n", "dim")
-        import threading
         def _run():
             result = _profile_project_fn(project_root=root)
             def _done():
@@ -1093,8 +1119,6 @@ class SIDE_App(tk.Tk, TeamsCanvasMixin):
 
     def _build_missing_tool(self, spec) -> None:
         """Run a 3-agent tool-building team, then approve into Manager."""
-        import threading
-        from ai.tool_builder import build_tool_with_team
 
         root = self.project_root or (
             self.graph["meta"]["root"] if self.graph else "")
@@ -1390,7 +1414,6 @@ class SIDE_App(tk.Tk, TeamsCanvasMixin):
         except Exception:
             return
 
-        from gui.app import P
         mono = self._mono_xs.actual()['family']
 
         if kind == 'thought':
@@ -1694,6 +1717,16 @@ class SIDE_App(tk.Tk, TeamsCanvasMixin):
                                       highlightbackground=P["line2"], highlightthickness=1)
         self._profile_btn.grid(row=0, column=col[0], padx=(2, 6), pady=8)
         self._profile_btn.bind("<Button-1>", lambda _: self._run_profiler())
+        col[0] += 1
+
+        # Optimizer button
+        self._opt_btn = tk.Label(tb, text="▶ START OPT", bg=P["bg3"], fg=P["t2"],
+                                  font=self._mono_xs, padx=7, pady=3,
+                                  cursor="hand2",
+                                  highlightbackground=P["line2"], highlightthickness=1)
+        self._opt_btn.grid(row=0, column=col[0], padx=(2, 6), pady=8)
+        self._opt_btn.bind("<Button-1>", lambda _: self._toggle_opt())
+        self._opt_btn.grid_remove()
         col[0] += 1
 
         # Layout mode toggle
@@ -3104,7 +3137,7 @@ class SIDE_App(tk.Tk, TeamsCanvasMixin):
             if self.vp_z > 0.5:
                 # Tags strip
                 cy = sy + hh + 4 * self.vp_z
-                tags = node.get("tags") or []
+                tags: List[str] = node.get("tags") or []
                 tx = sx + 8 * self.vp_z
                 for tag in tags[:5]:
                     tag_font_sz = max(6, int(8 * self.vp_z))
@@ -3121,7 +3154,7 @@ class SIDE_App(tk.Tk, TeamsCanvasMixin):
                     cy += 18 * self.vp_z
 
                 # Definitions
-                defs = (node.get("definitions") or [])[:MAX_DEFS]
+                defs: List[dict] = (node.get("definitions") or [])[:MAX_DEFS]
                 if defs:
                     cy += 4 * self.vp_z
                     c.create_text(sx + 10 * self.vp_z, cy,
@@ -3234,7 +3267,6 @@ class SIDE_App(tk.Tk, TeamsCanvasMixin):
 
     def _draw_doc_links(self, c, node_map: dict) -> None:
         """Dashed connectors from docs nodes to source files in same dir."""
-        import os as _os
         if "docs" in self.hidden_cats and "docs" not in self.filter_cats:
             return
         if self.vp_z < 0.25:
@@ -3242,7 +3274,7 @@ class SIDE_App(tk.Tk, TeamsCanvasMixin):
         for node in self._vis_nodes():
             if node.get("category") != "docs":
                 continue
-            doc_dir = _os.path.dirname(node.get("path", ""))
+            doc_dir = os.path.dirname(node.get("path", ""))
             doc_id  = node["id"]
             if doc_id not in self.positions:
                 continue
@@ -3251,7 +3283,7 @@ class SIDE_App(tk.Tk, TeamsCanvasMixin):
             for other in self._vis_nodes():
                 if other["id"] == doc_id or other.get("category") == "docs":
                     continue
-                if _os.path.dirname(other.get("path", "")) != doc_dir:
+                if os.path.dirname(other.get("path", "")) != doc_dir:
                     continue
                 if other["id"] not in self.positions:
                     continue
@@ -3414,11 +3446,11 @@ class SIDE_App(tk.Tk, TeamsCanvasMixin):
 
         rng_x = x1 - x0 or 1
         rng_y = y1 - y0 or 1
-        sc = min(W / rng_x, H / rng_y) * 0.88
+        sc: float = float(min(W / rng_x, H / rng_y) * 0.88)
         mx = (W - rng_x * sc) / 2
         my = (H - rng_y * sc) / 2
 
-        def mm_pt(wx, wy):
+        def mm_pt(wx: float, wy: float) -> Tuple[float, float]:
             return ((wx - x0) * sc + mx, (wy - y0) * sc + my)
 
         # Edges
@@ -3681,6 +3713,26 @@ class SIDE_App(tk.Tk, TeamsCanvasMixin):
             try:
                 with open(config_path) as f:
                     self.projects = json.load(f)
+
+                # Auto-discover sibling -opt projects
+                known = {p["path"] for p in self.projects if isinstance(p, dict)}
+                added = False
+                for p in list(self.projects):
+                    if not isinstance(p, dict) or not p.get("path"): continue
+                    opt_path = p["path"].rstrip("\\/") + "-opt"
+                    if opt_path not in known and os.path.isdir(opt_path):
+                        name = p.get("name")
+                        if not name:
+                            name = os.path.basename(p["path"])
+                        self.projects.append({
+                            "name": name + " (opt)",
+                            "path": opt_path
+                        })
+                        known.add(opt_path)
+                        added = True
+                if added:
+                    self._save_project_list()
+
                 self._render_project_list()
             except Exception:
                 pass
@@ -3850,17 +3902,102 @@ class SIDE_App(tk.Tk, TeamsCanvasMixin):
             del_btn.bind("<Button-1>",
                          lambda _, pp=p["path"]: self._remove_project(pp))
 
+            def show_menu(event, path=p["path"]):
+                menu = tk.Menu(self, tearoff=0, bg=P['bg2'], fg=P['t1'],
+                               activebackground=P['bg3'], activeforeground=P['t0'],
+                               bd=0, relief='flat', font=self._mono_xs)
+                menu.add_command(label="Clone for Optimization",
+                                 command=lambda: self._clone_for_opt(path))
+                menu.add_separator()
+                menu.add_command(label="Remove from List",
+                                 command=lambda: self._remove_project(path))
+                menu.add_command(label="Delete project from Disk",
+                                 command=lambda: self._delete_project_files(path))
+                menu.tk_popup(event.x_root + 10, event.y_root + 10)
+
             row.bind("<Button-1>",
                      lambda _, pp=p["path"]: self._load_project(pp))
+            row.bind("<Button-3>", show_menu)
+            if sys.platform == "darwin":
+                row.bind("<Button-2>", show_menu)
+
             for child in row.winfo_children():
                 if child != del_btn:
                     child.bind("<Button-1>",
                                lambda _, pp=p["path"]: self._load_project(pp))
+                    child.bind("<Button-3>", show_menu)
+                    if sys.platform == "darwin":
+                        child.bind("<Button-2>", show_menu)
 
     def _remove_project(self, path: str):
         self.projects = [p for p in self.projects if p["path"] != path]
         self._save_project_list()
         self._render_project_list()
+
+    def _clone_for_opt(self, path: str):
+        target = path.rstrip("\\/") + "-opt"
+        if os.path.exists(target):
+            messagebox.showerror("Clone Failed", f"Optimization project already exists at {target}")
+            return
+        
+        import shutil
+        from typing import List
+        def ignore_build(p: str, names: List[str]) -> List[str]:
+            to_ignore = {'.git', '__pycache__', 'venv', '.side', '.gemini'}
+            return [n for n in names if n in to_ignore]
+            
+        try:
+            self._log.info("Cloning %s to %s for optimization", path, target)
+            shutil.copytree(path, target, ignore=ignore_build)
+            self.projects.append({
+                "name": os.path.basename(target),
+                "path": target
+            })
+            self._save_project_list()
+            self._render_project_list()
+            self._load_project(target)
+        except Exception as e:
+            messagebox.showerror("Clone Failed", str(e))
+
+    def _delete_project_files(self, path: str):
+        if messagebox.askyesno("Confirm Delete", f"DANGER: This will permanently delete the directory from disk:\\n{path}\\nAre you sure?"):
+            import shutil
+            try:
+                shutil.rmtree(path)
+                self._remove_project(path)
+                messagebox.showinfo("Deleted", "Project deleted successfully.")
+            except Exception as e:
+                messagebox.showerror("Delete Failed", str(e))
+
+    def _toggle_opt(self):
+        if getattr(self, "_opt_session", None) is not None and not self._opt_session._stop_event.is_set():
+            self._opt_session.stop()
+            self._opt_btn.config(text="▶ START OPT", fg=P["t2"], highlightbackground=P["line2"])
+            self._log.info("Optimization stopped.")
+            return
+
+        from ai.teams import TeamSession, AgentConfig
+        self._opt_btn.config(text="■ STOP OPT", fg=P["amber"], highlightbackground=P["amber"])
+        self._log.info("Starting optimization...")
+        
+        self._opt_session = TeamSession(
+            project_root=self.project_root,
+            task=("First, aggressively scan the repository. DO NOT assume `src/main.py` is the entry point—find the actual main files (e.g., using `list_files`, `list_dir`, `get_graph_overview`). "
+                  "Once the actual structure is known, profile the project (or explicitly profile the test suites) to identify bottlenecks. "
+                  "Finally, rewrite the slow code for maximum speed, and document everything."),
+            agents=[AgentConfig(role="optimizer", model=getattr(self, "_ai_model", "mistral"))],
+            graph=self.graph,
+            on_event=self._log_team_event
+        )
+
+        def on_done(res):
+            try:
+                self.after(0, lambda: self._opt_btn.config(text="▶ START OPT", fg=P["t2"], highlightbackground=P["line2"]))
+            except Exception:
+                pass
+            self._opt_session = None
+
+        self._opt_session.run_async(on_done)
 
     # ── Inspector ─────────────────────────────────────────────────────────────
 
@@ -4205,6 +4342,13 @@ class SIDE_App(tk.Tk, TeamsCanvasMixin):
         is_self = getattr(self, "_is_self", False)
         if hasattr(self, "_self_badge_var"):
             self._self_badge_var.set("◈ SELF" if is_self else "")
+
+        # Opt button visibility
+        if hasattr(self, "_opt_btn"):
+            if self.project_root and self.project_root.endswith("-opt"):
+                self._opt_btn.grid()
+            else:
+                self._opt_btn.grid_remove()
 
     def _update_doc_badge(self):
         if not self.graph:
@@ -5130,7 +5274,6 @@ class SIDE_App(tk.Tk, TeamsCanvasMixin):
 
         def _do_build():
             try:
-                from build.packager import package_project, PackageOptions
                 opts = PackageOptions(
                     kind=kind,
                     target_platform=plat,
@@ -5147,8 +5290,6 @@ class SIDE_App(tk.Tk, TeamsCanvasMixin):
                 self._log.info("Build complete: %s", summary)
 
                 if bump and bump != "none":
-                    from parser.project_config import (load_project_config,
-                                                        save_project_config, bump_version)
                     cfg = load_project_config(root)
                     new_ver = bump_version(cfg.get("version", "0.0.0"), bump)
                     cfg["version"] = new_ver
@@ -5158,7 +5299,6 @@ class SIDE_App(tk.Tk, TeamsCanvasMixin):
                     self._log.info("Version bumped to %s", new_ver)
 
             except Exception as exc:
-                import traceback
                 msg = str(exc)
                 tb  = traceback.format_exc()
                 self._log.error("Build failed: %s\n%s", msg, tb)
@@ -5176,7 +5316,6 @@ class SIDE_App(tk.Tk, TeamsCanvasMixin):
 
         def _do_clean():
             try:
-                from build.cleaner import clean_project, CleanOptions
                 tiers = ["cache", "logs", "build", "dev"]
                 report = clean_project(root, CleanOptions(tiers=tiers, verbose=False))
                 summary = report.summary()
@@ -5289,14 +5428,12 @@ class SIDE_App(tk.Tk, TeamsCanvasMixin):
             self.graph["meta"]["root"] if self.graph else "")
         if not root:
             return
-        from ai.teams import list_sessions
-        import time as _t
         sessions = list_sessions(root)
         self._sess_data = sessions
         try:
             lb.delete(0, "end")
             for s in sessions:
-                age = _t.time() - s.get("modified", 0)
+                age = time.time() - s.get("modified", 0)
                 if age < 3600:
                     age_s = str(int(age // 60)) + "m"
                 elif age < 86400:
@@ -5306,6 +5443,9 @@ class SIDE_App(tk.Tk, TeamsCanvasMixin):
                 lb.insert("end", s["id"][:7] + "  " + age_s + " ago")
         except Exception:
             pass
+        
+        # Loop to automatically update session list periodically without requiring manual hits of the 'Sessions' button
+        self.after(3000, self._sessions_refresh)
 
     def _sessions_open_selected(self) -> None:
         """Show selected past session in the log panel."""

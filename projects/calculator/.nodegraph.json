@@ -2,14 +2,14 @@
   "version": "1.0.0",
   "meta": {
     "root": "/home/n0v4p4x/DevOps/s-ide-py/projects/calculator",
-    "parsedAt": "2026-03-19T08:04:42.179986+00:00",
-    "parseTime": 40.06,
+    "parsedAt": "2026-03-20T00:29:49.791501+00:00",
+    "parseTime": 149.73,
     "perf": {
-      "total_ms": 44.32,
+      "total_ms": 154.35,
       "stages": [
         {
           "name": "config",
-          "ms": 0.29
+          "ms": 0.32
         },
         {
           "name": "walk",
@@ -17,99 +17,71 @@
         },
         {
           "name": "parse_files",
-          "ms": 38.27
+          "ms": 146.77
         },
         {
           "name": "resolve_edges",
-          "ms": 0.2
+          "ms": 0.31
         },
         {
           "name": "layout",
-          "ms": 0.07
+          "ms": 0.22
         },
         {
           "name": "doc_audit",
-          "ms": 0.12
+          "ms": 0.15
         },
         {
           "name": "write_json",
-          "ms": 4.18
+          "ms": 4.54
         }
       ],
       "slowest": "parse_files"
     },
-    "totalFiles": 7,
-    "totalEdges": 14,
+    "totalFiles": 10,
+    "totalEdges": 18,
     "languages": {
       "docs": {
-        "files": 1,
-        "lines": 67
+        "files": 3,
+        "lines": 76
       },
       "python": {
-        "files": 6,
-        "lines": 805
+        "files": 7,
+        "lines": 814
       }
     },
     "docs": {
       "healthy": false,
       "summary": {
-        "missingReadmes": 2,
-        "staleReadmes": 0,
-        "emptyModules": 2,
-        "total": 4
+        "missingReadmes": 0,
+        "staleReadmes": 2,
+        "emptyModules": 0,
+        "total": 2
       },
       "warnings": [
         {
-          "type": "missing-readme",
-          "severity": "warning",
-          "message": "No README.md in 'src'",
+          "type": "stale-readme",
+          "severity": "info",
+          "message": "README.md in '.' is older than 1 file(s)",
+          "dir": ".",
+          "node_id": null,
+          "readme_path": "README.md",
+          "affected_files": [
+            "run_tests_for_profile_py"
+          ],
+          "stale_since": "2026-03-19T20:16:09.585388"
+        },
+        {
+          "type": "stale-readme",
+          "severity": "info",
+          "message": "README.md in 'src' is older than 1 file(s)",
           "dir": "src",
           "node_id": null,
-          "readme_path": null,
+          "readme_path": "src/README.md",
           "affected_files": [
-            "src___init___py",
-            "src_cli_py",
-            "src_gui_app_py",
             "src_pemdas_py"
           ],
-          "stale_since": null
-        },
-        {
-          "type": "missing-readme",
-          "severity": "warning",
-          "message": "No README.md in 'test'",
-          "dir": "test",
-          "node_id": null,
-          "readme_path": null,
-          "affected_files": [
-            "test___init___py",
-            "test_test_pemdas_py"
-          ],
-          "stale_since": null
-        },
-        {
-          "type": "empty-module",
-          "severity": "info",
-          "message": "'src/__init__.py' has no imports, exports, or definitions",
-          "dir": null,
-          "node_id": "src___init___py",
-          "readme_path": null,
-          "affected_files": [
-            "src___init___py"
-          ],
-          "stale_since": null
-        },
-        {
-          "type": "empty-module",
-          "severity": "info",
-          "message": "'test/__init__.py' has no imports, exports, or definitions",
-          "dir": null,
-          "node_id": "test___init___py",
-          "readme_path": null,
-          "affected_files": [
-            "test___init___py"
-          ],
-          "stale_since": null
+          "stale_since": "2026-03-19T20:26:17.091181"
         }
       ]
     },
@@ -135,15 +107,74 @@
       "ext": ".md",
       "lines": 67,
       "size": 1732,
-      "modified": "2026-03-19T07:27:08.570802+00:00",
+      "modified": "2026-03-19T22:09:31.958578+00:00",
       "imports": [],
       "exports": [],
       "definitions": [],
       "tags": [],
       "errors": [],
       "position": {
-        "x": 0.0,
-        "y": 420.0
+        "x": 1540.0,
+        "y": 300.0
+      }
+    },
+    {
+      "id": "run_tests_for_profile_py",
+      "label": "run_tests_for_profile.py",
+      "path": "run_tests_for_profile.py",
+      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/projects/calculator/run_tests_for_profile.py",
+      "category": "python",
+      "ext": ".py",
+      "lines": 7,
+      "size": 135,
+      "modified": "2026-03-20T00:16:09.585388+00:00",
+      "imports": [
+        {
+          "type": "import",
+          "source": "unittest",
+          "line": 1,
+          "names": [],
+          "alias": null
+        },
+        {
+          "type": "import",
+          "source": "sys",
+          "line": 2,
+          "names": [],
+          "alias": null
+        }
+      ],
+      "exports": [],
+      "definitions": [],
+      "tags": [
+        "entrypoint",
+        "pytest",
+        "test"
+      ],
+      "errors": [],
+      "position": {
+        "x": 1540.0,
+        "y": 80.0
+      }
+    },
+    {
+      "id": "src_README_md",
+      "label": "README.md",
+      "path": "src/README.md",
+      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/projects/calculator/src/README.md",
+      "category": "docs",
+      "ext": ".md",
+      "lines": 4,
+      "size": 102,
+      "modified": "2026-03-19T22:09:31.958578+00:00",
+      "imports": [],
+      "exports": [],
+      "definitions": [],
+      "tags": [],
+      "errors": [],
+      "position": {
+        "x": 80.0,
+        "y": 740.0
       }
     },
     {
@@ -154,16 +185,26 @@
       "category": "python",
       "ext": ".py",
       "lines": 2,
-      "size": 25,
-      "modified": "2026-03-19T07:27:08.570802+00:00",
-      "imports": [],
+      "size": 35,
+      "modified": "2026-03-19T20:08:25.568614+00:00",
+      "imports": [
+        {
+          "type": "from-import",
+          "source": "__future__",
+          "line": 1,
+          "names": [
+            "annotations"
+          ],
+          "alias": null
+        }
+      ],
       "exports": [],
       "definitions": [],
       "tags": [],
       "errors": [],
       "position": {
-        "x": 0.0,
-        "y": 0.0
+        "x": 80.0,
+        "y": 520.0
       }
     },
     {
@@ -175,7 +216,7 @@
       "ext": ".py",
       "lines": 89,
       "size": 2120,
-      "modified": "2026-03-19T07:27:08.570802+00:00",
+      "modified": "2026-03-19T19:06:11.923491+00:00",
       "imports": [
         {
           "type": "from-import",
@@ -307,8 +348,8 @@
       ],
       "errors": [],
       "position": {
-        "x": 0.0,
-        "y": -630.0
+        "x": 80.0,
+        "y": 80.0
       }
     },
     {
@@ -320,7 +361,7 @@
       "ext": ".py",
       "lines": 256,
       "size": 8329,
-      "modified": "2026-03-19T07:27:08.570802+00:00",
+      "modified": "2026-03-19T19:06:11.923491+00:00",
       "imports": [
         {
           "type": "from-import",
@@ -584,8 +625,8 @@
       ],
       "errors": [],
       "position": {
-        "x": 0.0,
-        "y": -420.0
+        "x": 80.0,
+        "y": 300.0
       }
     },
     {
@@ -597,7 +638,7 @@
       "ext": ".py",
       "lines": 231,
       "size": 7226,
-      "modified": "2026-03-19T07:27:08.570802+00:00",
+      "modified": "2026-03-20T00:26:17.091181+00:00",
       "imports": [
         {
           "type": "from-import",
@@ -1033,8 +1074,28 @@
       "tags": [],
       "errors": [],
       "position": {
-        "x": 340.0,
-        "y": -105.0
+        "x": 420.0,
+        "y": 410.0
+      }
+    },
+    {
+      "id": "test_README_md",
+      "label": "README.md",
+      "path": "test/README.md",
+      "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/projects/calculator/test/README.md",
+      "category": "docs",
+      "ext": ".md",
+      "lines": 5,
+      "size": 141,
+      "modified": "2026-03-19T22:09:31.958578+00:00",
+      "imports": [],
+      "exports": [],
+      "definitions": [],
+      "tags": [],
+      "errors": [],
+      "position": {
+        "x": 980.0,
+        "y": 520.0
       }
     },
     {
@@ -1044,17 +1105,27 @@
       "fullPath": "/home/n0v4p4x/DevOps/s-ide-py/projects/calculator/test/__init__.py",
       "category": "python",
       "ext": ".py",
-      "lines": 0,
-      "size": 0,
-      "modified": "2026-03-19T07:27:08.570802+00:00",
-      "imports": [],
+      "lines": 2,
+      "size": 35,
+      "modified": "2026-03-19T20:08:25.568614+00:00",
+      "imports": [
+        {
+          "type": "from-import",
+          "source": "__future__",
+          "line": 1,
+          "names": [
+            "annotations"
+          ],
+          "alias": null
+        }
+      ],
       "exports": [],
       "definitions": [],
       "tags": [],
       "errors": [],
       "position": {
-        "x": 0.0,
-        "y": 210.0
+        "x": 980.0,
+        "y": 300.0
       }
     },
     {
@@ -1066,7 +1137,7 @@
       "ext": ".py",
       "lines": 227,
       "size": 6595,
-      "modified": "2026-03-19T07:27:08.570802+00:00",
+      "modified": "2026-03-19T19:06:11.923491+00:00",
       "imports": [
         {
           "type": "import",
@@ -2528,14 +2599,46 @@
       ],
       "errors": [],
       "position": {
-        "x": 0.0,
-        "y": -210.0
+        "x": 980.0,
+        "y": 80.0
       }
     }
   ],
   "edges": [
     {
       "id": "e_0",
+      "source": "run_tests_for_profile_py",
+      "target": "ext_unittest",
+      "type": "external",
+      "symbols": [],
+      "line": 1,
+      "isExternal": true,
+      "externalPackage": "unittest"
+    },
+    {
+      "id": "e_1",
+      "source": "run_tests_for_profile_py",
+      "target": "ext_sys",
+      "type": "external",
+      "symbols": [],
+      "line": 2,
+      "isExternal": true,
+      "externalPackage": "sys"
+    },
+    {
+      "id": "e_2",
+      "source": "src___init___py",
+      "target": "ext___future__",
+      "type": "external",
+      "symbols": [
+        "annotations"
+      ],
+      "line": 1,
+      "isExternal": true,
+      "externalPackage": "__future__"
+    },
+    {
+      "id": "e_3",
       "source": "src_cli_py",
       "target": "ext___future__",
       "type": "external",
@@ -2547,7 +2650,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_1",
+      "id": "e_4",
       "source": "src_cli_py",
       "target": "ext_sys",
       "type": "external",
@@ -2557,7 +2660,7 @@
       "externalPackage": "sys"
     },
     {
-      "id": "e_2",
+      "id": "e_5",
       "source": "src_cli_py",
       "target": "src_pemdas_py",
       "type": "import",
@@ -2571,7 +2674,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_3",
+      "id": "e_6",
       "source": "src_gui_app_py",
       "target": "ext___future__",
       "type": "external",
@@ -2583,7 +2686,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_4",
+      "id": "e_7",
       "source": "src_gui_app_py",
       "target": "ext_sys",
       "type": "external",
@@ -2593,7 +2696,7 @@
       "externalPackage": "sys"
     },
     {
-      "id": "e_5",
+      "id": "e_8",
       "source": "src_gui_app_py",
       "target": "ext_tkinter",
       "type": "external",
@@ -2605,7 +2708,7 @@
       "externalPackage": "tkinter"
     },
     {
-      "id": "e_6",
+      "id": "e_9",
       "source": "src_gui_app_py",
       "target": "src_pemdas_py",
       "type": "import",
@@ -2619,7 +2722,7 @@
       "externalPackage": null
     },
     {
-      "id": "e_7",
+      "id": "e_10",
       "source": "src_pemdas_py",
       "target": "ext___future__",
       "type": "external",
@@ -2631,7 +2734,7 @@
       "externalPackage": "__future__"
     },
     {
-      "id": "e_8",
+      "id": "e_11",
       "source": "src_pemdas_py",
       "target": "ext_re",
       "type": "external",
@@ -2641,7 +2744,7 @@
       "externalPackage": "re"
     },
     {
-      "id": "e_9",
+      "id": "e_12",
       "source": "src_pemdas_py",
       "target": "ext_typing",
       "type": "external",
@@ -2653,7 +2756,19 @@
       "externalPackage": "typing"
     },
     {
-      "id": "e_10",
+      "id": "e_13",
+      "source": "test___init___py",
+      "target": "ext___future__",
+      "type": "external",
+      "symbols": [
+        "annotations"
+      ],
+      "line": 1,
+      "isExternal": true,
+      "externalPackage": "__future__"
+    },
+    {
+      "id": "e_14",
       "source": "test_test_pemdas_py",
       "target": "ext_sys",
       "type": "external",
@@ -2663,7 +2778,7 @@
       "externalPackage": "sys"
     },
     {
-      "id": "e_11",
+      "id": "e_15",
       "source": "test_test_pemdas_py",
       "target": "ext_os",
       "type": "external",
@@ -2673,7 +2788,7 @@
       "externalPackage": "os"
     },
     {
-      "id": "e_12",
+      "id": "e_16",
       "source": "test_test_pemdas_py",
       "target": "ext_unittest",
       "type": "external",
@@ -2683,7 +2798,7 @@
       "externalPackage": "unittest"
     },
     {
-      "id": "e_13",
+      "id": "e_17",
       "source": "test_test_pemdas_py",
       "target": "src_pemdas_py",
       "type": "import",

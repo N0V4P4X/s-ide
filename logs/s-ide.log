@@ -264,3 +264,108 @@ FileNotFoundError: [Errno 2] No such file or directory: '/home/n0v4p4x/DevOps/S-
 19:42:55 INFO     side.app                 Parse OK — 28794 nodes, 1130 edges in 6842ms  (slowest: parse_files)
 19:42:55 DEBUG    side.app                 MetricsWatcher started for /home/n0v4p4x/DevOps
 19:47:01 INFO     side.app                 S-IDE shutting down
+20:10:32 INFO     side                     session started — log → /home/n0v4p4x/DevOps/s-ide-py/logs/s-ide.log
+20:19:11 INFO     side                     session started — log → /home/n0v4p4x/DevOps/s-ide-py/logs/s-ide.log
+20:19:11 INFO     side.app                 S-IDE starting
+20:19:12 INFO     side.app                 Loading project: /home/n0v4p4x/DevOps/s-ide-py
+20:19:12 DEBUG    side.app                 parse_project thread started
+20:19:12 INFO     side.app                 Parse OK — 91 nodes, 476 edges in 290ms  (slowest: parse_files)
+20:19:12 INFO     side.app                 S-IDE is monitoring itself: /home/n0v4p4x/DevOps/s-ide-py
+20:19:12 DEBUG    side.app                 MetricsWatcher started for /home/n0v4p4x/DevOps/s-ide-py
+20:20:48 INFO     side.app                 Loading project: /home/n0v4p4x/DevOps
+20:20:48 DEBUG    side.app                 parse_project thread started
+20:20:52 INFO     side.app                 Parse OK — 28885 nodes, 1566 edges in 2507ms  (slowest: walk)
+20:20:52 DEBUG    side.app                 MetricsWatcher started for /home/n0v4p4x/DevOps
+20:21:25 INFO     side.app                 Loading project: /home/n0v4p4x/DevOps/s-ide-py
+20:21:25 DEBUG    side.app                 parse_project thread started
+20:21:25 INFO     side.app                 Parse OK — 91 nodes, 476 edges in 29ms  (slowest: write_json)
+20:21:25 INFO     side.app                 S-IDE is monitoring itself: /home/n0v4p4x/DevOps/s-ide-py
+20:21:25 DEBUG    side.app                 MetricsWatcher started for /home/n0v4p4x/DevOps/s-ide-py
+20:29:49 INFO     side.app                 Loading project: /home/n0v4p4x/DevOps/s-ide-py/projects/calculator
+20:29:49 DEBUG    side.app                 parse_project thread started
+20:29:49 INFO     side.app                 Parse OK — 10 nodes, 18 edges in 149ms  (slowest: parse_files)
+20:29:49 DEBUG    side.app                 MetricsWatcher started for /home/n0v4p4x/DevOps/s-ide-py/projects/calculator
+20:29:53 INFO     side.app                 Loading project: /home/n0v4p4x/DevOps/s-ide-py
+20:29:53 DEBUG    side.app                 parse_project thread started
+20:29:53 INFO     side.app                 Parse OK — 91 nodes, 476 edges in 177ms  (slowest: parse_files)
+20:29:53 INFO     side.app                 S-IDE is monitoring itself: /home/n0v4p4x/DevOps/s-ide-py
+20:29:53 DEBUG    side.app                 MetricsWatcher started for /home/n0v4p4x/DevOps/s-ide-py
+20:36:10 INFO     side.app                 S-IDE shutting down
+20:36:12 INFO     side                     session started — log → /home/n0v4p4x/DevOps/s-ide-py/logs/s-ide.log
+20:36:12 INFO     side.app                 S-IDE starting
+20:36:12 INFO     side.app                 Loading project: /home/n0v4p4x/DevOps/s-ide-py
+20:36:12 DEBUG    side.app                 parse_project thread started
+20:36:13 INFO     side.app                 Parse OK — 91 nodes, 477 edges in 470ms  (slowest: parse_files)
+20:36:13 INFO     side.app                 S-IDE is monitoring itself: /home/n0v4p4x/DevOps/s-ide-py
+20:36:13 DEBUG    side.app                 MetricsWatcher started for /home/n0v4p4x/DevOps/s-ide-py
+20:36:17 INFO     side.app                 Loading project: /home/n0v4p4x/DevOps/s-ide-py-opt
+20:36:17 DEBUG    side.app                 parse_project thread started
+20:36:18 INFO     side.app                 Parse OK — 90 nodes, 474 edges in 582ms  (slowest: parse_files)
+20:36:18 DEBUG    side.app                 MetricsWatcher started for /home/n0v4p4x/DevOps/s-ide-py-opt
+20:36:41 INFO     side.app                 Cloning /home/n0v4p4x/DevOps/s-ide-py-opt to /home/n0v4p4x/DevOps/s-ide-py-opt-opt for optimization
+20:36:41 INFO     side.app                 Loading project: /home/n0v4p4x/DevOps/s-ide-py-opt-opt
+20:36:41 DEBUG    side.app                 parse_project thread started
+20:36:42 INFO     side.app                 Parse OK — 90 nodes, 474 edges in 38ms  (slowest: write_json)
+20:36:42 DEBUG    side.app                 MetricsWatcher started for /home/n0v4p4x/DevOps/s-ide-py-opt-opt
+20:42:20 INFO     side.app                 S-IDE shutting down
+20:42:22 INFO     side                     session started — log → /home/n0v4p4x/DevOps/s-ide-py/logs/s-ide.log
+20:42:22 INFO     side.app                 S-IDE starting
+20:42:23 INFO     side.app                 Loading project: /home/n0v4p4x/DevOps/s-ide-py
+20:42:23 DEBUG    side.app                 parse_project thread started
+20:42:24 INFO     side.app                 Parse OK — 91 nodes, 477 edges in 550ms  (slowest: parse_files)
+20:42:24 INFO     side.app                 S-IDE is monitoring itself: /home/n0v4p4x/DevOps/s-ide-py
+20:42:24 DEBUG    side.app                 MetricsWatcher started for /home/n0v4p4x/DevOps/s-ide-py
+20:42:32 INFO     side.app                 Loading project: /home/n0v4p4x/DevOps/s-ide-py-opt
+20:42:32 DEBUG    side.app                 parse_project thread started
+20:42:32 INFO     side.app                 Parse OK — 90 nodes, 474 edges in 80ms  (slowest: write_json)
+20:42:32 DEBUG    side.app                 MetricsWatcher started for /home/n0v4p4x/DevOps/s-ide-py-opt
+20:43:22 INFO     side.app                 Starting optimization...
+20:46:17 INFO     side.app                 S-IDE shutting down
+20:46:21 INFO     side                     session started — log → /home/n0v4p4x/DevOps/s-ide-py/logs/s-ide.log
+20:46:21 INFO     side.app                 S-IDE starting
+20:46:22 INFO     side.app                 Loading project: /home/n0v4p4x/DevOps/s-ide-py
+20:46:22 DEBUG    side.app                 parse_project thread started
+20:46:23 INFO     side.app                 Parse OK — 91 nodes, 477 edges in 586ms  (slowest: parse_files)
+20:46:23 INFO     side.app                 S-IDE is monitoring itself: /home/n0v4p4x/DevOps/s-ide-py
+20:46:23 DEBUG    side.app                 MetricsWatcher started for /home/n0v4p4x/DevOps/s-ide-py
+20:46:33 INFO     side.app                 Loading project: /home/n0v4p4x/DevOps/s-ide-py-opt
+20:46:33 DEBUG    side.app                 parse_project thread started
+20:46:33 INFO     side.app                 Parse OK — 90 nodes, 474 edges in 76ms  (slowest: write_json)
+20:46:33 DEBUG    side.app                 MetricsWatcher started for /home/n0v4p4x/DevOps/s-ide-py-opt
+20:46:35 INFO     side.app                 Starting optimization...
+20:57:26 INFO     side.app                 S-IDE shutting down
+20:57:30 INFO     side                     session started — log → /home/n0v4p4x/DevOps/s-ide-py/logs/s-ide.log
+20:57:30 INFO     side.app                 S-IDE starting
+20:57:31 INFO     side.app                 Loading project: /home/n0v4p4x/DevOps/s-ide-py
+20:57:31 DEBUG    side.app                 parse_project thread started
+20:57:31 INFO     side.app                 Parse OK — 91 nodes, 477 edges in 297ms  (slowest: parse_files)
+20:57:31 INFO     side.app                 S-IDE is monitoring itself: /home/n0v4p4x/DevOps/s-ide-py
+20:57:31 DEBUG    side.app                 MetricsWatcher started for /home/n0v4p4x/DevOps/s-ide-py
+20:57:40 INFO     side.app                 Cloning /home/n0v4p4x/DevOps/s-ide-py/projects/calculator to /home/n0v4p4x/DevOps/s-ide-py/projects/calculator-opt for optimization
+20:57:40 INFO     side.app                 Loading project: /home/n0v4p4x/DevOps/s-ide-py/projects/calculator-opt
+20:57:40 DEBUG    side.app                 parse_project thread started
+20:57:40 INFO     side.app                 Parse OK — 10 nodes, 18 edges in 3ms  (slowest: write_json)
+20:57:40 DEBUG    side.app                 MetricsWatcher started for /home/n0v4p4x/DevOps/s-ide-py/projects/calculator-opt
+20:57:52 INFO     side.app                 Starting optimization...
+21:10:54 INFO     side.app                 S-IDE shutting down
+21:10:56 INFO     side                     session started — log → /home/n0v4p4x/DevOps/s-ide-py/logs/s-ide.log
+21:10:56 INFO     side.app                 S-IDE starting
+21:10:57 INFO     side.app                 Loading project: /home/n0v4p4x/DevOps/s-ide-py
+21:10:57 DEBUG    side.app                 parse_project thread started
+21:10:58 INFO     side.app                 Parse OK — 101 nodes, 495 edges in 340ms  (slowest: parse_files)
+21:10:58 INFO     side.app                 S-IDE is monitoring itself: /home/n0v4p4x/DevOps/s-ide-py
+21:10:58 DEBUG    side.app                 MetricsWatcher started for /home/n0v4p4x/DevOps/s-ide-py
+21:11:03 INFO     side.app                 Loading project: /home/n0v4p4x/DevOps/s-ide-py/projects/calculator-opt
+21:11:03 DEBUG    side.app                 parse_project thread started
+21:11:03 INFO     side.app                 Parse OK — 10 nodes, 18 edges in 3ms  (slowest: write_json)
+21:11:03 DEBUG    side.app                 MetricsWatcher started for /home/n0v4p4x/DevOps/s-ide-py/projects/calculator-opt
+21:11:38 INFO     side.app                 Loading project: /home/n0v4p4x/DevOps/s-ide-py
+21:11:38 DEBUG    side.app                 parse_project thread started
+21:11:38 INFO     side.app                 Parse OK — 101 nodes, 495 edges in 70ms  (slowest: write_json)
+21:11:38 INFO     side.app                 S-IDE is monitoring itself: /home/n0v4p4x/DevOps/s-ide-py
+21:11:38 DEBUG    side.app                 MetricsWatcher started for /home/n0v4p4x/DevOps/s-ide-py
+21:12:07 INFO     side.app                 Loading project: /home/n0v4p4x/DevOps/s-ide-py/projects/calculator-opt
+21:12:07 DEBUG    side.app                 parse_project thread started
+21:12:07 INFO     side.app                 Parse OK — 10 nodes, 18 edges in 3ms  (slowest: write_json)
+21:12:07 DEBUG    side.app                 MetricsWatcher started for /home/n0v4p4x/DevOps/s-ide-py/projects/calculator-opt
+21:12:14 INFO     side.app                 Starting optimization...

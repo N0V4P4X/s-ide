@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 N0V4-N3XU5
+
 """
 main.py
 =======
@@ -240,6 +243,7 @@ def cmd_build(args: argparse.Namespace) -> None:
         clean_tiers=["cache", "logs"],
         entry_point=args.entry or "",
         strip_tests=not args.keep_tests,
+        generate_webapp=args.webapp,
     )
     print(f"[s-ide] Building '{root}' → {out}  (kind={args.kind})")
     result = package_project(root, out, opts)
@@ -257,6 +261,21 @@ def cmd_build(args: argparse.Namespace) -> None:
         save_project_config(root, cfg)
         print(f"[s-ide] Version bumped to {new_ver}")
 
+
+def cmd_serve(args) -> None:
+    """Launch the S-IDE Web Port and API bridge."""
+    from gui.server import run as start_server
+    root = _require_dir(args.project)
+    # Ensure graph exists
+    graph_path = os.path.join(root, ".nodegraph.json")
+    if not os.path.exists(graph_path):
+        print(f"[s-ide] No graph found at {graph_path}. Parsing first...")
+        from parser.project_parser import parse_project
+        parse_project(root_dir=root)
+    
+    # Change to project root so bridge sees the right files
+    os.chdir(root)
+    start_server(port=args.port)
 
 # ── Argument parser ───────────────────────────────────────────────────────────
 
@@ -300,7 +319,7 @@ def build_parser() -> argparse.ArgumentParser:
     # build
     sp = sub.add_parser("build", help="Clean, minify, and package a project")
     sp.add_argument("project", help="Path to project directory")
-    sp.add_argument("--kind", choices=["tarball", "installer", "portable"],
+    sp.add_argument("--kind", choices=["tarball", "installer", "portable", "webapp"],
                     default="tarball", help="Package type (default: tarball)")
     sp.add_argument("--platform", default="auto",
                     choices=["auto", "linux", "macos", "windows"],
@@ -312,12 +331,12 @@ def build_parser() -> argparse.ArgumentParser:
                     help="Entry point script (e.g. gui/app.py)")
     sp.add_argument("--bump", choices=["major", "minor", "patch"], default=None,
                     help="Bump version after build")
+    sp.add_argument("--webapp", action="store_true", help="Generate logic-view web app in dist/")
 
-    # self-check
-    sp = sub.add_parser("self-check", help="Run tests, parse, and doc audit for the project itself")
+    # serve
+    sp = sub.add_parser("serve", help="Launch the high-fidelity web interface")
     sp.add_argument("project", help="Path to project directory")
-    sp.add_argument("--strict-docs", action="store_true", help="Fail if any doc warnings exist")
-    sp.add_argument("--json", action="store_true", help="Output results in JSON (for CI)")
+    sp.add_argument("--port", type=int, default=8080, help="Bridge port (default: 8080)")
 
     return p
 
@@ -338,9 +357,55 @@ def main() -> None:
         "compress": cmd_compress,
         "build":    cmd_build,
         "self-check": cmd_self_check,
+        "serve":    cmd_serve,
     }
     handlers[args.command](args)
 
 
 if __name__ == "__main__":
     main()
+
+# ── GPLv3 interactive notice ──────────────────────────────────────────────────
+
+_GPLv3_WARRANTY = (
+    "THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY\n"
+    "APPLICABLE LAW. EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT\n"
+    'HOLDERS AND/OR OTHER PARTIES PROVIDE THE PROGRAM \"AS IS\" WITHOUT\n'
+    "WARRANTY OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT\n"
+    "LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A\n"
+    "PARTICULAR PURPOSE. THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE\n"
+    "OF THE PROGRAM IS WITH YOU.  (GPL-3.0-or-later §15)"
+)
+
+_GPLv3_CONDITIONS = (
+    "You may convey verbatim copies of the Program's source code as you\n"
+    "receive it, in any medium, provided that you conspicuously and\n"
+    "appropriately publish on each copy an appropriate copyright notice and\n"
+    "disclaimer of warranty. (See GPL-3.0 §4-6 for full conditions.)\n"
+    "Full license: <https://www.gnu.org/licenses/gpl-3.0.html>"
+)
+
+
+def gplv3_notice():
+    """Print the short GPLv3 startup notice. Call this at program startup."""
+    print("S-IDE  Copyright (C) 2026  N0V4-N3XU5")
+    print("This program comes with ABSOLUTELY NO WARRANTY; for details type 'show w'.")
+    print("This is free software, and you are welcome to redistribute it")
+    print("under certain conditions; type 'show c' for details.")
+
+
+def gplv3_handle(cmd: str) -> bool:
+    """
+    Check whether *cmd* is a GPLv3 license command and handle it.
+    Returns True if the command was consumed (caller should skip normal processing).
+    """
+    match cmd.strip().lower():
+        case "show w":
+            print(_GPLv3_WARRANTY)
+            return True
+        case "show c":
+            print(_GPLv3_CONDITIONS)
+            return True
+    return False
+
+# ─────────────────────────────────────────────────────────────────────────────

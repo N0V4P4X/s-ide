@@ -1,0 +1,1268 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- Copyright (C) 2026 N0V4-N3XU5 -->
+<!-- S-IDE v0.6.0 — Full JS frontend, served by gui/server.py at http://localhost:7700 -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>S-IDE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg0:#08080d; --bg1:#0c0c12; --bg2:#101018; --bg3:#161620; --bg4:#1c1c28;
+  --line1:#1a1a28; --line2:#222232; --line3:#2e2e44;
+  --t0:#e2e2f2; --t1:#8888a8; --t2:#484860; --t3:#242438;
+  --green:#39ff8a; --amber:#ffaa33; --blue:#4da6ff;
+  --purple:#aa66ff; --cyan:#33ddcc; --pink:#ff55aa; --red:#ff4466;
+  --font:'IBM Plex Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:var(--bg0);color:var(--t0);font-family:var(--font);font-size:12px}
+button,input,select,textarea{font-family:var(--font);font-size:12px;color:var(--t0);background:transparent;border:none;outline:none}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:var(--bg1)}
+::-webkit-scrollbar-thumb{background:var(--line3)}
+
+/* ── LAYOUT ── */
+#app{display:flex;flex-direction:column;height:100vh}
+#topbar{height:42px;background:var(--bg1);border-bottom:1px solid var(--line1);display:flex;align-items:center;gap:0;flex-shrink:0;z-index:100}
+#main{display:flex;flex:1;overflow:hidden}
+#statusbar{height:20px;background:var(--bg1);border-top:1px solid var(--line1);display:flex;align-items:center;gap:18px;padding:0 12px;flex-shrink:0}
+
+/* ── TOPBAR ── */
+.tb-logo{padding:0 14px;font-weight:700;font-size:13px;color:var(--t0);letter-spacing:.06em;border-right:1px solid var(--line1)}
+.tb-logo span{color:var(--green)}
+.tb-sep{width:1px;height:20px;background:var(--line1);margin:0 2px}
+.tb-btn{padding:0 12px;height:42px;background:transparent;border:none;color:var(--t2);cursor:pointer;font-family:var(--font);font-size:11px;letter-spacing:.04em;transition:color .12s;white-space:nowrap;border-right:1px solid var(--line1)}
+.tb-btn:hover{color:var(--t0);background:var(--bg2)}
+.tb-btn.active{color:var(--green);border-bottom:2px solid var(--green)}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:0}
+#tb-project-name{padding:0 12px;font-size:10px;color:var(--t2);border-right:1px solid var(--line1);height:42px;display:flex;align-items:center;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#tb-model-sel{background:var(--bg2);border:none;border-left:1px solid var(--line1);border-right:1px solid var(--line1);color:var(--t1);padding:0 8px;height:42px;cursor:pointer}
+#tb-zoom{padding:0 10px;font-size:10px;color:var(--t2);min-width:48px;text-align:center}
+
+/* ── LEFT SIDEBAR ── */
+#sidebar-left{width:220px;flex-shrink:0;background:var(--bg1);border-right:1px solid var(--line1);display:flex;flex-direction:column;overflow:hidden}
+#sidebar-left.collapsed{width:0}
+.sl-section{border-bottom:1px solid var(--line1)}
+.sl-hdr{padding:6px 10px;font-size:9px;font-weight:600;color:var(--t2);letter-spacing:.1em;text-transform:uppercase;background:var(--bg2);display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none}
+.sl-hdr:hover{color:var(--t1)}
+.sl-list{overflow-y:auto;flex:1}
+.proj-item{padding:5px 12px;font-size:10px;color:var(--t1);cursor:pointer;display:flex;align-items:center;gap:6px;transition:background .1s}
+.proj-item:hover{background:var(--bg3);color:var(--t0)}
+.proj-item.active{color:var(--green);background:rgba(57,255,138,.06)}
+.proj-item .proj-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.proj-item .proj-rm{color:var(--t3);font-size:10px;padding:2px 4px;opacity:0}
+.proj-item:hover .proj-rm{opacity:1}
+.proj-item .proj-rm:hover{color:var(--red)}
+#btn-open-project{margin:8px 10px;padding:5px 8px;background:var(--bg3);border:1px solid var(--line3);color:var(--t1);cursor:pointer;font-size:10px;width:calc(100% - 20px);text-align:center;transition:all .15s}
+#btn-open-project:hover{border-color:var(--blue);color:var(--blue)}
+
+/* ── CANVAS AREA ── */
+#canvas-wrap{flex:1;position:relative;overflow:hidden;background:var(--bg0)}
+#grid-cvs,#main-cvs{position:absolute;top:0;left:0;width:100%;height:100%}
+#canvas-wrap.panning{cursor:grabbing}
+#empty-hint{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;pointer-events:none}
+#empty-hint.hidden{display:none}
+.hint-title{font-size:13px;font-weight:600;color:var(--t2)}
+.hint-sub{font-size:10px;color:var(--t3);text-align:center;line-height:1.8}
+
+/* ── MINIMAP ── */
+#minimap{position:absolute;bottom:12px;right:12px;width:140px;height:88px;background:rgba(8,8,13,.9);border:1px solid var(--line2);pointer-events:none}
+#minimap canvas{width:100%;height:100%;display:block}
+
+/* ── INSPECTOR ── */
+#inspector{width:260px;flex-shrink:0;background:var(--bg1);border-left:1px solid var(--line1);overflow-y:auto;display:flex;flex-direction:column}
+#inspector.hidden{display:none}
+.insp-hdr{padding:10px 12px 6px;border-bottom:1px solid var(--line1);flex-shrink:0}
+.insp-name{font-weight:600;font-size:12px;color:var(--t0)}
+.insp-path{font-size:9px;color:var(--t2);margin-top:2px}
+.insp-body{padding:10px 12px;display:flex;flex-direction:column;gap:8px;flex:1}
+.insp-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.kv .k{font-size:9px;color:var(--t2);text-transform:uppercase;letter-spacing:.1em}
+.kv .v{font-size:11px;color:var(--t1);margin-top:1px}
+.insp-sec{font-size:9px;color:var(--t2);text-transform:uppercase;letter-spacing:.1em;margin-top:4px}
+.def-row{background:var(--bg3);border:1px solid var(--line2);padding:5px 7px;margin-top:3px;cursor:pointer;transition:border-color .12s}
+.def-row:hover{border-color:var(--line3)}
+.def-row.open-in-editor{cursor:pointer}
+.def-row .dn{font-size:10px;font-weight:600;color:var(--t0)}
+.def-row .dm{font-size:9px;color:var(--t2);margin-top:2px}
+#btn-open-editor{margin:8px 12px;padding:5px 8px;background:var(--bg3);border:1px solid var(--line3);color:var(--t1);cursor:pointer;font-size:10px;width:calc(100% - 24px);transition:all .15s}
+#btn-open-editor:hover{border-color:var(--blue);color:var(--blue)}
+
+/* ── BOTTOM PANEL ── */
+#bottom-panel{flex-shrink:0;background:var(--bg1);border-top:1px solid var(--line1);display:flex;flex-direction:column;overflow:hidden}
+#panel-resize{height:4px;background:transparent;cursor:row-resize;flex-shrink:0}
+#panel-resize:hover{background:var(--line2)}
+#panel-tabs{display:flex;border-bottom:1px solid var(--line1);flex-shrink:0;background:var(--bg2)}
+.ptab{padding:0 14px;height:30px;display:flex;align-items:center;font-size:10px;color:var(--t2);cursor:pointer;border-right:1px solid var(--line1);letter-spacing:.04em;white-space:nowrap;transition:color .12s}
+.ptab:hover{color:var(--t1)}
+.ptab.active{color:var(--green);border-bottom:2px solid var(--green)}
+#panel-content{flex:1;overflow:hidden;display:flex;flex-direction:column}
+
+/* ── AI CHAT ── */
+#chat-panel{display:flex;flex-direction:column;height:100%;overflow:hidden}
+#chat-msgs{flex:1;overflow-y:auto;padding:8px 12px;display:flex;flex-direction:column;gap:6px}
+.chat-msg{display:flex;flex-direction:column;gap:3px;animation:msgIn .15s ease}
+@keyframes msgIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.chat-msg.user .cm-role{color:var(--blue);font-size:9px;font-weight:600}
+.chat-msg.assistant .cm-role{color:var(--green);font-size:9px;font-weight:600}
+.cm-content{font-size:11px;color:var(--t1);line-height:1.6;white-space:pre-wrap;word-break:break-word}
+.cm-tool-call{background:var(--bg3);border:1px solid var(--line2);border-left:2px solid var(--amber);padding:4px 8px;margin:2px 0;font-size:10px}
+.cm-tool-call .tc-name{color:var(--amber);font-weight:600}
+.cm-tool-call .tc-result{color:var(--t2);margin-top:2px;font-size:9px;max-height:80px;overflow:hidden}
+.cm-tool-call .tc-result.expanded{max-height:none}
+.cm-code{background:var(--bg3);border:1px solid var(--line2);padding:5px 8px;font-size:10px;color:var(--cyan);overflow-x:auto;margin:3px 0}
+#chat-input-row{display:flex;gap:0;border-top:1px solid var(--line1);flex-shrink:0}
+#chat-input{flex:1;padding:8px 10px;background:var(--bg2);border:none;color:var(--t0);font-size:11px;resize:none;height:54px}
+#chat-input:focus{outline:none}
+#chat-send{padding:0 14px;background:rgba(57,255,138,.08);border-left:1px solid var(--green);color:var(--green);cursor:pointer;font-size:10px;font-weight:600;letter-spacing:.05em;transition:background .12s}
+#chat-send:hover{background:rgba(57,255,138,.16)}
+#chat-cancel{padding:0 10px;background:transparent;border-left:1px solid var(--line2);color:var(--t2);cursor:pointer;font-size:10px;display:none}
+#chat-cancel.visible{display:block}
+
+/* ── EDITOR ── */
+#editor-panel{display:flex;flex-direction:column;height:100%;overflow:hidden}
+#editor-topbar{display:flex;align-items:center;gap:0;border-bottom:1px solid var(--line1);flex-shrink:0;background:var(--bg2)}
+.etab{padding:0 12px;height:28px;display:flex;align-items:center;font-size:10px;color:var(--t2);cursor:pointer;border-right:1px solid var(--line1);gap:6px;white-space:nowrap}
+.etab.active{color:var(--t0);background:var(--bg1)}
+.etab .close-tab{color:var(--t3);padding:0 2px;font-size:11px}
+.etab .close-tab:hover{color:var(--red)}
+.etab.modified .etab-name::after{content:'·';color:var(--amber);margin-left:4px}
+#editor-area{flex:1;display:flex;overflow:hidden}
+#editor-gutter{width:44px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--line1);overflow:hidden;padding-top:8px;text-align:right;padding-right:8px}
+.line-num{height:18px;display:block;font-size:10px;color:var(--t3);line-height:18px}
+#editor-code{flex:1;overflow:auto;padding:8px 10px;font-size:12px;color:var(--t0);line-height:18px;white-space:pre;tab-size:4;caret-color:var(--green);border:none;background:transparent;resize:none;width:100%}
+#editor-code:focus{outline:none}
+#editor-statusline{height:20px;background:var(--bg2);border-top:1px solid var(--line1);display:flex;align-items:center;gap:14px;padding:0 10px;font-size:9px;color:var(--t2);flex-shrink:0}
+#btn-editor-save{margin-left:auto;padding:2px 8px;background:rgba(57,255,138,.08);border:1px solid var(--green);color:var(--green);cursor:pointer;font-size:9px}
+#btn-editor-save:hover{background:rgba(57,255,138,.16)}
+
+/* ── TERMINAL ── */
+#terminal-panel{display:flex;flex-direction:column;height:100%;overflow:hidden}
+#terminal-output{flex:1;overflow-y:auto;padding:6px 10px;font-size:11px;line-height:1.5;color:var(--t1)}
+.tline{display:flex;gap:8px;animation:msgIn .1s ease}
+.tline.cmd .tl-text{color:var(--green)}
+.tline.stdout .tl-text{color:var(--t1)}
+.tline.stderr .tl-text{color:var(--amber)}
+.tline.info .tl-text{color:var(--blue)}
+.tline.error .tl-text{color:var(--red)}
+.tl-ts{color:var(--t3);font-size:9px;flex-shrink:0;padding-top:1px}
+.tl-text{word-break:break-all}
+#terminal-input-row{display:flex;align-items:center;border-top:1px solid var(--line1);flex-shrink:0;padding:0 8px}
+.term-prompt{color:var(--green);font-size:11px;margin-right:6px;white-space:nowrap}
+#terminal-input{flex:1;height:30px;background:transparent;border:none;color:var(--t0);font-size:11px}
+
+/* ── PLAN ── */
+#plan-panel{padding:10px 12px;overflow-y:auto;height:100%}
+#plan-content{display:flex;flex-direction:column;gap:4px}
+.plan-step{display:flex;align-items:center;gap:8px;padding:5px 8px;background:var(--bg3);border:1px solid var(--line2)}
+.plan-step.done{opacity:.5}
+.plan-step.doing{border-color:var(--amber)}
+.step-status{width:14px;height:14px;border:1px solid var(--line3);display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0}
+.step-status.done{border-color:var(--green);color:var(--green)}
+.step-status.doing{border-color:var(--amber);color:var(--amber)}
+.step-text{font-size:10px;color:var(--t1)}
+#plan-empty{font-size:10px;color:var(--t2);padding:8px}
+
+/* ── GIT ── */
+#git-panel{display:flex;flex-direction:column;height:100%;overflow:hidden}
+#git-top{display:flex;gap:6px;padding:8px 10px;border-bottom:1px solid var(--line1);flex-shrink:0}
+.git-btn{padding:4px 10px;background:var(--bg3);border:1px solid var(--line3);color:var(--t1);cursor:pointer;font-size:10px;transition:all .12s}
+.git-btn:hover{border-color:var(--blue);color:var(--blue)}
+#git-output{flex:1;overflow-y:auto;padding:8px 10px;font-size:10px;color:var(--t1);white-space:pre-wrap;word-break:break-all}
+.git-added{color:var(--green)} .git-removed{color:var(--red)} .git-hdr{color:var(--cyan);font-weight:600}
+
+/* ── TEAMS LOG ── */
+#teams-panel{display:flex;height:100%;overflow:hidden}
+#teams-sessions{width:160px;flex-shrink:0;border-right:1px solid var(--line1);overflow-y:auto;padding:6px 0}
+.sess-item{padding:4px 10px;font-size:9px;color:var(--t2);cursor:pointer;transition:background .1s}
+.sess-item:hover{background:var(--bg3);color:var(--t1)}
+.sess-item.active{color:var(--green)}
+#teams-log-body{flex:1;overflow-y:auto;padding:8px 10px;font-size:10px;display:flex;flex-direction:column;gap:3px}
+.tlog-entry{display:flex;gap:8px;animation:msgIn .1s ease}
+.tlog-ts{color:var(--t3);font-size:9px;flex-shrink:0}
+.tlog-agent{font-weight:600;flex-shrink:0;min-width:80px}
+.tlog-msg{color:var(--t1);word-break:break-word}
+
+/* ── STATUSBAR ── */
+.sb-item{font-size:9px;color:var(--t2);display:flex;align-items:center;gap:4px}
+.sb-dot{width:5px;height:5px;border-radius:50%;background:var(--line2)}
+.sb-dot.green{background:var(--green);box-shadow:0 0 4px var(--green)}
+.sb-dot.amber{background:var(--amber)}
+
+/* ── TOOLTIP ── */
+#tooltip{position:fixed;background:var(--bg3);border:1px solid var(--line3);padding:5px 9px;font-size:10px;color:var(--t1);pointer-events:none;z-index:9999;display:none;max-width:220px}
+.tt-name{font-weight:600;color:var(--t0);margin-bottom:2px}
+.tt-path{color:var(--t2);font-size:9px}
+
+/* ── DIALOG ── */
+.dialog-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;display:flex;align-items:center;justify-content:center}
+.dialog-backdrop.hidden{display:none}
+.dialog{background:var(--bg2);border:1px solid var(--line3);padding:20px;min-width:320px;max-width:480px}
+.dialog h2{font-size:12px;font-weight:600;margin-bottom:12px;color:var(--t0)}
+.dlg-field{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+.dlg-field label{font-size:10px;color:var(--t2)}
+.dlg-field input,.dlg-field select{background:var(--bg3);border:1px solid var(--line3);color:var(--t0);padding:5px 8px;width:100%}
+.dlg-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+.dlg-btn{padding:5px 14px;background:var(--bg3);border:1px solid var(--line3);color:var(--t1);cursor:pointer;font-size:10px;transition:all .12s}
+.dlg-btn:hover{border-color:var(--blue);color:var(--blue)}
+.dlg-btn.primary{border-color:var(--green);color:var(--green);background:rgba(57,255,138,.08)}
+.dlg-btn.primary:hover{background:rgba(57,255,138,.16)}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- TOPBAR -->
+<div id="topbar">
+  <div class="tb-logo">S-<span>IDE</span></div>
+  <button class="tb-btn" id="btn-graph" onclick="setCanvasMode('graph')">⬡ Graph</button>
+  <button class="tb-btn" id="btn-teams-mode" onclick="setCanvasMode('teams')">⚡ Teams</button>
+  <div class="tb-sep"></div>
+  <button class="tb-btn" onclick="doReparse()">↺ Re-parse</button>
+  <button class="tb-btn" onclick="doProfile()">⏱ Profile</button>
+  <button class="tb-btn" onclick="doArchive()">📦 Archive</button>
+  <div class="tb-right">
+    <div id="tb-project-name">no project</div>
+    <select id="tb-model-sel" title="Ollama model">
+      <option value="llama3.2">llama3.2</option>
+      <option value="codellama">codellama</option>
+      <option value="mistral">mistral</option>
+      <option value="deepseek-coder">deepseek-coder</option>
+      <option value="qwen2.5-coder">qwen2.5-coder</option>
+    </select>
+    <div id="tb-zoom">100%</div>
+    <button class="tb-btn" onclick="fitView()" title="Fit to view">⊞</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+
+  <!-- LEFT SIDEBAR: Projects + file tree -->
+  <div id="sidebar-left">
+    <div class="sl-section" style="flex-shrink:0">
+      <div class="sl-hdr">Projects</div>
+      <button id="btn-open-project" onclick="showOpenDialog()">⊕ Open project</button>
+      <div id="project-list" class="sl-list" style="max-height:140px"></div>
+    </div>
+    <div class="sl-section" style="flex:1;display:flex;flex-direction:column;overflow:hidden">
+      <div class="sl-hdr" id="files-hdr">Files <span id="files-count" style="color:var(--t3)"></span></div>
+      <div id="file-list" class="sl-list" style="flex:1;overflow-y:auto"></div>
+    </div>
+  </div>
+
+  <!-- CANVAS -->
+  <div id="canvas-wrap">
+    <canvas id="grid-cvs"></canvas>
+    <canvas id="main-cvs"></canvas>
+    <div id="minimap"><canvas id="mm-cvs"></canvas></div>
+    <div id="empty-hint">
+      <div class="hint-title">S-IDE</div>
+      <div class="hint-sub">Open a project to begin<br>⊕ Open project in the sidebar</div>
+    </div>
+  </div>
+
+  <!-- INSPECTOR -->
+  <div id="inspector" class="hidden">
+    <div class="insp-hdr">
+      <div class="insp-name" id="insp-name">—</div>
+      <div class="insp-path" id="insp-path"></div>
+    </div>
+    <button id="btn-open-editor" onclick="openFileInEditor()">⬡ Open in Editor</button>
+    <div class="insp-body" id="insp-body"></div>
+  </div>
+
+</div><!-- /#main -->
+
+<!-- BOTTOM PANEL -->
+<div id="bottom-panel" style="height:280px">
+  <div id="panel-resize"></div>
+  <div id="panel-tabs">
+    <div class="ptab active" data-tab="chat" onclick="setTab('chat')">AI Chat</div>
+    <div class="ptab" data-tab="editor" onclick="setTab('editor')">Editor</div>
+    <div class="ptab" data-tab="terminal" onclick="setTab('terminal')">Terminal</div>
+    <div class="ptab" data-tab="plan" onclick="setTab('plan')">Plan</div>
+    <div class="ptab" data-tab="git" onclick="setTab('git')">Git</div>
+    <div class="ptab" data-tab="teams" onclick="setTab('teams')">Teams Log</div>
+  </div>
+  <div id="panel-content">
+
+    <!-- AI CHAT -->
+    <div id="chat-panel">
+      <div id="chat-msgs"></div>
+      <div id="chat-input-row">
+        <textarea id="chat-input" placeholder="Ask the Manager anything about your project…" onkeydown="chatKeydown(event)"></textarea>
+        <button id="chat-send" onclick="sendChat()">⚡ Send</button>
+        <button id="chat-cancel" onclick="cancelChat()">✕ Stop</button>
+      </div>
+    </div>
+
+    <!-- EDITOR -->
+    <div id="editor-panel" style="display:none">
+      <div id="editor-topbar">
+        <div id="editor-tabs"></div>
+        <div style="flex:1"></div>
+      </div>
+      <div id="editor-area">
+        <div id="editor-gutter"></div>
+        <textarea id="editor-code" spellcheck="false"
+          oninput="editorInput()" onkeydown="editorKeydown(event)"
+          onscroll="syncGutter()"></textarea>
+      </div>
+      <div id="editor-statusline">
+        <span id="ed-lang">—</span>
+        <span id="ed-pos">Ln 1, Col 1</span>
+        <span id="ed-lines">0 lines</span>
+        <button id="btn-editor-save" onclick="saveEditorFile()">⬡ Save</button>
+      </div>
+    </div>
+
+    <!-- TERMINAL -->
+    <div id="terminal-panel" style="display:none">
+      <div id="terminal-output"></div>
+      <div id="terminal-input-row">
+        <span class="term-prompt">$</span>
+        <input id="terminal-input" type="text" placeholder="shell command…" onkeydown="termKeydown(event)">
+      </div>
+    </div>
+
+    <!-- PLAN -->
+    <div id="plan-panel" style="display:none">
+      <div id="plan-content">
+        <div id="plan-empty">No plan loaded. Ask the Manager to create_plan.</div>
+      </div>
+    </div>
+
+    <!-- GIT -->
+    <div id="git-panel" style="display:none">
+      <div id="git-top">
+        <button class="git-btn" onclick="gitCmd('status')">status</button>
+        <button class="git-btn" onclick="gitCmd('diff')">diff</button>
+        <button class="git-btn" onclick="gitCmd('log')">log</button>
+        <button class="git-btn" onclick="gitCmd('add_all')">add all</button>
+        <button class="git-btn" onclick="gitCommit()">commit…</button>
+        <button class="git-btn" onclick="gitCmd('push')">push</button>
+        <button class="git-btn" onclick="gitCmd('pull')">pull</button>
+      </div>
+      <div id="git-output">Run a git command to see output.</div>
+    </div>
+
+    <!-- TEAMS LOG -->
+    <div id="teams-panel" style="display:none">
+      <div id="teams-sessions"></div>
+      <div id="teams-log-body"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- STATUSBAR -->
+<div id="statusbar">
+  <div class="sb-item"><div class="sb-dot" id="srv-dot"></div><span id="srv-status">connecting…</span></div>
+  <div class="sb-item"><span id="sb-nodes">0 nodes</span></div>
+  <div class="sb-item"><span id="sb-edges">0 edges</span></div>
+  <div class="sb-item"><span id="sb-info"></span></div>
+</div>
+
+<!-- DIALOGS -->
+<div class="dialog-backdrop hidden" id="dlg-open">
+  <div class="dialog">
+    <h2>Open Project</h2>
+    <div class="dlg-field"><label>Absolute project path</label>
+      <input id="dlg-open-path" type="text" placeholder="/home/user/my-project" onkeydown="if(event.key==='Enter')dlgOpenConfirm()"></div>
+    <div class="dlg-btns">
+      <button class="dlg-btn" onclick="hideDlg('dlg-open')">Cancel</button>
+      <button class="dlg-btn primary" onclick="dlgOpenConfirm()">Open</button>
+    </div>
+  </div>
+</div>
+
+<div class="dialog-backdrop hidden" id="dlg-commit">
+  <div class="dialog">
+    <h2>Git Commit</h2>
+    <div class="dlg-field"><label>Commit message</label>
+      <input id="dlg-commit-msg" type="text" placeholder="feat: …" onkeydown="if(event.key==='Enter')dlgCommitConfirm()"></div>
+    <div class="dlg-btns">
+      <button class="dlg-btn" onclick="hideDlg('dlg-commit')">Cancel</button>
+      <button class="dlg-btn primary" onclick="dlgCommitConfirm()">Commit All</button>
+    </div>
+  </div>
+</div>
+
+<div id="tooltip"><div class="tt-name" id="tt-name"></div><div class="tt-path" id="tt-path"></div></div>
+
+<script>
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 N0V4-N3XU5  |  S-IDE v0.6.0 Frontend
+
+const API = 'http://127.0.0.1:7700';
+
+// ── COLORS ────────────────────────────────────────────────────────────────────
+const C = {
+  bg0:'#08080d',bg1:'#0c0c12',bg2:'#101018',bg3:'#161620',
+  line1:'#1a1a28',line2:'#222232',line3:'#2e2e44',
+  t0:'#e2e2f2',t1:'#8888a8',t2:'#484860',t3:'#242438',
+  green:'#39ff8a',amber:'#ffaa33',blue:'#4da6ff',
+  purple:'#aa66ff',cyan:'#33ddcc',pink:'#ff55aa',red:'#ff4466',
+};
+const CAT_COL = {
+  python: {fill:'#0a0a14',accent:'#4da6ff',border:'#181828'},
+  docs:   {fill:'#0a120a',accent:'#39ff8a',border:'#182018'},
+  js:     {fill:'#140e04',accent:'#ffaa33',border:'#241808'},
+  config: {fill:'#100a18',accent:'#aa66ff',border:'#1e1230'},
+  other:  {fill:'#0a0a14',accent:'#8888a8',border:'#181828'},
+};
+const ROLE_COL = {
+  architect:'#4da6ff',implementer:'#39ff8a',reviewer:'#ffaa33',
+  tester:'#33ddcc',optimizer:'#aa66ff',documentarian:'#ff55aa',
+};
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let graph = null, root = null;
+let nodes = [], edges = [], nodeMap = {};
+let selId = null, hovId = null;
+let canvasMode = 'graph'; // 'graph' | 'teams'
+let teamNodes = [], teamEdges = [];
+let chatHistory = [];
+let chatStreamId = null;
+let termHistory = [], termHistIdx = -1;
+let editorTabs = []; // [{path, content, modified, lang}]
+let editorActive = null; // path
+let sseConn = null;
+
+// ── VIEWPORT ──────────────────────────────────────────────────────────────────
+const vp = {x:0,y:0,z:1};
+const w2s = (wx,wy) => ({x:wx*vp.z+vp.x, y:wy*vp.z+vp.y});
+const s2w = (sx,sy) => ({x:(sx-vp.x)/vp.z, y:(sy-vp.y)/vp.z});
+
+// ── CANVAS ────────────────────────────────────────────────────────────────────
+const cvs  = document.getElementById('main-cvs');
+const ctx  = cvs.getContext('2d');
+const gcvs = document.getElementById('grid-cvs');
+const gctx = gcvs.getContext('2d');
+const mmcvs= document.getElementById('mm-cvs');
+const mctx = mmcvs.getContext('2d');
+const wrap = document.getElementById('canvas-wrap');
+
+const NW=200, NH=110, HH=26;
+
+function resize() {
+  const w=wrap.clientWidth, h=wrap.clientHeight;
+  cvs.width=gcvs.width=w; cvs.height=gcvs.height=h;
+  mmcvs.width=140; mmcvs.height=88;
+  drawGrid(); render();
+}
+window.addEventListener('resize', resize);
+resize();
+
+// ── GRID ──────────────────────────────────────────────────────────────────────
+function drawGrid() {
+  const w=gcvs.width, h=gcvs.height;
+  gctx.clearRect(0,0,w,h);
+  const step=40*vp.z, ox=vp.x%step, oy=vp.y%step;
+  gctx.strokeStyle=C.line1; gctx.lineWidth=.5;
+  for(let x=ox;x<w;x+=step){gctx.beginPath();gctx.moveTo(x,0);gctx.lineTo(x,h);gctx.stroke()}
+  for(let y=oy;y<h;y+=step){gctx.beginPath();gctx.moveTo(0,y);gctx.lineTo(w,y);gctx.stroke()}
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+let _raf=null;
+function schedRender(){if(!_raf)_raf=requestAnimationFrame(()=>{_raf=null;render()})}
+
+function render() {
+  ctx.clearRect(0,0,cvs.width,cvs.height);
+  if(canvasMode==='teams') { renderTeams(); renderMinimap(); return; }
+  renderEdges(); renderNodes(); renderMinimap();
+  document.getElementById('tb-zoom').textContent=`${Math.round(vp.z*100)}%`;
+}
+
+function renderEdges() {
+  for(const e of edges) {
+    const s=nodeMap[e.source], t=nodeMap[e.target];
+    if(!s||!t) continue;
+    const isSel = selId===e.source||selId===e.target;
+    const sp=w2s(s.position.x+NW, s.position.y+HH/2);
+    const tp=w2s(t.position.x, t.position.y+HH/2);
+    const mx=(sp.x+tp.x)/2;
+    ctx.save();
+    ctx.strokeStyle = isSel?C.line3:C.line1;
+    ctx.lineWidth = isSel?1.5*vp.z:1*vp.z;
+    ctx.beginPath(); ctx.moveTo(sp.x,sp.y);
+    ctx.bezierCurveTo(mx,sp.y,mx,tp.y,tp.x,tp.y);
+    ctx.stroke();
+    // arrow
+    const ang=Math.atan2(tp.y-tp.y*0+tp.y-((sp.y+tp.y)/2), tp.x-mx);
+    const al=5*vp.z;
+    ctx.fillStyle=isSel?C.line3:C.line2;
+    ctx.beginPath();
+    ctx.moveTo(tp.x,tp.y);
+    ctx.lineTo(tp.x-al*Math.cos(ang-.5),tp.y-al*Math.sin(ang-.5));
+    ctx.lineTo(tp.x-al*Math.cos(ang+.5),tp.y-al*Math.sin(ang+.5));
+    ctx.closePath(); ctx.fill();
+    ctx.restore();
+  }
+}
+
+function renderNodes() {
+  for(const n of nodes) {
+    const p=n.position;
+    const s=w2s(p.x,p.y);
+    const sw=NW*vp.z, sh=NH*vp.z, hh=HH*vp.z;
+    const cat=n.category||'other';
+    const col=CAT_COL[cat]||CAT_COL.other;
+    const isSel=selId===n.id, isHov=hovId===n.id;
+
+    ctx.save();
+    if(isSel){ctx.shadowColor=col.accent;ctx.shadowBlur=12}
+
+    ctx.fillStyle=col.fill;
+    ctx.fillRect(s.x,s.y,sw,sh);
+    ctx.strokeStyle=isSel?col.accent:(isHov?C.line3:col.border);
+    ctx.lineWidth=isSel?2:1;
+    ctx.strokeRect(s.x,s.y,sw,sh);
+
+    // header band
+    ctx.fillStyle=col.border;
+    ctx.fillRect(s.x,s.y,sw,hh);
+
+    if(vp.z>0.3) {
+      // dot
+      ctx.fillStyle=col.accent;
+      ctx.beginPath();
+      ctx.arc(s.x+9*vp.z, s.y+hh/2, 3.5*vp.z, 0, Math.PI*2);
+      ctx.fill();
+      // label
+      ctx.fillStyle=C.t0;
+      ctx.font=`600 ${Math.round(10*vp.z)}px "IBM Plex Mono"`;
+      ctx.textAlign='left'; ctx.textBaseline='middle';
+      ctx.fillText(n.label||n.id, s.x+20*vp.z, s.y+hh/2, sw-40*vp.z);
+      // category tag
+      if(vp.z>0.5){
+        ctx.fillStyle=col.accent; ctx.font=`400 ${Math.round(8*vp.z)}px "IBM Plex Mono"`;
+        ctx.textAlign='right';
+        ctx.fillText(cat, s.x+sw-5*vp.z, s.y+hh/2);
+      }
+    }
+
+    if(vp.z>0.55) {
+      const defs=(n.definitions||[]).slice(0,3);
+      defs.forEach((d,i)=>{
+        const dy=s.y+hh+12*vp.z+i*16*vp.z;
+        ctx.fillStyle=C.t2; ctx.font=`400 ${Math.round(9*vp.z)}px "IBM Plex Mono"`;
+        ctx.textAlign='left';
+        const icon=d.kind==='class'?'⬡':'→';
+        ctx.fillText(`${icon} ${d.name}`, s.x+8*vp.z, dy, sw-16*vp.z);
+      });
+      if(n.lines) {
+        ctx.fillStyle=C.t3; ctx.textAlign='right';
+        ctx.fillText(`${n.lines}L`, s.x+sw-5*vp.z, s.y+hh+12*vp.z);
+      }
+    }
+    ctx.restore();
+  }
+}
+
+function renderTeams() {
+  // Draw team edges
+  ctx.strokeStyle=C.line3; ctx.lineWidth=2*vp.z;
+  for(const e of teamEdges) {
+    const s=teamNodes.find(n=>n.id===e.source);
+    const t=teamNodes.find(n=>n.id===e.target);
+    if(!s||!t) continue;
+    const sp=w2s(s.x+200,s.y+55);
+    const tp=w2s(t.x,t.y+55);
+    const mx=(sp.x+tp.x)/2;
+    ctx.save(); ctx.strokeStyle=C.line3;
+    ctx.beginPath(); ctx.moveTo(sp.x,sp.y);
+    ctx.bezierCurveTo(mx,sp.y,mx,tp.y,tp.x,tp.y); ctx.stroke();
+    ctx.restore();
+  }
+  // Draw team nodes
+  for(const n of teamNodes) {
+    const s=w2s(n.x,n.y);
+    const sw=200*vp.z, sh=110*vp.z, hh=30*vp.z;
+    const accent=ROLE_COL[n.role]||C.t1;
+    ctx.save();
+    ctx.fillStyle=C.bg2; ctx.fillRect(s.x,s.y,sw,sh);
+    ctx.strokeStyle=n.id===selId?accent:C.line2; ctx.lineWidth=n.id===selId?2:1;
+    ctx.strokeRect(s.x,s.y,sw,sh);
+    ctx.fillStyle=C.line1; ctx.fillRect(s.x,s.y,sw,hh);
+    if(vp.z>0.3) {
+      ctx.fillStyle=accent; ctx.beginPath();
+      ctx.arc(s.x+12*vp.z, s.y+hh/2, 4*vp.z, 0,Math.PI*2); ctx.fill();
+      ctx.fillStyle=C.t0; ctx.font=`600 ${Math.round(10*vp.z)}px "IBM Plex Mono"`;
+      ctx.textAlign='left'; ctx.textBaseline='middle';
+      ctx.fillText(n.name||n.role, s.x+24*vp.z, s.y+hh/2);
+      ctx.fillStyle=C.t2; ctx.font=`${Math.round(9*vp.z)}px "IBM Plex Mono"`;
+      ctx.fillText(`model: ${n.model||'llama3.2'}`, s.x+10*vp.z, s.y+hh+14*vp.z);
+    }
+    ctx.restore();
+  }
+}
+
+function renderMinimap() {
+  mctx.fillStyle=C.bg0; mctx.fillRect(0,0,140,88);
+  if(!nodes.length) return;
+  const xs=nodes.map(n=>n.position.x), ys=nodes.map(n=>n.position.y);
+  const minX=Math.min(...xs), maxX=Math.max(...xs);
+  const minY=Math.min(...ys), maxY=Math.max(...ys);
+  const tw=maxX-minX+NW+40, th=maxY-minY+NH+40;
+  const sc=Math.min(140/tw, 88/th);
+  const ox=(140-tw*sc)/2, oy=(88-th*sc)/2;
+  for(const e of edges) {
+    const s=nodeMap[e.source], t=nodeMap[e.target];
+    if(!s||!t) continue;
+    mctx.strokeStyle=C.line2; mctx.lineWidth=.5;
+    mctx.beginPath();
+    mctx.moveTo(ox+(s.position.x-minX+NW)*sc, oy+(s.position.y-minY+NH/2)*sc);
+    mctx.lineTo(ox+(t.position.x-minX)*sc, oy+(t.position.y-minY+NH/2)*sc);
+    mctx.stroke();
+  }
+  for(const n of nodes) {
+    const cat=n.category||'other';
+    const col=CAT_COL[cat]||CAT_COL.other;
+    mctx.fillStyle=col.accent;
+    mctx.fillRect(ox+(n.position.x-minX)*sc, oy+(n.position.y-minY)*sc,
+                  Math.max(NW*sc,2), Math.max(4,2));
+  }
+  // viewport rect
+  mctx.strokeStyle=C.t3; mctx.lineWidth=.8;
+  mctx.strokeRect(ox+(-vp.x/vp.z-minX)*sc, oy+(-vp.y/vp.z-minY)*sc,
+                  (cvs.width/vp.z)*sc, (cvs.height/vp.z)*sc);
+}
+
+// ── CANVAS INTERACTION ────────────────────────────────────────────────────────
+let isPan=false, panStart={x:0,y:0}, vpStart={x:0,y:0};
+let hovTimer=null;
+
+wrap.addEventListener('mousedown', e=>{
+  const w=s2w(e.offsetX,e.offsetY);
+  const hit=hitTest(w.x,w.y);
+  if(hit) { selectNode(hit.id); }
+  else { isPan=true; panStart={x:e.clientX,y:e.clientY}; vpStart={x:vp.x,y:vp.y}; wrap.classList.add('panning'); }
+});
+
+wrap.addEventListener('mousemove', e=>{
+  if(isPan) {
+    vp.x=vpStart.x+(e.clientX-panStart.x);
+    vp.y=vpStart.y+(e.clientY-panStart.y);
+    drawGrid(); schedRender(); return;
+  }
+  const w=s2w(e.offsetX,e.offsetY);
+  const hit=hitTest(w.x,w.y);
+  const tt=document.getElementById('tooltip');
+  if(hit&&hit.id!==hovId) { hovId=hit.id; schedRender(); }
+  else if(!hit&&hovId) { hovId=null; schedRender(); }
+  if(hit) {
+    tt.style.display='block';
+    tt.style.left=(e.clientX+14)+'px'; tt.style.top=(e.clientY-8)+'px';
+    document.getElementById('tt-name').textContent=hit.label||hit.id;
+    document.getElementById('tt-path').textContent=hit.path||'';
+  } else { tt.style.display='none'; }
+});
+
+wrap.addEventListener('mouseup', ()=>{isPan=false;wrap.classList.remove('panning')});
+wrap.addEventListener('mouseleave', ()=>{isPan=false;wrap.classList.remove('panning');document.getElementById('tooltip').style.display='none'});
+
+wrap.addEventListener('wheel', e=>{
+  e.preventDefault();
+  const f=e.deltaY<0?1.1:.9;
+  const px=e.offsetX, py=e.offsetY;
+  const pre=s2w(px,py);
+  vp.z=Math.max(.08,Math.min(4,vp.z*f));
+  vp.x=px-pre.x*vp.z; vp.y=py-pre.y*vp.z;
+  drawGrid(); schedRender();
+},{passive:false});
+
+function hitTest(wx,wy) {
+  for(const n of [...nodes].reverse()) {
+    const p=n.position;
+    if(wx>=p.x&&wx<=p.x+NW&&wy>=p.y&&wy<=p.y+NH) return n;
+  }
+  return null;
+}
+
+// ── SELECTION ─────────────────────────────────────────────────────────────────
+function selectNode(id) {
+  selId=id;
+  showInspector(nodeMap[id]);
+  schedRender();
+}
+
+function showInspector(n) {
+  if(!n) { document.getElementById('inspector').classList.add('hidden'); return; }
+  document.getElementById('inspector').classList.remove('hidden');
+  document.getElementById('insp-name').textContent=n.label||n.id;
+  document.getElementById('insp-path').textContent=n.path||'';
+  const body=document.getElementById('insp-body');
+  const defs=n.definitions||[];
+  const imports=n.imports||[];
+  body.innerHTML=`
+    <div class="insp-grid">
+      <div class="kv"><div class="k">Lines</div><div class="v">${n.lines||'—'}</div></div>
+      <div class="kv"><div class="k">Size</div><div class="v">${n.size?Math.round(n.size/1024)+'KB':'—'}</div></div>
+      <div class="kv"><div class="k">Category</div><div class="v">${n.category||'—'}</div></div>
+      <div class="kv"><div class="k">Imports</div><div class="v">${imports.length}</div></div>
+    </div>
+    ${defs.length?`<div class="insp-sec">Definitions (${defs.length})</div>`:''}
+    ${defs.map(d=>`
+      <div class="def-row" onclick="openDefInEditor('${n.path}',${d.line})">
+        <div class="dn">${d.kind==='class'?'⬡':'→'} ${d.name}</div>
+        <div class="dm">${d.kind} · L${d.line}${d.end_line?'–'+d.end_line:''} · cx ${d.complexity??'?'}${d.args&&d.args.length?' · ('+d.args.map(a=>Array.isArray(a)?a[0]:a).join(', ')+')':''}</div>
+      </div>`).join('')}
+    ${imports.length?`<div class="insp-sec" style="margin-top:8px">Imports</div>`:''}
+    ${imports.slice(0,8).map(i=>`<div class="def-row"><div class="dm">${i.source} (L${i.line})</div></div>`).join('')}
+  `;
+}
+
+// ── CANVAS MODES ──────────────────────────────────────────────────────────────
+function setCanvasMode(mode) {
+  canvasMode=mode;
+  document.getElementById('btn-graph').classList.toggle('active',mode==='graph');
+  document.getElementById('btn-teams-mode').classList.toggle('active',mode==='teams');
+  if(mode==='teams'&&teamNodes.length===0) initDefaultTeam();
+  schedRender();
+}
+
+function initDefaultTeam() {
+  const roles=['architect','implementer','reviewer','tester'];
+  teamNodes=roles.map((r,i)=>({id:`tw_${i}`,role:r,name:r.charAt(0).toUpperCase()+r.slice(1),model:getModel(),x:60+i*260,y:80}));
+  teamEdges=roles.slice(1).map((_,i)=>({id:`te_${i}`,source:`tw_${i}`,target:`tw_${i+1}`}));
+}
+
+// ── FIT VIEW ──────────────────────────────────────────────────────────────────
+function fitView() {
+  if(!nodes.length) return;
+  const xs=nodes.map(n=>n.position.x), ys=nodes.map(n=>n.position.y);
+  const minX=Math.min(...xs), maxX=Math.max(...xs);
+  const minY=Math.min(...ys), maxY=Math.max(...ys);
+  const tw=maxX-minX+NW+100, th=maxY-minY+NH+100;
+  vp.z=Math.min(cvs.width/tw, cvs.height/th, 1.0);
+  vp.x=cvs.width/2-(minX+(maxX-minX)/2+NW/2)*vp.z;
+  vp.y=cvs.height/2-(minY+(maxY-minY)/2+NH/2)*vp.z;
+  drawGrid(); schedRender();
+}
+
+// ── PROJECT LOADING ────────────────────────────────────────────────────────────
+async function loadProject(projectRoot) {
+  setStatus('Parsing…');
+  try {
+    const res=await post('/api/projects/open',{root:projectRoot});
+    if(res.error){setStatus('Error: '+res.error);return}
+    applyGraph(res, projectRoot);
+    setStatus(`Loaded: ${nodes.length} nodes`);
+  } catch(e){setStatus('Server error: '+e.message)}
+}
+
+function applyGraph(g, projectRoot) {
+  graph=g; root=projectRoot||g.meta?.root;
+  nodes=(g.nodes||[]).filter(n=>n.position&&!n.isExternal);
+  edges=(g.edges||[]).filter(e=>!nodeMap[e.source]?.isExternal&&!nodeMap[e.target]?.isExternal);
+  nodeMap={};
+  nodes.forEach(n=>nodeMap[n.id]=n);
+  // Re-filter edges with nodeMap
+  edges=(g.edges||[]).filter(e=>nodeMap[e.source]&&nodeMap[e.target]);
+
+  document.getElementById('tb-project-name').textContent=g.meta?.project?.name||root?.split('/').pop()||'project';
+  document.getElementById('empty-hint').classList.add('hidden');
+  document.getElementById('sb-nodes').textContent=`${nodes.length} nodes`;
+  document.getElementById('sb-edges').textContent=`${edges.length} edges`;
+
+  buildFileList();
+  loadSessionState();
+  fitView();
+  refreshProjects();
+}
+
+function buildFileList() {
+  const el=document.getElementById('file-list');
+  const pyNodes=nodes.filter(n=>n.category==='python'||n.category==='js');
+  document.getElementById('files-count').textContent=`(${nodes.length})`;
+  el.innerHTML=pyNodes.map(n=>`
+    <div class="proj-item" onclick="openFileInEditorByPath('${n.path}')">
+      <span style="color:${(CAT_COL[n.category]||CAT_COL.other).accent};font-size:9px">●</span>
+      <span class="proj-name">${n.label||n.path}</span>
+      <span style="color:var(--t3);font-size:9px">${n.lines||0}L</span>
+    </div>`).join('');
+}
+
+async function refreshProjects() {
+  const res=await get('/api/projects');
+  const el=document.getElementById('project-list');
+  el.innerHTML=(res||[]).map(p=>`
+    <div class="proj-item ${p.path===root?'active':''}" onclick="loadProject('${p.path}')">
+      <span class="proj-name">${p.name||p.path.split('/').pop()}</span>
+      <button class="proj-rm" onclick="event.stopPropagation();removeProject('${p.path}')">✕</button>
+    </div>`).join('');
+}
+
+async function removeProject(p) {
+  await post('/api/projects/remove',{root:p});
+  refreshProjects();
+}
+
+async function doReparse() {
+  if(!root){setStatus('No project loaded');return}
+  setStatus('Parsing…');
+  const res=await post('/api/projects/parse',{root});
+  if(!res.error) applyGraph(res,root);
+  setStatus(`Parsed: ${nodes.length} nodes`);
+}
+
+// ── SESSION STATE ─────────────────────────────────────────────────────────────
+async function loadSessionState() {
+  if(!root) return;
+  try {
+    const s=await get('/api/state?root='+encodeURIComponent(root));
+    if(s.ai_history?.length) { chatHistory=s.ai_history; renderChatHistory(); }
+    if(s.viewport?.x!=null) { Object.assign(vp,s.viewport); drawGrid(); schedRender(); }
+  } catch(e){}
+}
+
+async function saveVP() {
+  if(!root) return;
+  await post('/api/state',{root,key:'viewport',value:{x:vp.x,y:vp.y,z:vp.z}});
+}
+
+// ── AI CHAT ───────────────────────────────────────────────────────────────────
+function getModel() { return document.getElementById('tb-model-sel').value; }
+
+async function sendChat() {
+  const input=document.getElementById('chat-input');
+  const text=input.value.trim(); if(!text) return;
+  if(!root){addChatMsg('assistant','Load a project first.');return}
+  input.value='';
+  chatHistory.push({role:'user',content:text});
+  addChatMsg('user',text);
+  document.getElementById('chat-cancel').classList.add('visible');
+
+  chatStreamId='sid_'+Date.now();
+  let asstMsg=null; let toolDiv=null;
+
+  return new Promise(resolve=>{
+    const body=JSON.stringify({root,model:getModel(),messages:chatHistory,role:'chat',stream_id:chatStreamId});
+    const es=new EventSource(`data:text/event-stream,`);  // placeholder
+    // Use fetch+ReadableStream for SSE POST
+    fetch(API+'/api/ai/chat',{method:'POST',headers:{'Content-Type':'application/json'},body})
+    .then(r=>{
+      const reader=r.body.getReader(); const dec=new TextDecoder();
+      let buf='';
+      function pump(){
+        reader.read().then(({done,value})=>{
+          if(done){endChat();resolve();return}
+          buf+=dec.decode(value,{stream:true});
+          const parts=buf.split('\n\n');
+          buf=parts.pop();
+          for(const part of parts){
+            if(!part.trim()) continue;
+            let etype='message',data='';
+            for(const line of part.split('\n')){
+              if(line.startsWith('event:')) etype=line.slice(6).trim();
+              else if(line.startsWith('data:')) data=line.slice(5).trim();
+            }
+            try{ handleChatEvent(etype,JSON.parse(data||'{}')); }catch(e){}
+          }
+          pump();
+        }).catch(()=>{endChat();resolve()});
+      }
+      pump();
+    }).catch(e=>{addChatMsg('assistant','Connection error: '+e.message);endChat();resolve()});
+  });
+}
+
+function handleChatEvent(etype, data) {
+  if(etype==='text') {
+    if(!document.getElementById('chat-astream')) {
+      const d=addChatMsg('assistant','');
+      d.id='chat-astream';
+    }
+    const el=document.getElementById('chat-astream');
+    el.querySelector('.cm-content').textContent+=data.delta||'';
+    scrollChat();
+  } else if(etype==='tool_start') {
+    const d=document.createElement('div');
+    d.className='chat-msg assistant';
+    d.innerHTML=`<div class="cm-role">TOOL</div><div class="cm-tool-call"><div class="tc-name">⚙ ${data.name}</div><div class="tc-result" id="tc_${data.name}">${JSON.stringify(data.args,null,2).slice(0,120)}</div></div>`;
+    document.getElementById('chat-msgs').appendChild(d);
+    scrollChat();
+  } else if(etype==='tool_result') {
+    const el=document.getElementById('tc_'+data.name);
+    if(el) { el.textContent=(data.content||'').slice(0,300); el.className='tc-result'; }
+    renderPlanFromHistory();
+  } else if(etype==='done') {
+    finishAsstMsg();
+    renderPlanFromHistory();
+    saveVP();
+    post('/api/state',{root,key:'ai_history',value:chatHistory});
+  } else if(etype==='error') {
+    addChatMsg('assistant','⚠ '+data.message);
+    endChat();
+  } else if(etype==='cancelled') {
+    endChat();
+  }
+}
+
+function finishAsstMsg() {
+  const el=document.getElementById('chat-astream');
+  if(el) {
+    el.removeAttribute('id');
+    chatHistory.push({role:'assistant',content:el.querySelector('.cm-content').textContent});
+  }
+}
+
+function endChat() {
+  document.getElementById('chat-cancel').classList.remove('visible');
+  chatStreamId=null;
+}
+
+async function cancelChat() {
+  if(chatStreamId) await post('/api/ai/cancel',{stream_id:chatStreamId});
+  endChat();
+}
+
+function addChatMsg(role,text) {
+  const msgs=document.getElementById('chat-msgs');
+  const d=document.createElement('div');
+  d.className='chat-msg '+role;
+  d.innerHTML=`<div class="cm-role">${role==='user'?'YOU':'MANAGER'}</div><div class="cm-content">${escHtml(text)}</div>`;
+  msgs.appendChild(d); scrollChat(); return d;
+}
+
+function scrollChat(){const el=document.getElementById('chat-msgs');el.scrollTop=el.scrollHeight}
+function chatKeydown(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat()}}
+function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+function renderChatHistory() {
+  document.getElementById('chat-msgs').innerHTML='';
+  for(const m of chatHistory) {
+    if(m.role==='user'||m.role==='assistant') addChatMsg(m.role,m.content||'');
+  }
+}
+
+function renderPlanFromHistory() {
+  // Look for create_plan tool results in chat msgs
+  // This is a simplified scan — in practice the tool result is in chatHistory
+}
+
+// ── EDITOR ────────────────────────────────────────────────────────────────────
+function openFileInEditor() {
+  if(!selId||!nodeMap[selId]) return;
+  openFileInEditorByPath(nodeMap[selId].path);
+}
+
+function openDefInEditor(path, line) {
+  openFileInEditorByPath(path, parseInt(line)||1);
+}
+
+async function openFileInEditorByPath(path, goToLine) {
+  if(!root||!path) return;
+  setTab('editor');
+  // Already open?
+  let tab=editorTabs.find(t=>t.path===path);
+  if(!tab) {
+    const res=await get('/api/file?root='+encodeURIComponent(root)+'&path='+encodeURIComponent(path));
+    if(res.error){setStatus('Error: '+res.error);return}
+    tab={path:res.path||path,content:res.content||'',modified:false,lang:detectLang(path)};
+    editorTabs.push(tab);
+  }
+  editorActive=tab.path;
+  renderEditorTabs();
+  renderEditorContent(tab, goToLine);
+}
+
+function detectLang(path) {
+  const ext=path.split('.').pop();
+  return {py:'python',js:'javascript',ts:'typescript',json:'json',
+          md:'markdown',sh:'bash',toml:'toml',yaml:'yaml',yml:'yaml'}[ext]||'text';
+}
+
+function renderEditorTabs() {
+  const el=document.getElementById('editor-tabs');
+  el.innerHTML=editorTabs.map(t=>`
+    <div class="etab ${t.path===editorActive?'active':''} ${t.modified?'modified':''}" onclick="switchEditorTab('${t.path}')">
+      <span class="etab-name">${t.path.split('/').pop()}</span>
+      <span class="close-tab" onclick="event.stopPropagation();closeEditorTab('${t.path}')">✕</span>
+    </div>`).join('');
+}
+
+function switchEditorTab(path) {
+  editorActive=path;
+  renderEditorTabs();
+  const tab=editorTabs.find(t=>t.path===path);
+  if(tab) renderEditorContent(tab);
+}
+
+function closeEditorTab(path) {
+  editorTabs=editorTabs.filter(t=>t.path!==path);
+  if(editorActive===path) editorActive=editorTabs[0]?.path||null;
+  renderEditorTabs();
+  if(editorActive) renderEditorContent(editorTabs.find(t=>t.path===editorActive));
+  else { document.getElementById('editor-code').value=''; renderGutter(0); }
+}
+
+function renderEditorContent(tab, goToLine) {
+  if(!tab) return;
+  const ta=document.getElementById('editor-code');
+  ta.value=tab.content;
+  document.getElementById('ed-lang').textContent=tab.lang;
+  document.getElementById('ed-lines').textContent=(tab.content.match(/\n/g)||[]).length+1+' lines';
+  renderGutter((tab.content.match(/\n/g)||[]).length+1);
+  if(goToLine) {
+    const lines=tab.content.split('\n');
+    let pos=0; for(let i=0;i<goToLine-1&&i<lines.length;i++) pos+=lines[i].length+1;
+    ta.setSelectionRange(pos,pos);
+    ta.focus();
+    // scroll into view
+    const lineH=18;
+    ta.scrollTop=(goToLine-3)*lineH;
+    document.getElementById('editor-gutter').scrollTop=ta.scrollTop;
+  }
+  updateEditorCursor();
+}
+
+function renderGutter(lines) {
+  const g=document.getElementById('editor-gutter');
+  let h='';
+  for(let i=1;i<=Math.max(lines,1);i++) h+=`<span class="line-num">${i}</span>`;
+  g.innerHTML=h;
+}
+
+function syncGutter() {
+  const ta=document.getElementById('editor-code');
+  document.getElementById('editor-gutter').scrollTop=ta.scrollTop;
+}
+
+function editorInput() {
+  const tab=editorTabs.find(t=>t.path===editorActive);
+  if(!tab) return;
+  const newContent=document.getElementById('editor-code').value;
+  tab.content=newContent; tab.modified=true;
+  renderEditorTabs();
+  renderGutter((newContent.match(/\n/g)||[]).length+1);
+  updateEditorCursor();
+}
+
+function updateEditorCursor() {
+  const ta=document.getElementById('editor-code');
+  const text=ta.value.slice(0,ta.selectionStart);
+  const ln=(text.match(/\n/g)||[]).length+1;
+  const col=ta.selectionStart-(text.lastIndexOf('\n')+1)+1;
+  document.getElementById('ed-pos').textContent=`Ln ${ln}, Col ${col}`;
+}
+
+function editorKeydown(e) {
+  if(e.key==='Tab'){
+    e.preventDefault();
+    const ta=document.getElementById('editor-code');
+    const s=ta.selectionStart;
+    ta.value=ta.value.slice(0,s)+'    '+ta.value.slice(ta.selectionEnd);
+    ta.selectionStart=ta.selectionEnd=s+4;
+    editorInput();
+  } else if(e.ctrlKey&&e.key==='s'){e.preventDefault();saveEditorFile()}
+  updateEditorCursor();
+}
+
+async function saveEditorFile() {
+  const tab=editorTabs.find(t=>t.path===editorActive);
+  if(!tab||!root) return;
+  const res=await post('/api/file/write',{root,path:tab.path,content:tab.content});
+  if(!res.error) { tab.modified=false; renderEditorTabs(); setStatus('Saved: '+tab.path); }
+  else setStatus('Save error: '+res.error);
+}
+
+// ── TERMINAL ──────────────────────────────────────────────────────────────────
+function termKeydown(e) {
+  const input=document.getElementById('terminal-input');
+  if(e.key==='Enter') {
+    const cmd=input.value.trim(); if(!cmd) return;
+    termHistory.unshift(cmd); termHistIdx=-1;
+    input.value='';
+    addTermLine('cmd','$ '+cmd);
+    runTermCmd(cmd);
+  } else if(e.key==='ArrowUp') {
+    e.preventDefault();
+    if(termHistIdx<termHistory.length-1){termHistIdx++;input.value=termHistory[termHistIdx]}
+  } else if(e.key==='ArrowDown') {
+    e.preventDefault();
+    if(termHistIdx>0){termHistIdx--;input.value=termHistory[termHistIdx]}
+    else{termHistIdx=-1;input.value=''}
+  }
+}
+
+async function runTermCmd(cmd) {
+  if(!root){addTermLine('error','No project loaded');return}
+  // Run as a process
+  const res=await post('/api/processes/start',{root,command:cmd,name:cmd.split(' ')[0]});
+  if(res.error) addTermLine('error',res.error);
+  else addTermLine('info',`[pid ${res.id}] started`);
+}
+
+function addTermLine(type,text) {
+  const el=document.getElementById('terminal-output');
+  const ts=new Date().toLocaleTimeString('en',{hour12:false});
+  const d=document.createElement('div');
+  d.className='tline '+type;
+  d.innerHTML=`<span class="tl-ts">${ts}</span><span class="tl-text">${escHtml(text)}</span>`;
+  el.appendChild(d); el.scrollTop=el.scrollHeight;
+}
+
+// ── GIT ───────────────────────────────────────────────────────────────────────
+async function gitCmd(cmd, extra={}) {
+  if(!root){setStatus('No project');return}
+  setTab('git');
+  const res=await post('/api/git',{root,command:cmd,...extra});
+  const out=res.output||res.error||JSON.stringify(res,null,2);
+  const el=document.getElementById('git-output');
+  el.innerHTML=colorDiff(out);
+}
+
+function colorDiff(txt) {
+  return txt.split('\n').map(l=>{
+    if(l.startsWith('+')&&!l.startsWith('+++')){return `<span class="git-added">${escHtml(l)}</span>`}
+    if(l.startsWith('-')&&!l.startsWith('---')){return `<span class="git-removed">${escHtml(l)}</span>`}
+    if(l.startsWith('@@')||l.startsWith('diff')||l.startsWith('index')){return `<span class="git-hdr">${escHtml(l)}</span>`}
+    return escHtml(l);
+  }).join('\n');
+}
+
+function gitCommit(){showDlg('dlg-commit');document.getElementById('dlg-commit-msg').focus()}
+async function dlgCommitConfirm(){
+  const msg=document.getElementById('dlg-commit-msg').value.trim();
+  if(!msg) return;
+  hideDlg('dlg-commit');
+  await gitCmd('commit_all',{message:msg});
+}
+
+// ── PLAN ──────────────────────────────────────────────────────────────────────
+// Plan is read from .side/task.md on server (via tool call),
+// here we just render it if we detect it in the chat stream.
+
+// ── BOTTOM PANEL TABS ─────────────────────────────────────────────────────────
+function setTab(tab) {
+  document.querySelectorAll('.ptab').forEach(t=>t.classList.toggle('active',t.dataset.tab===tab));
+  const panels={
+    chat:'chat-panel',editor:'editor-panel',terminal:'terminal-panel',
+    plan:'plan-panel',git:'git-panel',teams:'teams-panel'
+  };
+  Object.entries(panels).forEach(([k,v])=>{
+    document.getElementById(v).style.display=k===tab?'flex':'none';
+  });
+}
+
+// ── PANEL RESIZE ──────────────────────────────────────────────────────────────
+(()=>{
+  const handle=document.getElementById('panel-resize');
+  const panel=document.getElementById('bottom-panel');
+  let dragging=false,startY=0,startH=0;
+  handle.addEventListener('mousedown',e=>{
+    dragging=true;startY=e.clientY;startH=panel.offsetHeight;
+    document.body.style.userSelect='none';
+  });
+  document.addEventListener('mousemove',e=>{
+    if(!dragging)return;
+    const h=startH-(e.clientY-startY);
+    panel.style.height=Math.max(60,Math.min(window.innerHeight-100,h))+'px';
+    resize();
+  });
+  document.addEventListener('mouseup',()=>{dragging=false;document.body.style.userSelect=''});
+})();
+
+// ── DIALOGS ───────────────────────────────────────────────────────────────────
+function showDlg(id){document.getElementById(id).classList.remove('hidden')}
+function hideDlg(id){document.getElementById(id).classList.add('hidden')}
+function showOpenDialog(){showDlg('dlg-open');document.getElementById('dlg-open-path').focus()}
+async function dlgOpenConfirm(){
+  const p=document.getElementById('dlg-open-path').value.trim();
+  if(!p) return; hideDlg('dlg-open');
+  await loadProject(p);
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){document.querySelectorAll('.dialog-backdrop').forEach(d=>d.classList.add('hidden'))}});
+
+// ── ACTIONS ───────────────────────────────────────────────────────────────────
+async function doProfile() {
+  if(!root){setStatus('No project');return}
+  setStatus('Profiling…');
+  const res=await post('/api/profile',{root});
+  if(res.error){setStatus('Profile error: '+res.error);return}
+  setStatus(`Profile: ${res.total_ms}ms — top fn: ${res.top_functions?.[0]?.name||'?'}`);
+  addTermLine('info','Profile: '+res.summary);
+}
+
+async function doArchive() {
+  if(!root){setStatus('No project');return}
+  const res=await post('/api/versions/archive',{root});
+  if(res.ok) setStatus('Archived: '+res.archivePath);
+  else setStatus('Archive error: '+res.error);
+}
+
+// ── SSE PROCESS EVENTS ────────────────────────────────────────────────────────
+function connectSSE() {
+  sseConn=new EventSource(API+'/events');
+  sseConn.addEventListener('stdout',e=>{
+    const d=JSON.parse(e.data);
+    addTermLine('stdout',d.line||'');
+  });
+  sseConn.addEventListener('stderr',e=>{
+    const d=JSON.parse(e.data);
+    addTermLine('stderr',d.line||'');
+  });
+  sseConn.addEventListener('exit',e=>{
+    const d=JSON.parse(e.data);
+    addTermLine('info',`[pid ${d.id}] exited (${d.code})`);
+  });
+  sseConn.addEventListener('started',e=>{
+    const d=JSON.parse(e.data);
+    addTermLine('info',`[pid ${d.id}] ${d.name} started`);
+  });
+  sseConn.onerror=()=>{
+    setSrvStatus(false);
+    setTimeout(connectSSE,3000);
+  };
+  sseConn.onopen=()=>setSrvStatus(true);
+}
+
+function setSrvStatus(ok) {
+  const dot=document.getElementById('srv-dot');
+  const lbl=document.getElementById('srv-status');
+  dot.className='sb-dot '+(ok?'green':'');
+  lbl.textContent=ok?'connected':'disconnected';
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+async function get(path) {
+  const r=await fetch(API+path); return r.json();
+}
+async function post(path, body) {
+  const r=await fetch(API+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  return r.json();
+}
+function setStatus(msg) {
+  document.getElementById('sb-info').textContent=msg;
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+(async ()=>{
+  connectSSE();
+  setTab('chat');
+  refreshProjects();
+  // Load last-opened project
+  const state=await get('/api/state');
+  if(state.projects?.[0]) {
+    const last=state.projects[0];
+    // Try to load graph if .nodegraph.json exists already
+    const tryGraph=await get('/api/file?root='+encodeURIComponent(last.path)+'&path=.nodegraph.json').catch(()=>null);
+    if(tryGraph&&!tryGraph.error) {
+      try {
+        const g=JSON.parse(tryGraph.content);
+        applyGraph(g, last.path);
+      } catch(e) {}
+    }
+  }
+})();
+</script>
+</body>
+</html>

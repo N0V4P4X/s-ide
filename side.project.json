@@ -1,19 +1,18 @@
 {
   "name": "s-ide-py",
-  "version": "0.5.5",
-  "description": "S-IDE \u2014 project graph editor with AI development assistant",
+  "version": "0.6.0",
+  "description": "S-IDE -- project graph editor + AI assistant, JS frontend",
   "ignore": [
     "dist",
     "logs",
     ".nodegraph.json"
   ],
   "run": {
-    "gui": "python gui/app.py",
+    "server": "python run.py",
     "test": "python test/test_suite.py",
     "self-update": "python update.py",
     "build": "python main.py build . --kind tarball",
-    "clean": "python main.py build . --no-minify --kind tarball",
-    "server": "python gui/server.py"
+    "clean": "python main.py build . --no-minify --kind tarball"
   },
   "versions": {
     "dir": "versions",

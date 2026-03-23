@@ -1,8 +1,23 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright (C) 2026 N0V4-N3XU5
 
-from .perf import ParseTimer, ProcessMonitor, MetricsWatcher
-from .profiler import profile_project, profile_function, ProfileResult, load_last_profile
+import requests
+
+MODEL = "deepseek-coder"
+OLLAMA_URL = "http://localhost:11434/api/generate"
+
+def call_model(prompt: str) -> str:
+    """Send a prompt to the local Ollama instance and return the response text."""
+    try:
+        response = requests.post(OLLAMA_URL, json={
+            "model": MODEL,
+            "prompt": prompt,
+            "stream": False
+        })
+        response.raise_for_status()
+        return response.json().get("response", "")
+    except Exception as e:
+        return f"Error calling model: {e}"
 
 # ── GPLv3 interactive notice ──────────────────────────────────────────────────
 

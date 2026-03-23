@@ -133,6 +133,63 @@ class PseudocodeGenerator(ast.NodeVisitor):
     def visit_ImportFrom(self, node: ast.ImportFrom):
         pass # Ignore imports in pseudocode
 
+
+    def visit_AsyncFunctionDef(self, node):
+        self.visit_FunctionDef(node)
+
+    def visit_Global(self, node: ast.Global):
+        self._add(f"declare global {', '.join(node.names)}")
+
+    def visit_Nonlocal(self, node: ast.Nonlocal):
+        self._add(f"declare nonlocal {', '.join(node.names)}")
+
+    def visit_Pass(self, node: ast.Pass):
+        self._add("pass")
+
+    def visit_Break(self, node: ast.Break):
+        self._add("break")
+
+    def visit_Continue(self, node: ast.Continue):
+        self._add("continue")
+
+    def visit_AnnAssign(self, node: ast.AnnAssign):
+        target = self._expr(node.target)
+        ann = self._expr(node.annotation)
+        if node.value:
+            self._add(f"set {target} ({ann}) to {self._expr(node.value)}")
+        else:
+            self._add(f"declare {target} as {ann}")
+
+    def visit_Match(self, node):
+        # Python 3.10+ match/case
+        subject = self._expr(node.subject)
+        self._add(f"match {subject}:")
+        self.level += 1
+        for case in node.cases:
+            pattern = self._pattern(case.pattern)
+            guard = f" if {self._expr(case.guard)}" if case.guard else ""
+            self._add(f"case {pattern}{guard}:")
+            self._visit_block(case.body)
+        self.level -= 1
+
+    def _pattern(self, node) -> str:
+        t = type(node).__name__
+        if t == "MatchValue":     return self._expr(node.value)
+        if t == "MatchSingleton": return repr(node.value)
+        if t == "MatchStar":      return f"*{self._expr(node.name) if node.name else '_'}"
+        if t == "MatchAs":        return f"{self._pattern(node.pattern) if node.pattern else '_'} as {node.name or '_'}"
+        if t == "MatchOr":        return " | ".join(self._pattern(p) for p in node.patterns)
+        if t == "MatchSequence":  return f"[{', '.join(self._pattern(p) for p in node.patterns)}]"
+        if t == "MatchMapping":
+            pairs = ", ".join(f"{self._expr(k)}: {self._pattern(v)}" for k,v in zip(node.keys, node.patterns))
+            rest  = f", **{node.rest}" if node.rest else ""
+            return "{" + pairs + rest + "}"
+        if t == "MatchClass":
+            args = [self._pattern(p) for p in node.patterns]
+            kwargs = [f"{k}={self._pattern(v)}" for k,v in zip(node.kwd_attrs, node.kwd_patterns)]
+            return f"{self._expr(node.cls)}({', '.join(args+kwargs)})"
+        return f"<pattern:{t}>"
+
     def _expr(self, node: Union[ast.AST, None]) -> str:
         if node is None:
             return ""
@@ -177,7 +234,28 @@ class PseudocodeGenerator(ast.NodeVisitor):
         if isinstance(node, ast.Lambda):
             args = [a.arg for a in node.args.args]
             return f"lambda ({', '.join(args)}) -> {self._expr(node.body)}"
+        if isinstance(node, ast.Starred):
+            return f"*{self._expr(node.value)}"
+        if isinstance(node, ast.NamedExpr):   # walrus :=
+            return f"({self._expr(node.target)} := {self._expr(node.value)})"
+        if isinstance(node, ast.ListComp):
+            elt  = self._expr(node.elt)
+            gens = " ".join(self._comp_gen(g) for g in node.generators)
+            return f"[{elt} {gens}]"
+        if isinstance(node, ast.SetComp):
+            elt  = self._expr(node.elt)
+            gens = " ".join(self._comp_gen(g) for g in node.generators)
+            return f"{{{elt} {gens}}}"
+        if isinstance(node, ast.DictComp):
+            k    = self._expr(node.key); v = self._expr(node.value)
+            gens = " ".join(self._comp_gen(g) for g in node.generators)
+            return f"{{{k}: {v} {gens}}}"
+        if isinstance(node, ast.GeneratorExp):
+            elt  = self._expr(node.elt)
+            gens = " ".join(self._comp_gen(g) for g in node.generators)
+            return f"(generate {elt} {gens})"
         if isinstance(node, ast.JoinedStr):
+
             return f"f'{{''.join([self._expr(v) for v in node.values])}}'"
         if isinstance(node, ast.FormattedValue):
             return f"{{{self._expr(node.value)}}}"
@@ -185,6 +263,13 @@ class PseudocodeGenerator(ast.NodeVisitor):
             return f"({self._expr(node.body)} if {self._expr(node.test)} else {self._expr(node.orelse)})"
         
         return f"<{type(node).__name__}>"
+
+    def _comp_gen(self, gen: ast.comprehension) -> str:
+        target = self._expr(gen.target)
+        it     = self._expr(gen.iter)
+        ifs    = "".join(f" if {self._expr(c)}" for c in gen.ifs)
+        prefix = "async " if gen.is_async else ""
+        return f"{prefix}for each {target} in {it}{ifs}"
 
     def _op(self, op: ast.AST) -> str:
         ops = {

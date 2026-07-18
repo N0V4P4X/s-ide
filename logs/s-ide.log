@@ -1,8 +1,0 @@
-19:46:26 INFO     side                     session started — log → /home/n0v4p4x/DevOps/s-ide-py/logs/s-ide.log
-19:46:26 INFO     side.app                 S-IDE starting
-19:46:27 INFO     side.app                 Loading project: /home/n0v4p4x/DevOps/s-ide-py
-19:46:27 DEBUG    side.app                 parse_project thread started
-19:46:28 INFO     side.app                 Parse OK — 113 nodes, 518 edges in 715ms  (slowest: parse_files)
-19:46:28 INFO     side.app                 S-IDE is monitoring itself: /home/n0v4p4x/DevOps/s-ide-py
-19:46:28 DEBUG    side.app                 MetricsWatcher started for /home/n0v4p4x/DevOps/s-ide-py
-19:46:44 INFO     side.app                 S-IDE shutting down

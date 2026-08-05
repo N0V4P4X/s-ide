@@ -12,32 +12,19 @@ parse   <project-dir> [--out FILE]
     Walk and parse a project, write graph JSON to FILE
     (default: <project-dir>/.nodegraph.json).
 
-versions <project-dir>
-    List archived snapshots for a project.
-
-archive  <project-dir>
-    Create a new snapshot of the project's current state.
-
-update   <project-dir> <tarball.tar.gz> [--bump major|minor|patch]
-    Archive current state, then extract the tarball over the project
-    and bump its version. Default bump level: patch.
-
 run      <project-dir> <script-name>
     Look up script-name in side.project.json → run → and stream
     its output to the terminal.
 
-compress <project-dir>
-    Convert any loose snapshot directories in versions/ to .tar.gz.
+serve   <project-dir> [--port PORT]
+    Launch the S-IDE web interface.
 
 Examples
 --------
     python main.py parse ./my-project
     python main.py parse ./my-project --out /tmp/graph.json
-    python main.py versions ./my-project
-    python main.py archive ./my-project
-    python main.py update ./my-project new-release.tar.gz --bump minor
     python main.py run ./my-project dev
-    python main.py compress ./my-project
+    python main.py serve ./my-project
 """
 
 from __future__ import annotations
@@ -55,14 +42,6 @@ def _require_dir(path: str) -> str:
         print(f"[s-ide] ERROR: not a directory: {path}", file=sys.stderr)
         sys.exit(1)
     return abs_path
-
-
-def _fmt_size(n: float) -> str:
-    for unit in ("B", "KB", "MB", "GB"):
-        if n < 1024:
-            return f"{n:.1f} {unit}"
-        n /= 1024
-    return f"{n:.1f} TB"
 
 
 # ── Sub-command handlers ──────────────────────────────────────────────────────
@@ -91,50 +70,6 @@ def cmd_parse(args: argparse.Namespace) -> None:
               f"{s['staleReadmes']} stale, {s['emptyModules']} empty modules")
 
 
-def cmd_versions(args: argparse.Namespace) -> None:
-    """List archived version snapshots for a project."""
-    from version.version_manager import list_versions
-
-    root = _require_dir(args.project)
-    versions = list_versions(root)
-
-    if not versions:
-        print("[s-ide] No versions found.")
-        return
-
-    print(f"[s-ide] {len(versions)} version(s) in '{root}':\n")
-    for v in versions:
-        print(f"  {v['name']:<40} {_fmt_size(v['size']):>10}   {v['modified'][:19]}")
-
-
-def cmd_archive(args: argparse.Namespace) -> None:
-    """Create a compressed snapshot of the current project state."""
-    from version.version_manager import archive_version
-
-    root = _require_dir(args.project)
-    print(f"[s-ide] Archiving: {root}")
-    path = archive_version(root)
-    print(f"[s-ide] Snapshot created: {path}")
-
-
-def cmd_update(args: argparse.Namespace) -> None:
-    """Apply a tarball update to a project, archiving first."""
-    from version.version_manager import apply_update
-
-    root = _require_dir(args.project)
-    tarball = os.path.abspath(args.tarball)
-    if not os.path.isfile(tarball):
-        print(f"[s-ide] ERROR: tarball not found: {tarball}", file=sys.stderr)
-        sys.exit(1)
-
-    bump = args.bump or "patch"
-    print(f"[s-ide] Updating '{root}' from '{tarball}' (bump: {bump})")
-
-    new_version, archive_path = apply_update(root, tarball, bump)
-    print(f"[s-ide] Archived previous state → {archive_path}")
-    print(f"[s-ide] Update applied. New version: {new_version}")
-
-
 def cmd_run(args: argparse.Namespace) -> None:
     """Run a named script from the project's side.project.json."""
     import subprocess
@@ -157,27 +92,8 @@ def cmd_run(args: argparse.Namespace) -> None:
     print(f"[s-ide] Running '{script_name}': {command}")
     print()
 
-    # Run directly in the terminal (stdout/stderr pass through)
     result = subprocess.run(command, shell=True, cwd=root)
     sys.exit(result.returncode)
-
-
-def cmd_compress(args: argparse.Namespace) -> None:
-    """Compress any loose version directories to .tar.gz."""
-    from version.version_manager import compress_loose
-
-    root = _require_dir(args.project)
-    results = compress_loose(root)
-
-    if not results:
-        print("[s-ide] Nothing to compress.")
-        return
-
-    for r in results:
-        if "error" in r:
-            print(f"  [FAIL] {r['name']}: {r['error']}")
-        else:
-            print(f"  [OK]   {r['name']} → {r['tarball']}")
 
 
 def cmd_self_check(args: argparse.Namespace) -> None:
@@ -186,94 +102,107 @@ def cmd_self_check(args: argparse.Namespace) -> None:
     from parser.project_parser import parse_project
 
     root = _require_dir(args.project)
-    print(f"[s-ide] Self-checking: {root}")
+    use_json = args.json
 
-    # 1. Run tests
-    print("\n[s-ide] 1/3: Running unit tests...")
-    test_res = subprocess.run([sys.executable, "test/test_suite.py", "-q"], cwd=root)
+    report = {
+        "project": root,
+        "ok": True,
+        "stages": {},
+    }
+
+    def emit(code: int = 0) -> None:
+        if use_json:
+            print(json.dumps(report, indent=2))
+        sys.exit(code)
+
+    if not use_json:
+        print(f"[s-ide] Self-checking: {root}")
+
+    if not use_json:
+        print("\n[s-ide] 1/3: Running unit tests...")
+    test_res = subprocess.run(
+        [sys.executable, "test/test_suite.py", "-q"], cwd=root,
+        capture_output=use_json, text=True,
+    )
+    report["stages"]["tests"] = {
+        "ok": test_res.returncode == 0,
+        "returncode": test_res.returncode,
+    }
     if test_res.returncode != 0:
-        print(f"[s-ide] FAILED: Unit tests exited with code {test_res.returncode}")
-        sys.exit(1)
-    print("[s-ide] OK: Tests passed.")
+        report["stages"]["tests"]["tail"] = (
+            (test_res.stdout or test_res.stderr or "")[-2000:]
+            if use_json else ""
+        )
+        report["ok"] = False
+        if not use_json:
+            print(f"[s-ide] FAILED: Unit tests exited with code {test_res.returncode}")
+        emit(1)
+    if not use_json:
+        print("[s-ide] OK: Tests passed.")
 
-    # 2. Parse & Graph metadata
-    print("\n[s-ide] 2/3: Parsing graph & auditing docs...")
+    if not use_json:
+        print("\n[s-ide] 2/3: Parsing graph & auditing docs...")
     graph = parse_project(root)
     d = graph.to_dict()
     m = d["meta"]
-    
-    # Write graph for persistence
+    h = m["docs"]["healthy"]
+    s = m["docs"]["summary"]
+
     out_path = os.path.join(root, ".nodegraph.json")
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(d, f, indent=2)
-    print(f"[s-ide] OK: Parsing complete ({m['parseTime']} ms) → {out_path}")
+    report["stages"]["parse"] = {
+        "ok": True,
+        "totalFiles": m["totalFiles"],
+        "totalEdges": m["totalEdges"],
+        "parseTimeMs": m["parseTime"],
+        "graph": out_path,
+    }
+    if not use_json:
+        print(f"[s-ide] OK: Parsing complete ({m['parseTime']} ms) → {out_path}")
 
-    # 3. Doc audit report
-    print("\n[s-ide] 3/3: Document report:")
-    h = m["docs"]["healthy"]
-    s = m["docs"]["summary"]
-    print(f"  Missing READMEs: {s['missingReadmes']}")
-    print(f"  Stale READMEs:   {s['staleReadmes']}")
-    print(f"  Empty modules:   {s['emptyModules']}")
-    
+    if not use_json:
+        print("\n[s-ide] 3/3: Document report:")
+        print(f"  Missing READMEs: {s['missingReadmes']}")
+        print(f"  Stale READMEs:   {s['staleReadmes']}")
+        print(f"  Empty modules:   {s['emptyModules']}")
+
+    report["stages"]["docs"] = {
+        "ok": h,
+        "missingReadmes": s["missingReadmes"],
+        "staleReadmes": s["staleReadmes"],
+        "emptyModules": s["emptyModules"],
+        "strict": args.strict_docs,
+    }
+
     if not h:
-        print("[s-ide] Doc health issues detected.")
+        if not use_json:
+            print("[s-ide] Doc health issues detected.")
         if args.strict_docs:
-            print("[s-ide] FAILED: Strict-docs requirement not met.")
-            sys.exit(1)
-        else:
+            report["ok"] = False
+            if not use_json:
+                print("[s-ide] FAILED: Strict-docs requirement not met.")
+            emit(1)
+        elif not use_json:
             print("[s-ide] OK: Continuing (non-fatal docs).")
-    else:
+    elif not use_json:
         print("[s-ide] OK: All docs are healthy.")
 
+    if use_json:
+        emit(0)
     print("\n[s-ide] SUMMARY: ALL CHECKS PASSED.")
 
 
-def cmd_build(args: argparse.Namespace) -> None:
-    """Run the full build pipeline: clean, minify, package."""
-    from build.packager import package_project, PackageOptions
-
-    root = _require_dir(args.project)
-    out  = os.path.join(root, "dist")
-    opts = PackageOptions(
-        kind=args.kind,
-        target_platform=args.platform,
-        minify=not args.no_minify,
-        clean=not args.no_clean,
-        clean_tiers=["cache", "logs"],
-        entry_point=args.entry or "",
-        strip_tests=not args.keep_tests,
-        generate_webapp=args.webapp,
-    )
-    print(f"[s-ide] Building '{root}' → {out}  (kind={args.kind})")
-    result = package_project(root, out, opts)
-    if result.errors:
-        for e in result.errors:
-            print(f"  [WARN] {e}")
-    print(f"[s-ide] {result.summary()}")
-    if args.bump:
-        from version.version_manager import apply_update
-        # bump version only — no tarball to apply, just config write
-        from parser.project_config import load_project_config, save_project_config, bump_version
-        cfg = load_project_config(root)
-        new_ver = bump_version(cfg.get("version", "0.0.0"), args.bump)
-        cfg["version"] = new_ver
-        save_project_config(root, cfg)
-        print(f"[s-ide] Version bumped to {new_ver}")
-
-
 def cmd_serve(args) -> None:
-    """Launch the S-IDE Web Port and API bridge."""
+    """Launch the S-IDE web interface."""
     from gui.server import run as start_server
     root = _require_dir(args.project)
-    # Ensure graph exists
     graph_path = os.path.join(root, ".nodegraph.json")
     if not os.path.exists(graph_path):
         print(f"[s-ide] No graph found at {graph_path}. Parsing first...")
         from parser.project_parser import parse_project
         parse_project(root_dir=root)
-    
-    # Change to project root so bridge sees the right files
+
     os.chdir(root)
     start_server(port=args.port)
 
@@ -287,56 +216,23 @@ def build_parser() -> argparse.ArgumentParser:
     )
     sub = p.add_subparsers(dest="command", required=True)
 
-    # parse
     sp = sub.add_parser("parse", help="Parse a project and emit graph JSON")
     sp.add_argument("project", help="Path to project directory")
     sp.add_argument("--out", metavar="FILE", help="Output JSON path (default: <project>/.nodegraph.json)")
 
-    # versions
-    sp = sub.add_parser("versions", help="List archived versions")
-    sp.add_argument("project", help="Path to project directory")
-
-    # archive
-    sp = sub.add_parser("archive", help="Snapshot current project state")
-    sp.add_argument("project", help="Path to project directory")
-
-    # update
-    sp = sub.add_parser("update", help="Apply a tarball update to a project")
-    sp.add_argument("project", help="Path to project directory")
-    sp.add_argument("tarball", help="Path to .tar.gz update file")
-    sp.add_argument("--bump", choices=["major", "minor", "patch"], default="patch",
-                    help="Version component to increment (default: patch)")
-
-    # run
     sp = sub.add_parser("run", help="Run a script from side.project.json")
     sp.add_argument("project", help="Path to project directory")
     sp.add_argument("script", help="Script name (key in side.project.json → run)")
 
-    # compress
-    sp = sub.add_parser("compress", help="Compress loose version directories to .tar.gz")
+    sp = sub.add_parser("self-check", help="Run tests, parse, and doc audit")
     sp.add_argument("project", help="Path to project directory")
+    sp.add_argument("--strict-docs", action="store_true", help="Fail if doc health issues found")
+    sp.add_argument("--json", action="store_true",
+                    help="Emit a machine-readable JSON report instead of human output")
 
-    # build
-    sp = sub.add_parser("build", help="Clean, minify, and package a project")
+    sp = sub.add_parser("serve", help="Launch the web interface")
     sp.add_argument("project", help="Path to project directory")
-    sp.add_argument("--kind", choices=["tarball", "installer", "portable", "webapp"],
-                    default="tarball", help="Package type (default: tarball)")
-    sp.add_argument("--platform", default="auto",
-                    choices=["auto", "linux", "macos", "windows"],
-                    help="Target platform (default: auto-detect)")
-    sp.add_argument("--no-minify",  action="store_true", help="Skip minification")
-    sp.add_argument("--no-clean",   action="store_true", help="Skip pre-build clean")
-    sp.add_argument("--keep-tests", action="store_true", help="Include test/ directory")
-    sp.add_argument("--entry",      default="", metavar="FILE",
-                    help="Entry point script (e.g. gui/app.py)")
-    sp.add_argument("--bump", choices=["major", "minor", "patch"], default=None,
-                    help="Bump version after build")
-    sp.add_argument("--webapp", action="store_true", help="Generate logic-view web app in dist/")
-
-    # serve
-    sp = sub.add_parser("serve", help="Launch the high-fidelity web interface")
-    sp.add_argument("project", help="Path to project directory")
-    sp.add_argument("--port", type=int, default=8080, help="Bridge port (default: 8080)")
+    sp.add_argument("--port", type=int, default=8080, help="Port (default: 8080)")
 
     return p
 
@@ -349,15 +245,10 @@ def main() -> None:
     args = parser.parse_args()
 
     handlers = {
-        "parse":    cmd_parse,
-        "versions": cmd_versions,
-        "archive":  cmd_archive,
-        "update":   cmd_update,
-        "run":      cmd_run,
-        "compress": cmd_compress,
-        "build":    cmd_build,
+        "parse":      cmd_parse,
+        "run":        cmd_run,
         "self-check": cmd_self_check,
-        "serve":    cmd_serve,
+        "serve":      cmd_serve,
     }
     handlers[args.command](args)
 
@@ -370,7 +261,7 @@ if __name__ == "__main__":
 _GPLv3_WARRANTY = (
     "THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY\n"
     "APPLICABLE LAW. EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT\n"
-    'HOLDERS AND/OR OTHER PARTIES PROVIDE THE PROGRAM \"AS IS\" WITHOUT\n'
+    'HOLDERS AND/OR OTHER PARTIES PROVIDE THE PROGRAM "AS IS" WITHOUT\n'
     "WARRANTY OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT\n"
     "LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A\n"
     "PARTICULAR PURPOSE. THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE\n"

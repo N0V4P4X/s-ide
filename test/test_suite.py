@@ -20,6 +20,9 @@ TestLayout          — auto-layout position assignment
 TestDocCheck        — README / empty-module audit
 TestProjectParser   — full parse pipeline on a synthetic project
 TestProcessManager  — spawn, logs, stop
+TestSideNodeAdapter — MythOS bridge handlers exercised directly (/api/nodes,
+                      /api/infra, /api/xp) via a stub _json/_error sink
+TestWebInfraIntegrity — web-infra.json edge/childId structural validation
 """
 
 from __future__ import annotations
@@ -1013,131 +1016,318 @@ class TestWorkspaceManifest(unittest.TestCase):
 
 
 class TestSideNodeAdapter(unittest.TestCase):
-    """Test the /api/nodes SideNode adapter for MythOS bridge."""
+    """Real-handler tests for the MythOS bridge (/api/nodes, /api/infra, /api/xp).
 
-    _PROJECT_ROOT = ROOT  # s-ide's own project
+    These call the actual gui.server handlers rather than re-implementing the
+    adapter logic, so the contract under test is the code MythOS consumes.
+    A stub _json/_error captures status + body; no HTTP socket is involved.
+    """
 
-    def test_nodegraph_to_sidenodes(self):
-        """Verify .nodegraph.json nodes convert to SideNode shape."""
-        from gui.server import _load_graph
-        g = _load_graph(self._PROJECT_ROOT)
-        self.assertIsNotNone(g)
-        nodes = g["nodes"]
-        self.assertGreater(len(nodes), 0)
+    @staticmethod
+    def _handler():
+        """Return (handler, responses) where responses is a list of
+        {"status": int, "body": object} tuples captured by the stub sink."""
+        from gui.server import Handler
 
-        # Simulate the adapter logic from _get_nodes
-        LANG_SKILL_HINTS = {
-            ".py": "python", ".js": "javascript", ".ts": "typescript",
-            ".html": "html", ".css": "css", ".go": "go", ".rs": "rust",
-            ".sh": "shell", ".md": "markdown",
+        class _Stub(Handler):
+            def __init__(self):
+                pass
+
+            def _json(self, data):
+                responses.append({"status": 200, "body": data})
+
+            def _error(self, code, msg):
+                responses.append({"status": code, "body": {"error": str(msg)}})
+
+        responses = []
+        h = _Stub()
+        return h, responses
+
+    @staticmethod
+    def _write_graph(root):
+        """Write a hermetic .nodegraph.json into root; return the dict."""
+        g = {
+            "version": "1.0.0",
+            "meta": {"root": root},
+            "nodes": [
+                {
+                    "id": "app_py",
+                    "label": "app.py",
+                    "path": "app.py",
+                    "fullPath": os.path.join(root, "app.py"),
+                    "category": "source",
+                    "ext": ".py",
+                    "lines": 100,
+                    "size": 0,
+                    "modified": None,
+                    "imports": [
+                        {"type": "import", "source": "utils"},
+                        {"type": "import", "source": "missing_lib"},
+                    ],
+                    "exports": [{"type": "function", "name": "run"}],
+                    "definitions": [{"type": "function", "name": "main"}],
+                    "tags": [],
+                    "errors": [],
+                    "position": {"x": 0, "y": 0},
+                },
+                {
+                    "id": "utils_py",
+                    "label": "utils.py",
+                    "path": "utils.py",
+                    "fullPath": os.path.join(root, "utils.py"),
+                    "category": "source",
+                    "ext": ".py",
+                    "lines": 10,
+                    "size": 0,
+                    "modified": None,
+                    "imports": [],
+                    "exports": [],
+                    "definitions": [],
+                    "tags": [],
+                    "errors": [],
+                    "position": {"x": 10, "y": 10},
+                },
+                {
+                    "id": "readme_md",
+                    "label": "README.md",
+                    "path": "README.md",
+                    "fullPath": os.path.join(root, "README.md"),
+                    "category": "docs",
+                    "ext": ".md",
+                    "lines": 5,
+                    "size": 0,
+                    "modified": None,
+                    "imports": [],
+                    "exports": [],
+                    "definitions": [],
+                    "tags": [],
+                    "errors": [],
+                    "position": None,
+                },
+            ],
+            "edges": [],
         }
-        CATEGORY_TO_KIND = {
-            "source": "task", "test": "task", "docs": "milestone",
-            "config": "task", "script": "task",
-            "python": "task", "javascript": "task", "typescript": "task",
-        }
+        with open(os.path.join(root, ".nodegraph.json"), "w", encoding="utf-8") as f:
+            json.dump(g, f)
+        return g
 
-        side_nodes = []
-        for n in nodes:
-            ext = n.get("ext", "")
-            lang = ext.lstrip(".")
-            category = n.get("category", "source")
-            imports = n.get("imports", [])
-            lines = n.get("lines", 0)
+    def test_get_nodes_returns_exact_side_node_shape(self):
+        """Every node converts to the documented SideNode shape."""
+        h, responses = self._handler()
+        with tempfile.TemporaryDirectory() as root:
+            self._write_graph(root)
+            h._get_nodes({"root": [root]})
 
-            hints = []
-            if lang in LANG_SKILL_HINTS:
-                hints.append(LANG_SKILL_HINTS[lang])
+            self.assertEqual(len(responses), 1)
+            self.assertEqual(responses[0]["status"], 200)
+            nodes = {n["id"]: n for n in responses[0]["body"]}
+            self.assertEqual(set(nodes), {"side:app_py", "side:utils_py", "side:readme_md"})
 
-            for imp in imports[:5]:
-                src = imp.get("source", "") if isinstance(imp, dict) else str(imp)
-                if src:
-                    hints.append(src.split(".")[0].split("/")[-1])
-
-            seen = set()
-            unique_hints = [h for h in hints if h not in seen and not seen.add(h)]
-            estimate = max(0.5, round(lines / 50, 1)) if lines else None
-
-            side_nodes.append({
-                "id": f"side:{n.get('id', '')}",
-                "label": n.get("label", ""),
-                "kind": CATEGORY_TO_KIND.get(category, "task"),
-                "category": category,
-                "skillHints": unique_hints,
-                "estimateHours": estimate,
+            app = nodes["side:app_py"]
+            self.assertEqual(app["label"], "app.py")
+            self.assertEqual(app["detail"], "File: app.py\n100 lines, 2 imports, 1 exports, 1 definitions")
+            self.assertEqual(app["kind"], "task")
+            self.assertEqual(app["category"], "source")
+            self.assertEqual(app["skillHints"], ["python", "backend", "utils", "missing_lib"])
+            self.assertEqual(app["estimateHours"], 2.0)
+            self.assertEqual(app["childIds"], ["side:utils"])
+            self.assertEqual(app["_source"], {
+                "project": root,
+                "path": "app.py",
+                "category": "source",
+                "ext": ".py",
+                "position": {"x": 0, "y": 0},
             })
 
-        # All nodes should have required SideNode fields
-        for sn in side_nodes:
-            self.assertIn("id", sn)
-            self.assertIn("label", sn)
-            self.assertIn("kind", sn)
-            self.assertTrue(sn["id"].startswith("side:"))
-            self.assertIn(sn["kind"], ("task", "milestone", "quest"))
+            docs = nodes["side:readme_md"]
+            self.assertEqual(docs["kind"], "milestone")
+            self.assertEqual(docs["category"], "docs")
+            self.assertEqual(docs["skillHints"], ["documentation"])
+            self.assertEqual(docs["estimateHours"], 0.5)
 
-        # Check specific nodes exist
-        ids = {sn["id"] for sn in side_nodes}
-        self.assertIn("side:main_py", ids)
+            utils = nodes["side:utils_py"]
+            self.assertEqual(utils["estimateHours"], 0.5)
+            self.assertEqual(utils["childIds"], [])
 
-    def test_side_node_has_skill_hints(self):
-        """Python nodes should have 'python' in skill hints."""
-        from gui.server import _load_graph
-        g = _load_graph(self._PROJECT_ROOT)
-        py_nodes = [n for n in g["nodes"] if n.get("ext") == ".py"]
-        self.assertGreater(len(py_nodes), 0)
+    def test_get_nodes_child_ids_filtered_to_graph_nodes(self):
+        """childIds only references modules that exist in the graph."""
+        h, responses = self._handler()
+        with tempfile.TemporaryDirectory() as root:
+            self._write_graph(root)
+            h._get_nodes({"root": [root]})
+            app = next(n for n in responses[0]["body"] if n["id"] == "side:app_py")
+            self.assertEqual(app["childIds"], ["side:utils"])
+            self.assertNotIn("side:missing_lib", app["childIds"])
 
-        n = py_nodes[0]
-        hints = ["python"]  # from lang mapping
-        for imp in n.get("imports", [])[:5]:
-            src = imp.get("source", "") if isinstance(imp, dict) else str(imp)
-            if src:
-                hints.append(src.split(".")[0].split("/")[-1])
+    def test_get_nodes_category_override(self):
+        """The category query param overrides every node's category."""
+        h, responses = self._handler()
+        with tempfile.TemporaryDirectory() as root:
+            self._write_graph(root)
+            h._get_nodes({"root": [root], "category": ["python"]})
+            for n in responses[0]["body"]:
+                self.assertEqual(n["category"], "python")
 
-        self.assertIn("python", hints)
+    def test_get_nodes_lang_override(self):
+        """The lang query param replaces skill hints entirely."""
+        h, responses = self._handler()
+        with tempfile.TemporaryDirectory() as root:
+            self._write_graph(root)
+            h._get_nodes({"root": [root], "lang": ["python"]})
+            for n in responses[0]["body"]:
+                self.assertEqual(n["skillHints"], ["python"])
 
-    def test_estimate_hours_from_lines(self):
-        """Estimate hours should be proportional to line count."""
-        # 50 lines → 1.0h, 100 lines → 2.0h, 10 lines → 0.5h (min)
-        self.assertAlmostEqual(max(0.5, round(50 / 50, 1)), 1.0)
-        self.assertAlmostEqual(max(0.5, round(100 / 50, 1)), 2.0)
-        self.assertAlmostEqual(max(0.5, round(10 / 50, 1)), 0.5)
+    def test_get_nodes_requires_root(self):
+        """No root → 400 with a structured error body."""
+        h, responses = self._handler()
+        h._get_nodes({})
+        self.assertEqual(responses[0]["status"], 400)
+        self.assertEqual(responses[0]["body"], {"error": "root required"})
 
-    def test_xp_recording_writes_metrics(self):
-        """POST /api/xp should append to .side-metrics.json."""
-        import tempfile
-        from gui.server import Handler
-        with tempfile.TemporaryDirectory() as tmpdir:
-            # Create empty metrics file
-            mf = os.path.join(tmpdir, ".side-metrics.json")
+    def test_get_nodes_missing_graph_returns_empty_array(self):
+        """A root without a .nodegraph.json is an empty import, not an error."""
+        h, responses = self._handler()
+        with tempfile.TemporaryDirectory() as root:
+            h._get_nodes({"root": [root]})
+            self.assertEqual(responses[0]["status"], 200)
+            self.assertEqual(responses[0]["body"], [])
+
+    def test_get_nodes_corrupt_graph_returns_empty_array(self):
+        """A corrupt cached graph is treated as 'no graph' — the bridge serves
+        the cache, and a corrupt cache is a cache-management problem, not a
+        contract error for MythOS."""
+        h, responses = self._handler()
+        with tempfile.TemporaryDirectory() as root:
+            with open(os.path.join(root, ".nodegraph.json"), "w") as f:
+                f.write("{not valid json !!")
+            h._get_nodes({"root": [root]})
+            self.assertEqual(responses[0]["status"], 200)
+            self.assertEqual(responses[0]["body"], [])
+
+    def test_get_infra_maps_fixture(self):
+        """Infra nodes convert to SideNode shape with infra: id prefix."""
+        h, responses = self._handler()
+        with tempfile.TemporaryDirectory() as tmp:
+            infra = os.path.join(tmp, "web-infra.json")
+            fixture = {
+                "nodes": [
+                    {
+                        "id": "worker-a",
+                        "label": "worker A",
+                        "kind": "worker",
+                        "category": "cloudflare",
+                        "detail": "does things",
+                        "tech": ["cloudflare-workers", "d1"],
+                        "estimateHours": 3,
+                        "status": "live",
+                        "childIds": ["db-x"],
+                    },
+                    {
+                        "id": "db-x",
+                        "label": "D1: x",
+                        "kind": "database",
+                        "category": "cloudflare",
+                        "detail": "sqlite",
+                        "tech": ["d1"],
+                        "status": "live",
+                    },
+                ],
+                "edges": [{"from": "worker-a", "to": "db-x", "type": "uses"}],
+            }
+            with open(infra, "w", encoding="utf-8") as f:
+                json.dump(fixture, f)
+            h._get_infra(infra)
+
+            self.assertEqual(responses[0]["status"], 200)
+            by_id = {n["id"]: n for n in responses[0]["body"]}
+            self.assertEqual(set(by_id), {"infra:worker-a", "infra:db-x"})
+
+            worker = by_id["infra:worker-a"]
+            self.assertEqual(worker["label"], "worker A")
+            self.assertEqual(worker["kind"], "worker")
+            self.assertEqual(worker["category"], "cloudflare")
+            self.assertEqual(worker["skillHints"], ["cloudflare-workers", "d1"])
+            self.assertEqual(worker["estimateHours"], 3)
+            self.assertEqual(worker["childIds"], ["infra:db-x"])
+            self.assertEqual(worker["_source"], {
+                "type": "web-infra",
+                "status": "live",
+                "tech": ["cloudflare-workers", "d1"],
+            })
+
+    def test_get_infra_missing_file_returns_empty_array(self):
+        """Missing web-infra.json is an empty import, not an error."""
+        h, responses = self._handler()
+        with tempfile.TemporaryDirectory() as tmp:
+            h._get_infra(os.path.join(tmp, "does-not-exist.json"))
+            self.assertEqual(responses[0]["status"], 200)
+            self.assertEqual(responses[0]["body"], [])
+
+    def test_get_infra_corrupt_file_returns_500(self):
+        """web-infra.json is committed source content; a parse failure is a
+        defect and surfaces loudly rather than as an empty import."""
+        h, responses = self._handler()
+        with tempfile.TemporaryDirectory() as tmp:
+            bad = os.path.join(tmp, "web-infra.json")
+            with open(bad, "w") as f:
+                f.write("[ broken {")
+            h._get_infra(bad)
+            self.assertEqual(responses[0]["status"], 500)
+            self.assertIn("web-infra.json", responses[0]["body"]["error"])
+
+    def test_record_xp_writes_metrics(self):
+        """POST /api/xp appends to .side-metrics.json via the real handler."""
+        h, responses = self._handler()
+        with tempfile.TemporaryDirectory() as root:
+            mf = os.path.join(root, ".side-metrics.json")
             with open(mf, "w") as f:
                 json.dump({}, f)
 
-            # Simulate the _record_xp logic
-            body = {
-                "root": tmpdir,
-                "node_id": "side:agent_loop_py",
-                "xp": 50,
-                "skills": ["python", "subprocess"],
-            }
-            data = json.load(open(mf))
-            xp_log = data.setdefault("xp_log", [])
-            xp_log.append({
-                "node_id": body["node_id"],
-                "xp": body["xp"],
-                "skills": body["skills"],
-                "recorded_at": "2026-07-19T00:00:00",
-            })
-            data["total_xp"] = data.get("total_xp", 0) + body["xp"]
-            with open(mf, "w") as f:
-                json.dump(data, f, indent=2)
+            h._record_xp({"root": root, "node_id": "side:app_py", "xp": 50,
+                          "skills": ["python", "backend"]})
+            self.assertEqual(responses[0]["status"], 200)
+            self.assertEqual(responses[0]["body"], {"ok": True, "total_xp": 50})
 
-            # Verify
-            result = json.load(open(mf))
-            self.assertEqual(result["total_xp"], 50)
-            self.assertEqual(len(result["xp_log"]), 1)
-            self.assertEqual(result["xp_log"][0]["node_id"], "side:agent_loop_py")
-            self.assertEqual(result["xp_log"][0]["xp"], 50)
-            self.assertIn("python", result["xp_log"][0]["skills"])
+            data = json.load(open(mf))
+            self.assertEqual(data["total_xp"], 50)
+            self.assertEqual(len(data["xp_log"]), 1)
+            entry = data["xp_log"][0]
+            self.assertEqual(entry["node_id"], "side:app_py")
+            self.assertEqual(entry["xp"], 50)
+            self.assertEqual(entry["skills"], ["python", "backend"])
+            self.assertIn("recorded_at", entry)
+
+            h._record_xp({"root": root, "node_id": "side:utils_py", "xp": 25,
+                          "skills": []})
+            self.assertEqual(json.load(open(mf))["total_xp"], 75)
+            self.assertEqual(len(json.load(open(mf))["xp_log"]), 2)
+
+    def test_record_xp_requires_root_and_node_id(self):
+        h, responses = self._handler()
+        h._record_xp({"xp": 10})
+        self.assertEqual(responses[0]["status"], 400)
+        self.assertEqual(responses[0]["body"], {"error": "root and node_id required"})
+
+
+class TestWebInfraIntegrity(unittest.TestCase):
+    """Structural validation of the committed web-infra.json (round 2.3)."""
+
+    def test_edges_and_child_ids_reference_existing_nodes(self):
+        from gui.server import _ROOT_DIR
+        with open(os.path.join(_ROOT_DIR, "web-infra.json"), encoding="utf-8") as f:
+            data = json.load(f)
+        ids = {n["id"] for n in data.get("nodes", [])}
+
+        for n in data.get("nodes", []):
+            self.assertIn("id", n)
+            self.assertIn("label", n)
+            self.assertIn("kind", n)
+            for cid in n.get("childIds", []):
+                self.assertIn(cid, ids, f"node {n['id']} childId {cid} has no node")
+
+        for e in data.get("edges", []):
+            self.assertIn(e["from"], ids, f"edge from {e['from']} has no node")
+            self.assertIn(e["to"], ids, f"edge to {e['to']} has no node")
 
 
 if __name__ == "__main__":

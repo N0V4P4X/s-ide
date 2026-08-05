@@ -349,15 +349,15 @@ class Handler(BaseHTTPRequestHandler):
         "shell": "task", "markdown": "milestone",
     }
     _LANG_SKILL_HINTS = {
-        "python": ["python", "backend"],
-        "javascript": ["javascript", "web"],
-        "typescript": ["typescript", "web"],
-        "html": ["html", "web"],
-        "css": ["css", "web"],
-        "go": ["go", "backend"],
-        "rust": ["rust", "backend"],
-        "shell": ["shell", "devops"],
-        "markdown": ["documentation"],
+        ".py": ["python", "backend"],
+        ".js": ["javascript", "web"],
+        ".ts": ["typescript", "web"],
+        ".html": ["html", "web"],
+        ".css": ["css", "web"],
+        ".go": ["go", "backend"],
+        ".rs": ["rust", "backend"],
+        ".sh": ["shell", "devops"],
+        ".md": ["documentation"],
     }
 
     def _get_nodes(self, qs):
@@ -371,14 +371,13 @@ class Handler(BaseHTTPRequestHandler):
         nodes = []
         for n in g.get("nodes", []):
             ext = n.get("ext", "")
-            lang = ext.lstrip(".")
             category = n.get("category", "source")
             imports = n.get("imports", [])
             exports = n.get("exports", [])
             defs = n.get("definitions", [])
 
             # Derive skill hints from language + imports
-            hints = list(self._LANG_SKILL_HINTS.get(lang, []))
+            hints = list(self._LANG_SKILL_HINTS.get(ext, []))
             # Add import-derived hints (take the source module name)
             for imp in imports[:5]:
                 src = imp.get("source", "") if isinstance(imp, dict) else str(imp)
@@ -464,8 +463,8 @@ class Handler(BaseHTTPRequestHandler):
             self._error(500, str(e))
 
     # ── Infrastructure graph (web-infra.json → SideNode shape) ───────────────
-    def _get_infra(self):
-        infra_path = os.path.join(_ROOT_DIR, "web-infra.json")
+    def _get_infra(self, infra_path=None):
+        infra_path = infra_path or os.path.join(_ROOT_DIR, "web-infra.json")
         if not os.path.isfile(infra_path):
             self._json([]); return
         try:

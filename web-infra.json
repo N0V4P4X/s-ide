@@ -1,0 +1,221 @@
+{
+  "version": "1.0.0",
+  "type": "web-infra",
+  "meta": {
+    "name": "n3xu5 Web Infrastructure",
+    "description": "Complete infrastructure graph for n0v4-n3xu5.art + n3xu5.art — workers, databases, buckets, routes, domains, external services.",
+    "generatedAt": "2026-07-19T00:00:00Z"
+  },
+  "nodes": [
+    {
+      "id": "worker-homepage",
+      "label": "homepage",
+      "kind": "worker",
+      "category": "cloudflare",
+      "detail": "Static assets worker. Serves index.html (no-JS cyberdelic homepage), WKD keys, _headers. No bindings.",
+      "estimateHours": 0,
+      "tech": ["cloudflare-workers", "static-assets"],
+      "status": "live"
+    },
+    {
+      "id": "worker-auth",
+      "label": "n3xu5-auth",
+      "kind": "worker",
+      "category": "cloudflare",
+      "detail": "Auth + API + server-rendered pages. 1640 lines. PGP 2FA, D1 sessions, calendar API, SSO IdP, crew board, webmail read.",
+      "estimateHours": 0,
+      "tech": ["cloudflare-workers", "openpgp", "d1", "r2"],
+      "status": "live",
+      "childIds": ["d1-auth", "r2-mail", "rl-auth", "rl-msg", "secret-daily-salt", "secret-resend"]
+    },
+    {
+      "id": "worker-email-gate",
+      "label": "n3xu5-email-gate",
+      "kind": "worker",
+      "category": "cloudflare",
+      "detail": "Email ingest worker. Parses MIME, encrypts per-recipient PGP, stores to R2 + D1. Triggered by Cloudflare Email Routing.",
+      "estimateHours": 0,
+      "tech": ["cloudflare-workers", "openpgp", "postal-mime", "email-routing"],
+      "status": "live",
+      "childIds": ["d1-auth", "r2-mail"]
+    },
+    {
+      "id": "d1-auth",
+      "label": "D1: n3xu5-auth",
+      "kind": "database",
+      "category": "cloudflare",
+      "detail": "Shared D1 database. 18 tables: users, sessions, pgp_challenges, events, calendar_shares, board_posts, mail_objects, sso_clients, sso_tickets, etc.",
+      "estimateHours": 0,
+      "tech": ["d1", "sqlite"],
+      "status": "live"
+    },
+    {
+      "id": "r2-mail",
+      "label": "R2: n3xu5-mail",
+      "kind": "bucket",
+      "category": "cloudflare",
+      "detail": "Encrypted mail storage. PGP-encrypted raw MIME messages. Written by email-gate, read by auth worker for .gpg downloads.",
+      "estimateHours": 0,
+      "tech": ["r2", "object-storage"],
+      "status": "live"
+    },
+    {
+      "id": "rl-auth",
+      "label": "RL_AUTH",
+      "kind": "ratelimit",
+      "category": "cloudflare",
+      "detail": "Rate limit: 5 attempts/min/IP for auth login/verify.",
+      "estimateHours": 0,
+      "tech": ["cloudflare-ratelimit"],
+      "status": "live"
+    },
+    {
+      "id": "rl-msg",
+      "label": "RL_MSG",
+      "kind": "ratelimit",
+      "category": "cloudflare",
+      "detail": "Rate limit: 3 messages/min/IP for guest contact form.",
+      "estimateHours": 0,
+      "tech": ["cloudflare-ratelimit"],
+      "status": "live"
+    },
+    {
+      "id": "secret-daily-salt",
+      "label": "DAILY_SALT",
+      "kind": "secret",
+      "category": "cloudflare",
+      "detail": "Salt for IP hashing in messages.ip_hash.",
+      "estimateHours": 0,
+      "tech": ["secret"],
+      "status": "live"
+    },
+    {
+      "id": "secret-resend",
+      "label": "RESEND_API_KEY",
+      "kind": "secret",
+      "category": "cloudflare",
+      "detail": "Resend relay API key for outbound email sending.",
+      "estimateHours": 0,
+      "tech": ["secret", "resend"],
+      "status": "live"
+    },
+    {
+      "id": "domain-n0v4",
+      "label": "n0v4-n3xu5.art",
+      "kind": "domain",
+      "category": "dns",
+      "detail": "Primary persona domain. Serves homepage, auth, webmail, admin, board, SSO, calendar. DNS on Cloudflare, registered at Porkbun.",
+      "estimateHours": 0,
+      "tech": ["dns", "cloudflare"],
+      "status": "live",
+      "childIds": ["worker-homepage", "worker-auth", "worker-email-gate"]
+    },
+    {
+      "id": "domain-n3xu5",
+      "label": "n3xu5.art",
+      "kind": "domain",
+      "category": "dns",
+      "detail": "Federation apex. Same auth worker, same D1. Shared IdP + crew hub. Dual-routed.",
+      "estimateHours": 0,
+      "tech": ["dns", "cloudflare"],
+      "status": "live",
+      "childIds": ["worker-auth"]
+    },
+    {
+      "id": "domain-zines",
+      "label": "forsythzines.art",
+      "kind": "domain",
+      "category": "dns",
+      "detail": "Forsyth Zines business domain. Separate CF account. Static site + research gate Worker. SSO relying party.",
+      "estimateHours": 0,
+      "tech": ["dns", "cloudflare"],
+      "status": "live"
+    },
+    {
+      "id": "sso-idp",
+      "label": "SSO IdP",
+      "kind": "service",
+      "category": "auth",
+      "detail": "SSO Identity Provider. Issues tickets for relying parties (forsythzines). Endpoints: /sso/authorize, /sso/verify.",
+      "estimateHours": 0,
+      "tech": ["sso", "pgp"],
+      "status": "live",
+      "childIds": ["worker-auth", "d1-auth"]
+    },
+    {
+      "id": "email-routing",
+      "label": "Email Routing",
+      "kind": "service",
+      "category": "cloudflare",
+      "detail": "Cloudflare Email Routing. MX for both .art zones. Catch-all → email-gate worker.",
+      "estimateHours": 0,
+      "tech": ["email-routing", "smtp"],
+      "status": "live",
+      "childIds": ["worker-email-gate"]
+    },
+    {
+      "id": "calendar-api",
+      "label": "Calendar API",
+      "kind": "api",
+      "category": "cloudflare",
+      "detail": "REST API at /api/cal/*. 7 endpoints: events, event CRUD, actions, share/unshare, projects. Hierarchy: task/event/quest/ritual.",
+      "estimateHours": 0,
+      "tech": ["rest-api", "d1"],
+      "status": "live",
+      "childIds": ["worker-auth", "d1-auth"]
+    },
+    {
+      "id": "resend",
+      "label": "Resend",
+      "kind": "external",
+      "category": "service",
+      "detail": "Outbound email relay. Free tier ~100/day. Domain n0v4-n3xu5.art needs SPF/DKIM/DMARC.",
+      "estimateHours": 0,
+      "tech": ["email", "relay"],
+      "status": "live"
+    },
+    {
+      "id": "porkbun",
+      "label": "Porkbun",
+      "kind": "external",
+      "category": "service",
+      "detail": "Domain registrar. n0v4-n3xu5.art and n3xu5.art. WHOIS privacy enabled.",
+      "estimateHours": 0,
+      "tech": ["registrar"],
+      "status": "live"
+    },
+    {
+      "id": "c2-panel",
+      "label": "C2-Panel",
+      "kind": "tool",
+      "category": "local",
+      "detail": "Local Go app. Thin client over workers. Dashboard: admin, webmail, board, messages.",
+      "estimateHours": 0,
+      "tech": ["go", "local-app"],
+      "status": "live"
+    }
+  ],
+  "edges": [
+    {"from": "worker-auth", "to": "d1-auth", "type": "reads/writes"},
+    {"from": "worker-auth", "to": "r2-mail", "type": "reads"},
+    {"from": "worker-auth", "to": "rl-auth", "type": "uses"},
+    {"from": "worker-auth", "to": "rl-msg", "type": "uses"},
+    {"from": "worker-auth", "to": "secret-daily-salt", "type": "uses"},
+    {"from": "worker-auth", "to": "secret-resend", "type": "uses"},
+    {"from": "worker-email-gate", "to": "d1-auth", "type": "reads/writes"},
+    {"from": "worker-email-gate", "to": "r2-mail", "type": "writes"},
+    {"from": "email-routing", "to": "worker-email-gate", "type": "triggers"},
+    {"from": "domain-n0v4", "to": "worker-homepage", "type": "routes"},
+    {"from": "domain-n0v4", "to": "worker-auth", "type": "routes"},
+    {"from": "domain-n0v4", "to": "worker-email-gate", "type": "email-routes"},
+    {"from": "domain-n3xu5", "to": "worker-auth", "type": "routes"},
+    {"from": "domain-n3xu5", "to": "worker-email-gate", "type": "email-routes"},
+    {"from": "sso-idp", "to": "worker-auth", "type": "implemented-by"},
+    {"from": "sso-idp", "to": "d1-auth", "type": "stores-tickets"},
+    {"from": "calendar-api", "to": "worker-auth", "type": "implemented-by"},
+    {"from": "calendar-api", "to": "d1-auth", "type": "stores-events"},
+    {"from": "worker-auth", "to": "resend", "type": "sends-via"},
+    {"from": "worker-auth", "to": "c2-panel", "type": "api-for"},
+    {"from": "domain-zines", "to": "sso-idp", "type": "authenticates-via"}
+  ]
+}

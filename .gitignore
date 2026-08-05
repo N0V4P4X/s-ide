@@ -9,6 +9,7 @@ build/
 # S-IDE specific
 .side-workspace.json
 .nodegraph.json
+.side-metrics.json
 versions/
 archive/
 logs/

@@ -131,3 +131,63 @@ calculator project's copies. Same class, same treatment.
 
 **Rejected for round 1 (deferred):** making `web-infra.json` generated content, and touching
 the `SideNode` shape at all. Both are round 2's job per `ROADMAP.md`.
+
+## 2026-08-05 — round 2: bridge tests are real now; the error contract is decided
+
+**Context:** Round 2's job was to make the MythOS/n3xu5 bridge (`/api/nodes`, `/api/infra`,
+`/api/xp`) testable and to decide, test, and document its error behavior. `TestSideNodeAdapter`
+previously *simulated* the adapter logic inline and had drifted from `gui/server.py`; round 1's
+audit (§1.6) confirmed no test called a real handler and `_get_infra` had zero coverage.
+
+**Chosen (2.0):** tests now call the real handlers. A real `Handler` instance is built with a
+stub `_json`/`_error` that captures `{status, body}` — no sockets, no threads, hermetic.
+Fixtures are hand-built graph dicts written to a temp dir's `.nodegraph.json`, so the suite no
+longer couples to this repo's own live graph. Two server changes were required and are part of
+the same commit (2739c36):
+
+- **`_get_infra(infra_path=None)`** — parameterized so tests can point at a temp fixture;
+  default is unchanged (`_ROOT_DIR/web-infra.json`), so the `/api/infra` route behavior is
+  identical. Pure testability refactor.
+- **`_LANG_SKILL_HINTS` re-keyed by extension** (`.py`, `.js`, `.ts`, `.html`, `.css`, `.go`,
+  `.rs`, `.sh`, `.md`) instead of language name (`"python"`, ...). This is a **bug fix, not a
+  contract change**: the lookup used `ext.lstrip(".")` — `"py"` — which never matched the
+  language-name keys, so `.py`/`.js`/`.ts`/`.md`/`.sh`/`.rs` nodes shipped **empty** language
+  hints while `README.md` documents `"skillHints": ["python", ...]` for exactly that case.
+  Verified against MythOS (`~/DevOps/WebDev/mythos-os/src/lib/calendarBridge.ts`): it reads
+  `id/label/detail/kind/category/skillHints/estimateHours/childIds` and its `resolveSkillIds`
+  silently drops unmatched hints, so adding the documented `"python"`/`"backend"` hints cannot
+  break it. The dict values were otherwise unchanged (markdown stays `["documentation"]`).
+
+**Decided (2.1) — error contract, all five cases keep their current behavior. Tested in
+`TestSideNodeAdapter`; the rationale is the contract:**
+
+| Case | Response | Why this stays |
+|---|---|---|
+| `/api/nodes` with no `root` | 400 `{"error":"root required"}` | Malformed request. MythOS always sends `root`; a missing one is a caller bug, and 400 is the honest signal. |
+| `/api/nodes`, root has no `.nodegraph.json` | 200 `[]` | "Project has no graph" vs "empty graph" is functionally identical to a quest importer (nothing to import). An empty array needs zero MythOS special-casing. |
+| `/api/nodes`, `.nodegraph.json` corrupt | 200 `[]` | The bridge serves the *cache*, not a live parse. Corruption is self-healing (next `parse` rewrites it) and a cache-management concern, not a contract one. Surfacing it would give MythOS an error it has no recovery path for. |
+| `/api/infra`, `web-infra.json` missing | 200 `[]` | Same as nodes: absent tracked infra is an empty import. |
+| `/api/infra`, `web-infra.json` corrupt | 500 `{"error":"Failed to load web-infra.json: ..."}` | **Intentional asymmetry.** `.nodegraph.json` is regenerated ephemera; `web-infra.json` is *committed* source that `/api/infra` depends on. A committed file that fails to parse is a defect in this repo and should be loud, not silently empty. MythOS treating non-2xx as "infra view down" is acceptable because the fix is in this repo, not n3xu5. |
+
+A structured 200-with-error envelope for the corrupt-infra case was considered and rejected:
+it would add a MythOS-side branch for a case that is a repo bug, and the existing 500 is already
+a structured JSON body.
+
+**Decided (2.2) — `SideNode` shape stability rule: additive-only.** New fields may be added;
+renames, removals, or type changes to existing fields require an `ARCHITECTURE-DECISIONS.md`
+entry plus a coordinated bump in MythOS before landing. Rationale: this matches the existing
+stop-condition posture in `AGENTS.md`; a version header would add negotiation to a single-consumer
+bridge that currently needs none; and the one known consumer (`calendarBridge.ts`) reads only the
+documented fields and ignores unknown ones. No field meaning changed this round. Rule stated in
+`README.md`'s "MythOS bridge API" section as well.
+
+**Decided (2.3) — `web-infra.json` stays hand-maintained for now (option 1).** A structural
+validation test (`TestWebInfraIntegrity`) now guarantees every `edges[].from/to` and every
+`childIds[]` entry references an existing node id — the typo-catching safety net from the
+round-2 brief. Option 2 (a generator reading n3xu5's `wrangler.toml`/schema) is proposed-but-not-
+built: it crosses repo boundaries and regenerating real infrastructure data on a schedule is a
+decision Nova should make, not an agent unilaterally. Revisit if `web-infra.json` drifts from
+n3xu5's actual infra again.
+
+**Rejected:** the brief's parenthetical "(see 2.2)" for the infra-path question is a
+cross-reference error — the parameterization decision belongs to 2.0 and is documented there.

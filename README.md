@@ -115,6 +115,8 @@ GET /api/nodes?root=&category=&lang=
 
 **Integration:** MythOS `SideImporter` component auto-connects to `localhost:7700` and fetches nodes from this endpoint. Each node is converted to a MythOS quest with skill-tree placement and XP weighting derived from `estimateHours`.
 
+**Stability rule (additive-only):** The `SideNode` shape is a cross-repo contract — MythOS's `calendarBridge.sideNodeToQuest()` consumes it. New fields may be added freely; renaming, removing, or changing the type of an existing field requires an `ARCHITECTURE-DECISIONS.md` entry and a coordinated change in MythOS before landing. Consumers should ignore unknown fields. Error cases return either a 400/500 with a `{"error": ...}` body (malformed request / committed-data defect) or an empty array for "nothing to import" (no graph, no infra file) — an empty import is not an error.
+
 ---
 
 ## Web Infrastructure graph

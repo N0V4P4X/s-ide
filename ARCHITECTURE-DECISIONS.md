@@ -99,3 +99,35 @@ already reserves a slot for deciding its fate for real.
   the uncommitted rewrite. `web-infra.json` is new and untracked.
 - `gui/app.html` still shipped two buttons calling removed routes (`/api/profile`,
   `/api/versions/archive`); removed this round (item 1.5).
+
+## 2026-08-05 — round 1 execution decisions (decided, not followed)
+
+Decisions made while executing round 1 that the brief left open or didn't cover. Landed in
+seven commits; `tasks/round-1/AUDIT-R1.md` has the command output.
+
+**`self-check --json` was implemented rather than fixing `ci.yml`.** The CI gap was
+"`ci.yml` calls `self-check . --json` which doesn't exist" — the brief allowed either. Chosen:
+a real machine-readable mode, because CI is the one place a structured pass/fail artifact is
+actually useful, and `AGENTS.md` already anticipates extending `self-check`. Semantics: stdout
+is pure JSON in `--json` mode; exit code mirrors the human mode exactly (1 on test failure; 1
+on doc issues only under `--strict-docs`). CI runs without `--strict-docs`, so it is green
+despite this repo having 1 missing / 3 stale READMEs — doc health stays non-fatal by default.
+
+**The "3 failing `TestTomlParser` tests" were left untouched.** They pass in the current tree
+and at HEAD; the parser and tests are unchanged across the rewrite, so the failure report was
+stale, not a regression. Fixing "nothing to fix" would have meant rewriting green tests.
+
+**The dead Profile/Archive UI was removed, not rewired.** `gui/app.html`'s Profile button
+called `/api/profile` (backed by the deleted `monitor/` profiler) and Archive called
+`/api/versions/archive` (deleted `version/`). Repointing Profile at the surviving `/api/metrics`
+was considered and rejected: `/api/metrics` now only reads XP data written by `/api/xp`, so a
+"Profile" button there would show a different feature's data. Removal is the honest
+reconciliation. `side.project.json`'s run scripts (`update.py`, `main.py build`) pointed at
+deleted commands and were rewritten to the surviving ones.
+
+**`projects/calculator/.nodegraph.json` and `.side-metrics.json` were also untracked.** The
+brief listed the root-level artifacts; the same tracked-though-ignored condition applies to the
+calculator project's copies. Same class, same treatment.
+
+**Rejected for round 1 (deferred):** making `web-infra.json` generated content, and touching
+the `SideNode` shape at all. Both are round 2's job per `ROADMAP.md`.

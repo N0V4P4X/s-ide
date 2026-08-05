@@ -1,7 +1,7 @@
 {
   "name": "s-ide-py",
   "version": "0.6.0",
-  "description": "S-IDE -- project graph editor + AI assistant, JS frontend",
+  "description": "S-IDE -- project graph editor + visualizer, JS frontend",
   "ignore": [
     "dist",
     "logs",
@@ -10,14 +10,9 @@
   "run": {
     "server": "python run.py",
     "test": "python test/test_suite.py",
-    "self-update": "python update.py",
-    "build": "python main.py build . --kind tarball",
-    "clean": "python main.py build . --no-minify --kind tarball"
-  },
-  "versions": {
-    "dir": "versions",
-    "compress": true,
-    "keep": 20
+    "parse": "python main.py parse .",
+    "self-check": "python main.py self-check .",
+    "serve": "python main.py serve ."
   },
   "meta": {}
 }

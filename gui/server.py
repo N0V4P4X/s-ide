@@ -19,9 +19,6 @@ GET  /api/file?root=&path=       → {path,content,lines}
 POST /api/file/write {root,path,content}
 GET  /api/file/list?root=&ext=&subdir=
 GET  /api/file/defs?root=&path=
-POST /api/ai/chat  {root,model,messages,role,stream_id}  → SSE
-POST /api/ai/cancel {stream_id}
-POST /api/tool  {root,name,args,role}  → {name,result}
 POST /api/git   {root,command,...}
 GET  /api/processes
 POST /api/processes/start  {root,command,name}
@@ -30,15 +27,12 @@ POST /api/processes/suspend{id}
 POST /api/processes/resume {id}
 GET  /api/processes/:id/logs
 GET  /events                     → SSE process events
-GET  /api/versions?root=
-POST /api/versions/archive {root}
-POST /api/versions/update  {root,tarball,bump}
 GET  /api/state?root=
 POST /api/state {root,key,value}
+GET  /api/nodes?root=&category=&lang=  → SideNode-shaped JSON for MythOS bridge
+POST /api/xp  {root, node_id, xp, skills}  → record quest completion XP
+GET  /api/infra                            → web-infra graph nodes as SideNode JSON
 GET  /api/metrics?root=&path=
-POST /api/profile {root,entry,timeout}
-POST /api/build/clean   {root,tiers,dry_run}
-POST /api/build/package {root,kind,platform,minify}
 """
 
 from __future__ import annotations
@@ -69,7 +63,7 @@ def _save_projects(p):
     with open(PROJECTS_FILE, "w") as f: json.dump(p, f, indent=2)
 
 def _load_state():
-    d = {"projects":[],"ai_history":{},"terminal_history":{},"viewport":{},
+    d = {"projects":[],"terminal_history":{},"viewport":{},
          "bottom_panel":{"height":260,"tab":"projects"},"editor_sessions":{}}
     try:
         if os.path.isfile(_STATE_PATH):
@@ -96,8 +90,6 @@ def _load_graph(root):
 proc_mgr   = ProcessManager()
 sse_clients = []
 sse_lock   = threading.Lock()
-_ai_streams     = {}
-_ai_streams_lock = threading.Lock()
 
 def _broadcast(etype, data):
     msg = f"event: {etype}\ndata: {json.dumps(data)}\n\n"
@@ -107,82 +99,6 @@ def _broadcast(etype, data):
             try: q.put_nowait(msg)
             except queue.Full: dead.append(q)
         for q in dead: sse_clients.remove(q)
-
-# ── App context ───────────────────────────────────────────────────────────────
-def _ctx(root, graph=None, role="chat"):
-    from ai.context import AppContext
-    ctx = AppContext()
-    ctx.project_root = root
-    ctx.graph = graph or _load_graph(root)
-    ctx.role  = role
-    ctx.session_dir = os.path.join(root, ".side","session","default")
-    ctx.permitted_tools = None
-    return ctx
-
-# ── AI streaming ──────────────────────────────────────────────────────────────
-def _run_ai_stream(root, model, messages, role, send_chunk, cancel):
-    from ai.client import OllamaClient, ChatMessage
-    from ai.context import ROLE_TOOLS
-    from ai.tools import TOOLS, dispatch_tool
-    custom_schemas = []
-    try:
-        from ai.tool_builder import get_custom_schemas, dispatch_custom, is_custom_tool
-        custom_schemas = get_custom_schemas(root)
-    except Exception: pass
-
-    client = OllamaClient()
-    if not client.is_available():
-        send_chunk("error", {"message":"Ollama not running — start: ollama serve"})
-        return
-
-    ctx      = _ctx(root, role=role)
-    permitted = ROLE_TOOLS.get(role, ROLE_TOOLS["chat"])
-    all_tools = TOOLS + custom_schemas
-    role_tools = [t for t in all_tools if t["function"]["name"] in permitted]
-    chat_msgs  = [ChatMessage(**m) for m in messages]
-
-    for _ in range(20):
-        if cancel.is_set(): send_chunk("cancelled",{}); return
-        resp = client.chat(model, chat_msgs, tools=role_tools, stream=False)
-
-        if resp.tool_calls:
-            for tc in resp.tool_calls:
-                if cancel.is_set(): send_chunk("cancelled",{}); return
-                send_chunk("tool_start",{"name":tc.name,"args":tc.arguments})
-                try:
-                    try:
-                        from ai.tool_builder import is_custom_tool, dispatch_custom
-                        if is_custom_tool(tc.name):
-                            r = dispatch_custom(tc.name, tc.arguments, ctx)
-                        else:
-                            r = dispatch_tool(tc.name, tc.arguments, ctx)
-                    except Exception:
-                        r = dispatch_tool(tc.name, tc.arguments, ctx)
-                    content = r.content
-                except Exception as e:
-                    content = json.dumps({"error":str(e)})
-                send_chunk("tool_result",{"name":tc.name,"content":content})
-                chat_msgs.append(ChatMessage(role="assistant",content="",
-                    tool_calls=[{"function":{"name":tc.name,"arguments":tc.arguments}}]))
-                chat_msgs.append(ChatMessage(role="tool",content=content,tool_call_id=tc.id or ""))
-        else:
-            if resp.content:
-                for chunk in client.chat(model, chat_msgs, stream=True):
-                    if cancel.is_set(): send_chunk("cancelled",{}); return
-                    if chunk: send_chunk("text",{"delta":chunk})
-            _persist_ai(root, messages[-1] if messages else None,
-                        {"role":"assistant","content":resp.content})
-            send_chunk("done",{}); return
-
-    send_chunk("error",{"message":"Max tool iterations reached"})
-
-def _persist_ai(root, user_msg, asst_msg):
-    state = _load_state()
-    h = state.setdefault("ai_history",{}).setdefault(root,[])
-    if user_msg: h.append(user_msg)
-    h.append(asst_msg)
-    if len(h) > 200: state["ai_history"][root] = h[-200:]
-    _save_state(state)
 
 # ── HTTP Handler ──────────────────────────────────────────────────────────────
 class Handler(BaseHTTPRequestHandler):
@@ -207,7 +123,8 @@ class Handler(BaseHTTPRequestHandler):
             "/api/file/list":lambda: self._get_file_list(qs),
             "/api/file/defs":lambda: self._get_file_defs(qs),
             "/api/metrics":  lambda: self._get_metrics(qs),
-            "/api/versions": lambda: self._get_versions(qs),
+            "/api/nodes":    lambda: self._get_nodes(qs),
+            "/api/infra":    self._get_infra,
             "/api/processes":self._get_processes,
             "/api/state":    lambda: self._get_state(qs),
             "/events":       self._sse,
@@ -221,20 +138,13 @@ class Handler(BaseHTTPRequestHandler):
             "/api/projects/parse":   lambda: self._open(body),
             "/api/projects/remove":  lambda: self._remove(body),
             "/api/file/write":       lambda: self._write_file(body),
-            "/api/ai/chat":          lambda: self._ai_chat(body),
-            "/api/ai/cancel":        lambda: self._ai_cancel(body),
-            "/api/tool":             lambda: self._tool(body),
             "/api/git":              lambda: self._git(body),
             "/api/processes/start":  lambda: self._proc_start(body),
             "/api/processes/stop":   lambda: self._json({"ok":proc_mgr.stop(body.get("id"))}),
             "/api/processes/suspend":lambda: self._json({"ok":proc_mgr.suspend(body.get("id"))}),
             "/api/processes/resume": lambda: self._json({"ok":proc_mgr.resume(body.get("id"))}),
-            "/api/versions/archive": lambda: self._archive(body),
-            "/api/versions/update":  lambda: self._ver_update(body),
             "/api/state":            lambda: self._save_state_key(body),
-            "/api/profile":          lambda: self._profile(body),
-            "/api/build/clean":      lambda: self._build_clean(body),
-            "/api/build/package":    lambda: self._build_pkg(body),
+            "/api/xp":               lambda: self._record_xp(body),
         }.get(path, lambda: self._error(404, path))()
 
     # ── HTML / static ─────────────────────────────────────────────────────────
@@ -327,63 +237,49 @@ class Handler(BaseHTTPRequestHandler):
             self._json({"ok":True,"path":path,"bytes":len(content.encode())})
         except Exception as e: self._error(500,str(e))
 
-    # ── AI (SSE) ──────────────────────────────────────────────────────────────
-    def _ai_chat(self, body):
-        root      = body.get("root","").strip()
-        model     = body.get("model","llama3.2")
-        messages  = body.get("messages",[])
-        role      = body.get("role","chat")
-        sid       = body.get("stream_id",str(time.time()))
-        if not root: self._error(400,"root required"); return
-
-        self.send_response(200)
-        self.send_header("Content-Type","text/event-stream")
-        self.send_header("Cache-Control","no-cache")
-        self.send_header("Connection","keep-alive")
-        self._cors(); self.end_headers()
-
-        cancel = threading.Event()
-        with _ai_streams_lock: _ai_streams[sid] = cancel
-
-        def send(etype, data):
-            try:
-                self.wfile.write(f"event: {etype}\ndata: {json.dumps(data)}\n\n".encode())
-                self.wfile.flush()
-            except Exception: cancel.set()
-
-        try: _run_ai_stream(root, model, messages, role, send, cancel)
-        except Exception as e: send("error",{"message":str(e)})
-        finally:
-            with _ai_streams_lock: _ai_streams.pop(sid,None)
-
-    def _ai_cancel(self, body):
-        sid = body.get("stream_id","")
-        with _ai_streams_lock: ev = _ai_streams.get(sid)
-        if ev: ev.set(); self._json({"ok":True})
-        else: self._json({"ok":False})
-
-    # ── Tool dispatch ─────────────────────────────────────────────────────────
-    def _tool(self, body):
-        root = body.get("root",""); name = body.get("name","")
-        args = body.get("args",{}); role = body.get("role","chat")
-        if not name: self._error(400,"name required"); return
-        try:
-            from ai.tools import dispatch_tool
-            result = dispatch_tool(name, args, _ctx(root,role=role))
-            self._json({"name":name,"result":result.content})
-        except Exception as e: self._error(500,str(e))
-
     # ── Git ───────────────────────────────────────────────────────────────────
     def _git(self, body):
+        import subprocess as _sp
         root = body.get("root","")
         if not root: self._error(400,"root required"); return
-        try:
-            from ai.tools import dispatch_tool
-            args = {k:v for k,v in body.items() if k!="root"}
-            r = dispatch_tool("git", args, _ctx(root))
-            try:    self._json(json.loads(r.content))
-            except: self._json({"output":r.content})
-        except Exception as e: self._error(500,str(e))
+        cmd_name = body.get("command","status")
+        extra = body.get("args","").strip()
+        message = body.get("message","").strip()
+
+        def _git_run(cmd, timeout=15):
+            try:
+                r = _sp.run(cmd, shell=True, cwd=root, capture_output=True, text=True, timeout=timeout)
+                return {"command":cmd,"exit_code":r.returncode,"output":r.stdout[-6000:] if r.stdout else "","stderr":r.stderr[-800:] if r.stderr else "","ok":r.returncode==0}
+            except _sp.TimeoutExpired:
+                return {"command":cmd,"exit_code":-1,"output":"","stderr":"timed out","ok":False}
+            except Exception as e:
+                return {"command":cmd,"exit_code":-1,"output":"","stderr":str(e),"ok":False}
+
+        if cmd_name == "status":           r = _git_run("git status --porcelain")
+        elif cmd_name == "log":            r = _git_run(f"git log --oneline -{extra or 20}")
+        elif cmd_name == "diff":           r = _git_run("git diff" + (f" -- {extra}" if extra else ""))
+        elif cmd_name == "diff_staged":    r = _git_run("git diff --staged" + (f" -- {extra}" if extra else ""))
+        elif cmd_name == "branch":         r = _git_run("git branch -a" if extra == "all" else "git branch")
+        elif cmd_name == "add":            r = _git_run(f"git add -- {extra}" if extra else "git add .")
+        elif cmd_name == "add_all":        r = _git_run("git add -A")
+        elif cmd_name == "commit":         r = _git_run(f'git commit -m "{message}"' if message else "git commit")
+        elif cmd_name == "commit_all":     r = _git_run(f'git commit -a -m "{message}"' if message else "git commit -a")
+        elif cmd_name == "push":           r = _git_run("git push" + (f" {extra}" if extra else ""), timeout=30)
+        elif cmd_name == "pull":           r = _git_run("git pull" + (f" {extra}" if extra else ""), timeout=30)
+        elif cmd_name == "checkout":       r = _git_run(f"git checkout -- {extra}" if extra else "git checkout -- .")
+        elif cmd_name == "checkout_new":   r = _git_run(f"git checkout -b {extra}" if extra else "git checkout -b")
+        elif cmd_name == "stash":          r = _git_run("git stash" + (f" save \"{message}\"" if message else ""))
+        elif cmd_name == "stash_pop":      r = _git_run("git stash pop")
+        elif cmd_name == "stash_list":     r = _git_run("git stash list")
+        elif cmd_name == "show":           r = _git_run(f"git show {extra}" if extra else "git show HEAD")
+        elif cmd_name == "blame":          r = _git_run(f"git blame {extra}" if extra else "git blame", timeout=30)
+        elif cmd_name == "init":           r = _git_run("git init")
+        elif cmd_name == "remote":         r = _git_run("git remote -v")
+        elif cmd_name == "reset":          r = _git_run(f"git reset {extra}" if extra else "git reset HEAD")
+        elif cmd_name == "tag":            r = _git_run(f"git tag {extra}" if extra else "git tag")
+        else: self._error(400,f"unknown git command: {cmd_name}"); return
+
+        self._json(r)
 
     # ── Processes ─────────────────────────────────────────────────────────────
     def _get_processes(self): self._json(proc_mgr.list())
@@ -404,40 +300,12 @@ class Handler(BaseHTTPRequestHandler):
         _broadcast("started", proc.info())
         self._json(proc.info())
 
-    # ── Versions ──────────────────────────────────────────────────────────────
-    def _get_versions(self, qs):
-        root = (qs.get("root") or [""])[0]
-        if not root: self._error(400,"root required"); return
-        try:
-            from version.version_manager import list_versions
-            self._json(list_versions(root))
-        except Exception as e: self._error(500,str(e))
-
-    def _archive(self, body):
-        root = body.get("root")
-        if not root: self._error(400,"root required"); return
-        try:
-            from version.version_manager import archive_version
-            self._json({"ok":True,"archivePath":archive_version(root)})
-        except Exception as e: self._error(500,str(e))
-
-    def _ver_update(self, body):
-        root=body.get("root"); tb=body.get("tarball"); bump=body.get("bump","patch")
-        if not root or not tb: self._error(400,"root and tarball required"); return
-        try:
-            from version.version_manager import apply_update
-            nv, arch = apply_update(root,tb,bump)
-            g = parse_project(root)
-            self._json({"ok":True,"newVersion":nv,"archivePath":arch,"graph":g.to_dict()})
-        except Exception as e: self._error(500,str(e))
-
     # ── State ─────────────────────────────────────────────────────────────────
     def _get_state(self, qs):
         root  = (qs.get("root") or [""])[0]
         state = _load_state()
         if root:
-            self._json({"ai_history":state["ai_history"].get(root,[]),
-                        "terminal_history":state["terminal_history"].get(root,[]),
+            self._json({"terminal_history":state["terminal_history"].get(root,[]),
                         "viewport":state["viewport"].get(root,{}),
                         "bottom_panel":state["bottom_panel"],
                         "editor_sessions":state["editor_sessions"].get(root,[])})
@@ -447,7 +315,7 @@ class Handler(BaseHTTPRequestHandler):
     def _save_state_key(self, body):
         root=body.get("root",""); key=body.get("key",""); val=body.get("value")
         state = _load_state()
-        per = ("ai_history","terminal_history","viewport","editor_sessions")
+        per = ("terminal_history","viewport","editor_sessions")
         if key in per and root: state.setdefault(key,{})[root]=val
         elif key: state[key]=val
         _save_state(state); self._json({"ok":True})
@@ -470,46 +338,159 @@ class Handler(BaseHTTPRequestHandler):
                         "functions":[{**v,"name":k} for k,v in tn]})
         except Exception as e: self._error(500,str(e))
 
-    def _profile(self, body):
-        root=body.get("root",""); entry=body.get("entry","")
-        timeout=int(body.get("timeout",60))
-        if not root: self._error(400,"root required"); return
-        try:
-            from monitor.profiler import profile_project
-            r = profile_project(root,entry_point=entry,timeout=timeout)
-            self._json({"ok":r.ok,"entry_point":r.entry_point,"total_ms":round(r.total_ms,1),
-                        "exit_code":r.exit_code,"error":r.error,"metrics_path":r.metrics_path,
-                        "top_functions":[{"name":f.function_name,"module":f.module_path,
-                            "calls":f.calls,"total_ms":f.total_ms,"per_call_ms":f.per_call_ms}
-                            for f in r.top_functions(10)],
-                        "summary":r.summary()})
-        except Exception as e: self._error(500,str(e))
+    # ── Nodes (SideNode adapter for MythOS bridge) ───────────────────────────
+    # Converts FileNode graph entries into SideNode-shaped JSON that
+    # calendarBridge.sideNodeToQuest() in MythOS can consume directly.
+    _CATEGORY_TO_KIND = {
+        "source": "task", "test": "task", "docs": "milestone",
+        "config": "task", "script": "task",
+        "python": "task", "javascript": "task", "typescript": "task",
+        "html": "milestone", "css": "task", "go": "task", "rust": "task",
+        "shell": "task", "markdown": "milestone",
+    }
+    _LANG_SKILL_HINTS = {
+        "python": ["python", "backend"],
+        "javascript": ["javascript", "web"],
+        "typescript": ["typescript", "web"],
+        "html": ["html", "web"],
+        "css": ["css", "web"],
+        "go": ["go", "backend"],
+        "rust": ["rust", "backend"],
+        "shell": ["shell", "devops"],
+        "markdown": ["documentation"],
+    }
 
-    # ── Build ─────────────────────────────────────────────────────────────────
-    def _build_clean(self, body):
-        root = body.get("root")
+    def _get_nodes(self, qs):
+        root     = (qs.get("root") or [""])[0]
+        cat_fill = (qs.get("category") or [""])[0]
+        lang_fill = (qs.get("lang") or [""])[0]
         if not root: self._error(400,"root required"); return
-        try:
-            from build.cleaner import clean_project, CleanOptions
-            r = clean_project(root,CleanOptions(tiers=body.get("tiers",["cache","logs"]),
-                                                dry_run=bool(body.get("dry_run",False))))
-            self._json({"ok":True,"removed":r.removed,"freed_bytes":r.freed_bytes,"errors":r.errors})
-        except Exception as e: self._error(500,str(e))
+        g = _load_graph(root)
+        if not g: self._json([]); return
 
-    def _build_pkg(self, body):
-        root = body.get("root")
-        if not root: self._error(400,"root required"); return
+        nodes = []
+        for n in g.get("nodes", []):
+            ext = n.get("ext", "")
+            lang = ext.lstrip(".")
+            category = n.get("category", "source")
+            imports = n.get("imports", [])
+            exports = n.get("exports", [])
+            defs = n.get("definitions", [])
+
+            # Derive skill hints from language + imports
+            hints = list(self._LANG_SKILL_HINTS.get(lang, []))
+            # Add import-derived hints (take the source module name)
+            for imp in imports[:5]:
+                src = imp.get("source", "") if isinstance(imp, dict) else str(imp)
+                if src:
+                    # Take the top-level module name
+                    hints.append(src.strip("/").split(".")[0].strip("/").split("/")[-1])
+            # Deduplicate preserving order
+            seen = set()
+            unique_hints = []
+            for h in hints:
+                if h not in seen:
+                    seen.add(h)
+                    unique_hints.append(h)
+
+            # Estimate hours from lines (rough: 1h per 50 lines, min 0.5)
+            lines = n.get("lines", 0)
+            estimate = max(0.5, round(lines / 50, 1)) if lines else None
+
+            # Build the SideNode shape
+            side_node = {
+                "id": f"side:{n.get('id', n.get('path', ''))}",
+                "label": n.get("label", n.get("path", "")),
+                "detail": (
+                    f"File: {n.get('path', '')}\n"
+                    f"{lines} lines, {len(imports)} imports, {len(exports)} exports, "
+                    f"{len(defs)} definitions"
+                ).strip(),
+                "kind": self._CATEGORY_TO_KIND.get(category, "task"),
+                "category": category if not cat_fill else cat_fill,
+                "skillHints": unique_hints if not lang_fill else [lang_fill],
+                "estimateHours": estimate,
+                "childIds": [
+                    f"side:{imp.get('source', '').strip('/').split('.')[-1] if isinstance(imp, dict) else imp.strip('/').split('/')[-1]}"
+                    for imp in imports[:10]
+                    if (imp.get('source', '').strip('/').split('.')[-1] if isinstance(imp, dict) else imp.strip('/').split('/')[-1])
+                       in {nn.get("path", "").strip("/").split("/")[-1].split(".")[0]
+                           for nn in g.get("nodes", [])}
+                ],
+                # Source metadata for provenance tracking
+                "_source": {
+                    "project": root,
+                    "path": n.get("path"),
+                    "category": category,
+                    "ext": ext,
+                    "position": n.get("position"),
+                },
+            }
+            nodes.append(side_node)
+
+        self._json(nodes)
+
+    # ── XP recording (MythOS → S.I.D.E. feedback) ────────────────────────────
+    def _record_xp(self, body):
+        root = body.get("root", "")
+        node_id = body.get("node_id", "")
+        xp = body.get("xp", 0)
+        skills = body.get("skills", [])
+        if not root or not node_id:
+            self._error(400, "root and node_id required"); return
+
+        mf = os.path.join(root, ".side-metrics.json")
         try:
-            from build.packager import package_project, PackageOptions
-            opts = PackageOptions(kind=body.get("kind","tarball"),
-                                  target_platform=body.get("platform","auto"),
-                                  minify=bool(body.get("minify",True)),
-                                  clean=bool(body.get("clean",True)))
-            out = body.get("out_dir") or os.path.join(root,"dist")
-            r = package_project(root,out,opts)
-            self._json({"ok":True,"output":r.output_path,"archive":r.archive_path,
-                        "errors":r.errors,"summary":r.summary()})
-        except Exception as e: self._error(500,str(e))
+            data = json.load(open(mf)) if os.path.isfile(mf) else {}
+        except Exception:
+            data = {}
+
+        xp_log = data.setdefault("xp_log", [])
+        xp_log.append({
+            "node_id": node_id,
+            "xp": xp,
+            "skills": skills,
+            "recorded_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
+        })
+        data["total_xp"] = data.get("total_xp", 0) + xp
+
+        try:
+            tmp = mf + ".tmp"
+            with open(tmp, "w") as f:
+                json.dump(data, f, indent=2)
+            os.replace(tmp, mf)
+            self._json({"ok": True, "total_xp": data["total_xp"]})
+        except Exception as e:
+            self._error(500, str(e))
+
+    # ── Infrastructure graph (web-infra.json → SideNode shape) ───────────────
+    def _get_infra(self):
+        infra_path = os.path.join(_ROOT_DIR, "web-infra.json")
+        if not os.path.isfile(infra_path):
+            self._json([]); return
+        try:
+            data = json.load(open(infra_path, encoding="utf-8"))
+        except Exception as e:
+            self._error(500, f"Failed to load web-infra.json: {e}"); return
+
+        nodes_out = []
+        for n in data.get("nodes", []):
+            nodes_out.append({
+                "id": f"infra:{n['id']}",
+                "label": n["label"],
+                "detail": n.get("detail", ""),
+                "kind": n.get("kind", "service"),
+                "category": n.get("category", "infra"),
+                "skillHints": n.get("tech", []),
+                "estimateHours": n.get("estimateHours", 0),
+                "childIds": [f"infra:{cid}" for cid in n.get("childIds", [])],
+                "_source": {
+                    "type": "web-infra",
+                    "status": n.get("status", "unknown"),
+                    "tech": n.get("tech", []),
+                },
+            })
+        self._json(nodes_out)
 
     # ── SSE (process events) ──────────────────────────────────────────────────
     def _sse(self):

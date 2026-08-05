@@ -32,7 +32,10 @@ the GUI to explicitly save it.
 from __future__ import annotations
 import json
 import os
+import time
 from datetime import datetime, timezone
+from contextlib import contextmanager
+from typing import Iterator
 
 from parser.walker import walk_directory, make_node_id, FileInfo
 from parser.parsers import PARSERS
@@ -42,7 +45,33 @@ from parser.resolve_edges import resolve_edges
 from parser.layout import assign_positions
 from parser.doc_check import audit_docs
 from parser.project_config import init_project_config
-from monitor.perf import ParseTimer
+
+
+class ParseTimer:
+    """Context-manager based stage timer for the parse pipeline."""
+
+    def __init__(self) -> None:
+        self._stages: list[tuple[str, float]] = []
+        self._start = time.monotonic()
+
+    @contextmanager
+    def stage(self, name: str) -> Iterator[None]:
+        t0 = time.monotonic()
+        try:
+            yield
+        finally:
+            elapsed = (time.monotonic() - t0) * 1000
+            self._stages.append((name, round(elapsed, 2)))
+
+    def total_ms(self) -> float:
+        return round((time.monotonic() - self._start) * 1000, 2)
+
+    def report(self) -> dict:
+        return {
+            "total_ms": self.total_ms(),
+            "stages": [{"name": n, "ms": ms} for n, ms in self._stages],
+            "slowest": max(self._stages, key=lambda x: x[1])[0] if self._stages else None,
+        }
 
 from graph.types import (
     FileNode, ImportRecord, ExportRecord, Definition,

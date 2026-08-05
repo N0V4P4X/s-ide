@@ -1,0 +1,27 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": [
+    "AGENTS.md",
+    "ROADMAP.md",
+    "ARCHITECTURE-DECISIONS.md",
+    "README.md",
+    "tasks/round-*/*.md"
+  ],
+  "permission": {
+    "edit": "allow",
+    "bash": {
+      "*": "allow",
+      "git push*": "ask",
+      "git reset --hard*": "ask",
+      "git clean*": "ask",
+      "pip install*": "ask",
+      "pip3 install*": "ask",
+      "npm install*": "ask",
+      "npm i *": "ask",
+      "curl *": "ask",
+      "wget *": "ask",
+      "ssh *": "ask",
+      "rm -rf *": "ask"
+    }
+  }
+}

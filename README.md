@@ -1,51 +1,28 @@
-# S-IDE — v0.5.0
+# S-IDE — v0.6.0
 
-**Systematic Integrated Development Environment** — a project graph editor with an embedded AI development assistant, built entirely in Python.
+**Systematic Integrated Development Environment** — a project graph parser and visualizer built in Python.
 
-S-IDE parses any Python project into a live dependency graph, lets you navigate and inspect it visually, gives a team of AI agents direct tool access to your codebase, profiles execution with cProfile, and monitors live performance on node cards.
+S-IDE parses any Python/JavaScript/JSON/Shell project into a live dependency graph, renders it as an interactive node canvas in the browser, and lets you inspect, navigate, and edit your codebase visually.
 
 ---
 
 ## Architecture
 
 ```
-s-ide-py/
+s-ide/
 ├── gui/
-│   ├── app.py               # Main window, canvas, topbar, inspector
-│   ├── teams_canvas.py      # AI Teams workflow designer mixin
-│   ├── panels.py            # Bottom panel tab builders
-│   ├── markdown.py          # Markdown→Tk renderer
-│   ├── editor.py            # Syntax-highlighted source editor
-│   ├── state.py             # Session persistence (~/.s-ide-state.json)
-│   ├── log.py               # Rotating log + in-memory ring
-│   └── server.py            # Optional HTTP+SSE bridge
-├── ai/
-│   ├── client.py            # Ollama HTTP client, streaming, tool loop
-│   ├── tools.py             # 18 tool definitions + permission-aware dispatch
-│   ├── context.py           # AppContext, role permissions
-│   ├── standards.py         # Base system prompt
-│   ├── manager.py           # Manager orchestrator + scaffold_new_project
-│   ├── teams.py             # TeamSession: turn-based multi-agent engine
-│   ├── playground.py        # Isolated Python sandbox
-│   ├── tool_builder.py      # Self-improving tool creation workflow
-│   └── roles/               # Role definitions (6 roles)
-├── monitor/
-│   ├── profiler.py          # cProfile-based live project profiler ← use this
-│   ├── perf.py              # ParseTimer, ProcessMonitor, MetricsWatcher
-│   ├── instrument.py        # @timed decorator (legacy)
-│   └── instrumenter.py      # Bulk instrumentation (legacy)
-├── parser/                  # Project analysis pipeline
-│   ├── project_parser.py    # Orchestrator: walk→parse→edges→layout→audit
-│   └── parsers/             # python, js, json, shell, toml/yaml
-├── graph/types.py           # FileNode, Edge, ProjectGraph, Definition
-├── build/                   # clean, minify, package, sandbox
-├── process/                 # Subprocess lifecycle management
-├── version/                 # Snapshot, restore, apply-update
-├── examples/calculator/     # Reference project: PEMDAS GUI + CLI calc
-├── test/test_suite.py       # 280 tests, 43 classes, stdlib unittest
-├── CHANGELOG.md
-├── FUTURE.md
-└── update.py                # Self-update (version-sorted tarball selection)
+│   ├── app.html               # Full JS frontend (Canvas rendering, editor, terminal, git)
+│   └── server.py              # HTTP server + API bridge (Python)
+├── parser/                    # Project analysis pipeline
+│   ├── project_parser.py      # Orchestrator: walk→parse→edges→layout→audit
+│   └── parsers/               # python, js, json, shell, toml/yaml
+├── graph/types.py             # FileNode, Edge, ProjectGraph, Definition
+├── process/                   # Subprocess lifecycle management
+├── examples/calculator/       # Reference project: PEMDAS GUI + CLI calc
+├── test/test_suite.py         # Unit tests (stdlib unittest)
+├── main.py                    # CLI entry point
+├── run.py                     # Launcher (server + browser)
+└── CHANGELOG.md
 ```
 
 ---
@@ -53,10 +30,10 @@ s-ide-py/
 ## Quick start
 
 ```bash
-python gui/app.py                        # launch GUI
-python main.py parse /path/to/project   # parse from CLI
-python test/test_suite.py               # run tests
-python update.py                        # self-update from ~/Downloads/
+python run.py                          # start server, open browser
+python run.py --project ~/my-project   # pre-load a project
+python main.py parse ~/my-project      # parse only, no server
+python test/test_suite.py             # run tests
 ```
 
 ---
@@ -65,88 +42,91 @@ python update.py                        # self-update from ~/Downloads/
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│ TOPBAR  logo · project · [PY JS CFG DOCS] · ⚡TEAMS · ⏱Profile│
+│ TOPBAR  logo · project · [Graph] · ↺ Re-parse · ⊞ Fit      │
 ├───────────────────────────────────────────────┬──────────────┤
 │  CANVAS                                       │  INSPECTOR   │
 │  • node cards (one per source file)           │  (on click)  │
 │  • bezier import edges                        │              │
 │  • dashed doc→source links                   │              │
-│  • live @timed / cProfile overlays            │              │
 ├───────────────────────────────────────────────┴──────────────┤
 │  ▓ resize handle                                              │
 ├───────────────────────────────────────────────────────────────┤
-│  Projects │ AI Chat │ Plan │ Playground │ Terminal │ Teams Log │
+│  Editor │ Terminal │ Plan │ Git                               │
 └───────────────────────────────────────────────────────────────┘
 ```
-
-**⚡ TEAMS** — switch canvas to AI Teams workflow designer  
-**⏱ Profile** — run cProfile on project entry point, update node overlays
-
----
-
-## AI assistant (18 tools)
-
-Requires [Ollama](https://ollama.ai) running locally.
-
-```bash
-ollama serve && ollama pull llama3.2
-```
-
-| Category | Tools |
-|---|---|
-| Read | `read_file`, `list_files`, `get_file_summary`, `search_definitions`, `get_graph_overview`, `get_definition_source` |
-| Run | `run_command`, `run_in_playground`, `get_metrics` |
-| Write | `write_file`, `create_plan`, `update_plan`, `write_agent_note` |
-| Session | `write_session_file`, `read_session_file`, `list_session_files` |
-| Git | `git` (22 commands: status, log, diff, add, commit, push, pull, branch, stash, blame, …) |
-| Profiling | `profile_project` |
-
-The Manager bot surveys the project, writes a plan, and delegates complex tasks to a specialist team via `run_team` JSON. Bake sessions run autonomously for a time-boxed period. If the Manager calls a tool that doesn't exist, a team is offered to build it.
-
----
-
-## Live profiling
-
-```bash
-# Via GUI: click ⏱ Profile in topbar
-# Via Manager: "Profile the project"
-# Via code:
-from monitor.profiler import profile_project
-result = profile_project("/path/to/project")
-print(result.summary())
-```
-
-Results written to `.side-metrics.json`. Node cards update with colour-coded timing strips within ~1.5 seconds.
-
----
-
-## AI Teams
-
-Click **⚡ TEAMS** to open the workflow designer. Build agent sequences by adding role cards and connecting them. Click **▶ Run Workflow** in the Plan tab to start.
-
-Teams Log tab shows full-verbosity event stream from all agents with timestamps. Session browser on the left lists past sessions — click to review plans, findings, and verdicts.
 
 ---
 
 ## Git integration
 
-The `git` tool supports 22 commands. Standard workflow:
-```
-git status → git diff → git add_all → git diff_staged → git commit (message=…)
-```
-
-Push/pull with optional `remote` and `branch` params. `checkout_new` for feature branches. `blame`, `reset`, `tag` for deeper operations.
+The Git tab provides quick-access buttons for common workflows: status, diff, log, add all, commit, push, pull. All operations run as subprocess calls against the project's git repository.
 
 ---
 
-## Self-update
+## Parser pipeline
 
-```bash
-python update.py   # picks highest-versioned s-ide-*.tar.gz from ~/Downloads/
-```
+Each stage is timed and stored in the graph JSON under `meta.perf`:
+
+1. **init_project_config** — load/create `side.project.json`
+2. **walk_directory** — discover all source files
+3. **per-file parsing** — call the appropriate language parser (Python AST, JS regex, JSON, Shell, TOML/YAML)
+4. **resolve_edges** — turn raw import strings into graph edges
+5. **assign_positions** — auto-layout for the node editor
+6. **audit_docs** — README / empty-module health check
+7. **write_graph_json** — auto-save `.nodegraph.json`
 
 ---
 
-## Versioning
+## License
 
-Semantic versioning. See `CHANGELOG.md` for history, `FUTURE.md` for roadmap.
+GPL-3.0-or-later. See `LICENSE.txt`.
+
+---
+
+## MythOS bridge API
+
+The `/api/nodes` endpoint exports graph nodes as `SideNode`-shaped JSON for consumption by [MythOS](../../WebDev/mythos-os/) via `calendarBridge.sideNodeToQuest()`.
+
+```
+GET /api/nodes?root=&category=&lang=
+```
+
+**Query params:**
+| Param | Required | Description |
+|---|---|---|
+| `root` | yes | Project root path (must be registered) |
+| `category` | no | Override category for all nodes |
+| `lang` | no | Override skill hints (e.g. `python`) |
+
+**Response:** Array of `SideNode` objects:
+```json
+{
+  "id": "side:agent_loop_py",
+  "label": "agent_loop.py",
+  "detail": "File: agent_loop.py\n130 lines, 8 imports, 0 exports, 5 definitions",
+  "kind": "task",
+  "category": "python",
+  "skillHints": ["python", "time", "subprocess", "os"],
+  "estimateHours": 2.6,
+  "childIds": ["side:time", "side:subprocess"],
+  "_source": { "project": "/path/to/project", "path": "agent_loop.py" }
+}
+```
+
+**Integration:** MythOS `SideImporter` component auto-connects to `localhost:7700` and fetches nodes from this endpoint. Each node is converted to a MythOS quest with skill-tree placement and XP weighting derived from `estimateHours`.
+
+---
+
+## Web Infrastructure graph
+
+The `/api/infra` endpoint serves the n3xu5 web infrastructure as importable SideNode-shaped JSON. Source data: `web-infra.json`.
+
+```
+GET /api/infra
+```
+
+**Response:** Array of infrastructure nodes (workers, databases, buckets, domains, services, external deps) with edges showing relationships.
+
+**Components tracked:** homepage worker, n3xu5-auth worker, email-gate worker, D1 database, R2 bucket, rate limits, secrets, domains (n0v4-n3xu5.art, n3xu5.art, forsythzines.art), SSO IdP, email routing, calendar API, Resend, Porkbun, C2-Panel.
+
+**MythOS integration:** `InfraView` component shows infrastructure health dashboard with import-as-quest capability.

@@ -10,6 +10,7 @@ build/
 .side-workspace.json
 .nodegraph.json
 .side-metrics.json
+projects.json
 versions/
 archive/
 logs/

@@ -6,7 +6,57 @@ All notable changes follow [Semantic Versioning](https://semver.org):
 - **PATCH** — bug fixes and internal improvements
 
 ---
-## [0.5.3] -- 2026-03-19
+## [0.6.0] -- 2026-08-05
+
+### Added
+- **Browser canvas frontend** — the Tkinter GUI is gone. `gui/app.html` (single-file JS:
+  canvas node rendering, inspector, editor, terminal, git panel) is served by
+  `gui/server.py` (stdlib `http.server`). No framework, no build step.
+- **MythOS bridge** — `GET /api/nodes` exports the project graph as `SideNode`-shaped
+  JSON (`id`, `label`, `kind`, `category`, `skillHints`, `estimateHours`, `childIds`,
+  `_source`) for MythOS's `SideImporter`; `POST /api/xp` records quest-completion XP back
+  into `.side-metrics.json`. Both are part of the 0.6.0 rewrite — they have no committed
+  history before this release.
+- **n3xu5 infra bridge** — `GET /api/infra` serves `web-infra.json` (n3xu5 workers, D1,
+  R2, domains, rate limits, external services) as importable SideNode JSON for MythOS's
+  `InfraView`.
+- **Process manager** — `process/process_manager.py` with `/api/processes*` routes and an
+  SSE `/events` stream for live output in the terminal tab.
+- **`main.py serve`** — launch the web interface from the CLI.
+
+### Changed
+- Frontend rebased from Tkinter to a browser canvas (see above).
+- Git operations reimplemented as direct subprocess calls in `gui/server.py` (previously
+  routed through the AI tool dispatcher).
+
+### Removed
+- **`ai/` subsystem** (~5,200 lines): Ollama client, chat/tool/team endpoints
+  (`/api/ai/*`, `/api/tool`), and the GUI AI tab. OpenCode now drives the repo directly via
+  the round protocol (`AGENTS.md`); the in-repo agent was replaced, not ported.
+  `ai/teams.py` (multi-agent orchestration) has no replacement — see
+  `ARCHITECTURE-DECISIONS.md`.
+- **`build/` subsystem** (~1,650 lines): cleaner, minifier, packager, sandbox, and the
+  `main.py build` command. Nothing consumed packaging after the GUI dropped it.
+- **`monitor/` subsystem** (~1,900 lines): instrumenter/profiler removed; `ParseTimer` was
+  inlined into `parser/project_parser.py`, so per-stage `meta.perf` timing survives.
+  `/api/profile` removed — nothing in-tree generates `.side-metrics.json` anymore.
+- **`version/` subsystem** (~430 lines): `versions`/`archive`/`update`/`compress` commands
+  removed; existing `versions/*.tar.gz` snapshots kept as history.
+- **`migrate.py` / `update.py`** — one-shot v0.5→v0.6 Tkinter→web migration tooling.
+- **CLI subcommands** — `versions`, `archive`, `update`, `compress`, `build` from
+  `main.py`; `new`, `migrate` from `run.py`. Added `serve`.
+- **`AGENT_NOTES.md`, `FUTURE.md`, `SELF_IMPROVEMENT.md`** — superseded by `AGENTS.md`,
+  `ROADMAP.md`, and `ARCHITECTURE-DECISIONS.md`.
+
+### Fixed
+- Test suite reconciled with the deletions — it previously still exercised the removed
+  `ai`/`build`/`monitor`/`version` modules (301 tests / 38 errors at the pre-rewrite
+  HEAD); now 112 tests, green.
+- CI's `self-check . --json` call — `main.py self-check` gained a real `--json` output
+  mode, so the workflow no longer fails on an unrecognized flag.
+
+---
+
 
 ### Added
 - **Layout mode toggle** (topbar ⊞/⊟ button) -- switch between Compact

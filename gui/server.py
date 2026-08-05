@@ -82,7 +82,8 @@ def _save_state(s):
 def _load_graph(root):
     p = os.path.join(root, ".nodegraph.json")
     if os.path.isfile(p):
-        try: return json.load(open(p, encoding="utf-8"))
+        try:
+            with open(p, encoding="utf-8") as f: return json.load(f)
         except Exception: pass
     return None
 
@@ -328,7 +329,8 @@ class Handler(BaseHTTPRequestHandler):
         mf = os.path.join(root,".side-metrics.json")
         if not os.path.isfile(mf): self._json({"error":"No .side-metrics.json"}); return
         try:
-            data = json.load(open(mf))
+            with open(mf, encoding="utf-8") as f:
+                data = json.load(f)
             files = {k:v for k,v in data.get("files",{}).items() if not pf or pf in k}
             fns   = {k:v for k,v in data.get("functions",{}).items() if not pf or pf in k}
             tf = sorted(files.items(),key=lambda x:-x[1].get("avg_ms",0))[:20]
@@ -440,7 +442,11 @@ class Handler(BaseHTTPRequestHandler):
 
         mf = os.path.join(root, ".side-metrics.json")
         try:
-            data = json.load(open(mf)) if os.path.isfile(mf) else {}
+            if os.path.isfile(mf):
+                with open(mf, encoding="utf-8") as f:
+                    data = json.load(f)
+            else:
+                data = {}
         except Exception:
             data = {}
 
@@ -468,7 +474,8 @@ class Handler(BaseHTTPRequestHandler):
         if not os.path.isfile(infra_path):
             self._json([]); return
         try:
-            data = json.load(open(infra_path, encoding="utf-8"))
+            with open(infra_path, encoding="utf-8") as f:
+                data = json.load(f)
         except Exception as e:
             self._error(500, f"Failed to load web-infra.json: {e}"); return
 

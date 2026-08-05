@@ -1288,7 +1288,8 @@ class TestSideNodeAdapter(unittest.TestCase):
             self.assertEqual(responses[0]["status"], 200)
             self.assertEqual(responses[0]["body"], {"ok": True, "total_xp": 50})
 
-            data = json.load(open(mf))
+            with open(mf, encoding="utf-8") as f:
+                data = json.load(f)
             self.assertEqual(data["total_xp"], 50)
             self.assertEqual(len(data["xp_log"]), 1)
             entry = data["xp_log"][0]
@@ -1299,8 +1300,10 @@ class TestSideNodeAdapter(unittest.TestCase):
 
             h._record_xp({"root": root, "node_id": "side:utils_py", "xp": 25,
                           "skills": []})
-            self.assertEqual(json.load(open(mf))["total_xp"], 75)
-            self.assertEqual(len(json.load(open(mf))["xp_log"]), 2)
+            with open(mf, encoding="utf-8") as f:
+                data = json.load(f)
+            self.assertEqual(data["total_xp"], 75)
+            self.assertEqual(len(data["xp_log"]), 2)
 
     def test_record_xp_requires_root_and_node_id(self):
         h, responses = self._handler()

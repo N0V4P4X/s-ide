@@ -47,6 +47,9 @@ All notable changes follow [Semantic Versioning](https://semver.org):
   `main.py`; `new`, `migrate` from `run.py`. Added `serve`.
 - **`AGENT_NOTES.md`, `FUTURE.md`, `SELF_IMPROVEMENT.md`** — superseded by `AGENTS.md`,
   `ROADMAP.md`, and `ARCHITECTURE-DECISIONS.md`.
+- **`/api/metrics`** (round 4) — dead surface: no frontend caller, no producer (the
+  `monitor/` profiler that wrote `files`/`functions` metrics was deleted; `/api/xp` writes
+  `xp_log`/`total_xp`, not the shape it read), no external consumer.
 
 ### Fixed
 - Test suite reconciled with the deletions — it previously still exercised the removed
@@ -54,9 +57,25 @@ All notable changes follow [Semantic Versioning](https://semver.org):
   HEAD); now 112 tests, green.
 - CI's `self-check . --json` call — `main.py self-check` gained a real `--json` output
   mode, so the workflow no longer fails on an unrecognized flag.
+- **Bridge hardened after landing (round 2).** `TestSideNodeAdapter` replaced its inline
+  simulation with tests that drive the real `Handler` (hermetic stub responses, temp-dir
+  graph fixtures); the error contract is decided and tested (400 no-root, 200 `[]` for
+  no-graph / missing infra / corrupt cache, 500 for corrupt `web-infra.json`); the
+  `SideNode` shape stability rule (additive-only) is documented. Real-handler tests found
+  `_LANG_SKILL_HINTS` keyed by language name while the bridge looked up by extension —
+  `.py`/`.js`/`.ts`/`.md`/`.sh`/`.rs` nodes shipped **empty** skill hints; fixed by
+  re-keying to extensions (matches the documented example; MythOS is unaffected).
+- **Workspace fast path fixed (round 3).** `parser/workspace.py`'s `_collect_external_imports`
+  still stripped the pre-rewrite `ext:` prefix while `resolve_edges` now emits
+  `ext_<pkg>` + `externalPackage`, so graph-backed `resolve_project_deps` silently resolved
+  nothing. Now reads `externalPackage` first.
+- **Python 3.13 deprecations cleared (round 4).** `ast.Constant.s` (removed in 3.14) replaced
+  with `.value` in `python_parser.py`; the parse `ProcessPoolExecutor` now uses an explicit
+  `spawn` context instead of the multi-threaded-fork default.
 
 ---
 
+## [0.5.3] -- 2026-03-19
 
 ### Added
 - **Layout mode toggle** (topbar ⊞/⊟ button) -- switch between Compact

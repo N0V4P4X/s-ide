@@ -15,7 +15,8 @@ s-ide/
 │   └── server.py              # HTTP server + API bridge (Python)
 ├── parser/                    # Project analysis pipeline
 │   ├── project_parser.py      # Orchestrator: walk→parse→edges→layout→audit
-│   └── parsers/               # python, js, json, shell, toml/yaml
+│   ├── parsers/               # python, js, json, shell, toml/yaml
+│   └── workspace.py           # shared devspace dependency manifests
 ├── graph/types.py             # FileNode, Edge, ProjectGraph, Definition
 ├── process/                   # Subprocess lifecycle management
 ├── examples/calculator/       # Reference project: PEMDAS GUI + CLI calc
@@ -94,7 +95,7 @@ GET /api/nodes?root=&category=&lang=
 **Query params:**
 | Param | Required | Description |
 |---|---|---|
-| `root` | yes | Project root path (must be registered) |
+| `root` | yes | Project root path with a parsed graph (a `.nodegraph.json` next to it) |
 | `category` | no | Override category for all nodes |
 | `lang` | no | Override skill hints (e.g. `python`) |
 

@@ -191,3 +191,32 @@ n3xu5's actual infra again.
 
 **Rejected:** the brief's parenthetical "(see 2.2)" for the infra-path question is a
 cross-reference error — the parameterization decision belongs to 2.0 and is documented there.
+
+## 2026-08-05 — round 3: `_collect_external_imports` fast path fixed to the rewrite's graph shape; fast/slow divergence kept by design
+
+**Context:** Round 3.1 found `parser/workspace.py`'s `_collect_external_imports` graph fast path
+still stripping the pre-rewrite `ext:` prefix from external edge targets. The rewrite's
+`resolve_edges` (committed in `e772b8b`) changed the shape to `target: "ext_<pkg>"` plus a
+`externalPackage` field holding the real package name — so the fast path returned
+`ext_requests`-style names that never matched a workspace manifest's package keys.
+`resolve_project_deps` therefore silently resolved nothing whenever a graph was available.
+Introduced in `5dd5f13` and orphaned by the rewrite; no tests covered the fast path, so the
+drift went uncaught (round 1 and 2 never exercised `parser/workspace.py` graph-backed paths).
+
+**Chosen:** read `externalPackage` first (it's the authoritative name), with `ext_`/`ext:`
+prefix fallbacks for graphs that lack it. The fast path now matches the live graph — verified
+against this repo's own `.nodegraph.json` (32 external packages detected, stdlib externals
+included). A new test locks the `ext_`+`externalPackage` shape and would fail on the old code.
+
+**Decided (kept, not fixed):** the fast path (graph's `isExternal` edges only) and the scan
+path (all `.py` imports) return different sets by design, and that divergence predates the
+rewrite. Fast: `ctypes`/`queue`/`tomllib`/`webbrowser` — stdlib modules the graph records as
+external edges. Scan: `graph`/`parser`/`process` — this repo's own local packages, which the
+scan path cannot distinguish from third-party imports. Neither is "wrong" for its purpose
+(graph path = third-party dep resolution; scan path = fallback guess when no graph exists),
+and aligning them would require deciding whether local imports count as workspace deps —
+not a round-3 call. Flagged for the round-4 consolidation sweep.
+
+**Not a bridge change:** `SideNode` shape untouched; the round-3 brief's "if it touches the
+bridge" condition does not fire. `childIds`/`skillHints` matching was instead *confirmed*
+against real `parse_project` output by the new 3.2 integration test.

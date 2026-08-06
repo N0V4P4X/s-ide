@@ -14,8 +14,8 @@ found. A brief that no longer makes sense should be rewritten, not followed — 
 |---|---|---|
 | **1** | reconcile the uncommitted v0.6.0 rewrite; land it; adopt the round protocol | **done** — landed, `self-check` green, 7 commits; audit at `tasks/round-1/AUDIT-R1.md`. `ai/teams.py` fate flagged for Nova (round 4 slot) |
 | 2 | harden the MythOS/n3xu5 bridge (`/api/nodes`, `/api/infra`) | **done** — real-handler tests, error contract + stability rule decided, `web-infra` validated; audit at `tasks/round-2/AUDIT-R2.md` |
-| 3 | parser coverage + workspace features that atrophied during the rewrite | **next** — brief at `tasks/round-3/00-ROUND-3.md` |
-| 4 | consolidation — docs, dead-code sweep, decide the fate of `ai/teams.py` | planned |
+| 3 | parser coverage + workspace features that atrophied during the rewrite | **done** — coverage floor verified (0 methods lost), workspace fast path fixed to the `ext_`+`externalPackage` shape, parser→bridge integration test; audit at `tasks/round-3/AUDIT-R3.md` |
+| 4 | consolidation — docs, dead-code sweep, decide the fate of `ai/teams.py` | **next** — brief at `tasks/round-4/00-ROUND-4.md` |
 
 ---
 

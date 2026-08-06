@@ -32,7 +32,6 @@ POST /api/state {root,key,value}
 GET  /api/nodes?root=&category=&lang=  → SideNode-shaped JSON for MythOS bridge
 POST /api/xp  {root, node_id, xp, skills}  → record quest completion XP
 GET  /api/infra                            → web-infra graph nodes as SideNode JSON
-GET  /api/metrics?root=&path=
 """
 
 from __future__ import annotations
@@ -123,7 +122,6 @@ class Handler(BaseHTTPRequestHandler):
             "/api/file":     lambda: self._get_file(qs),
             "/api/file/list":lambda: self._get_file_list(qs),
             "/api/file/defs":lambda: self._get_file_defs(qs),
-            "/api/metrics":  lambda: self._get_metrics(qs),
             "/api/nodes":    lambda: self._get_nodes(qs),
             "/api/infra":    self._get_infra,
             "/api/processes":self._get_processes,
@@ -320,25 +318,6 @@ class Handler(BaseHTTPRequestHandler):
         if key in per and root: state.setdefault(key,{})[root]=val
         elif key: state[key]=val
         _save_state(state); self._json({"ok":True})
-
-    # ── Metrics / profiler ────────────────────────────────────────────────────
-    def _get_metrics(self, qs):
-        root = (qs.get("root") or [""])[0]
-        pf   = (qs.get("path") or [""])[0]
-        if not root: self._error(400,"root required"); return
-        mf = os.path.join(root,".side-metrics.json")
-        if not os.path.isfile(mf): self._json({"error":"No .side-metrics.json"}); return
-        try:
-            with open(mf, encoding="utf-8") as f:
-                data = json.load(f)
-            files = {k:v for k,v in data.get("files",{}).items() if not pf or pf in k}
-            fns   = {k:v for k,v in data.get("functions",{}).items() if not pf or pf in k}
-            tf = sorted(files.items(),key=lambda x:-x[1].get("avg_ms",0))[:20]
-            tn = sorted(fns.items(),  key=lambda x:-x[1].get("avg_ms",0))[:20]
-            self._json({"pid":data.get("pid"),"updated":data.get("updated"),
-                        "files":[{**v,"path":k} for k,v in tf],
-                        "functions":[{**v,"name":k} for k,v in tn]})
-        except Exception as e: self._error(500,str(e))
 
     # ── Nodes (SideNode adapter for MythOS bridge) ───────────────────────────
     # Converts FileNode graph entries into SideNode-shaped JSON that

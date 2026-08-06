@@ -309,6 +309,28 @@ class TestWalker(unittest.TestCase):
         self.assertEqual(make_node_id("src/utils/helpers.py"), "src_utils_helpers_py")
         self.assertEqual(make_node_id("main.py"), "main_py")
 
+    def test_venv_ignored(self):
+        with _tmp_project(
+            ("app.py", ""),
+            (".venv/lib/python3.11/site-packages/x.py", ""),
+            ("venv/lib/x.py", ""),
+            ("env/lib/x.py", ""),
+        ) as tmp:
+            files = walk_directory(tmp)
+            paths = [f.relative_path for f in files]
+            self.assertIn("app.py", paths)
+            self.assertTrue(all("venv" not in p and "env/" not in p for p in paths))
+
+    def test_git_dir_ignored(self):
+        with _tmp_project(
+            ("app.py", ""),
+            (".git/objects/aa/bb", ""),
+        ) as tmp:
+            files = walk_directory(tmp)
+            paths = [f.relative_path for f in files]
+            self.assertIn("app.py", paths)
+            self.assertFalse(any(".git" in p for p in paths))
+
     def test_hidden_files_ignored(self):
         with _tmp_project(
             ("visible.py", ""),
@@ -529,6 +551,20 @@ class TestProjectParser(unittest.TestCase):
             # Should not raise
             txt = json.dumps(graph.to_dict())
             self.assertIn("nodes", txt)
+
+    def test_meta_perf_recorded(self):
+        """The inlined ParseTimer (ex-monitor.perf) surfaces per-stage timing
+        under meta.perf for every parse."""
+        with _tmp_project(("app.py", "import os\n")) as tmp:
+            graph = parse_project(tmp)
+            perf = graph.to_dict()["meta"].get("perf", {})
+            self.assertIn("total_ms", perf)
+            self.assertGreater(perf["total_ms"], 0)
+            names = [s["name"] for s in perf.get("stages", [])]
+            self.assertIn("walk", names)
+            self.assertIn("parse_files", names)
+            self.assertIn("resolve_edges", names)
+            self.assertIn("write_json", names)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════

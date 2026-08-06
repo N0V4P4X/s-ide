@@ -15,7 +15,14 @@ found. A brief that no longer makes sense should be rewritten, not followed — 
 | **1** | reconcile the uncommitted v0.6.0 rewrite; land it; adopt the round protocol | **done** — landed, `self-check` green, 7 commits; audit at `tasks/round-1/AUDIT-R1.md`. `ai/teams.py` fate flagged for Nova (round 4 slot) |
 | 2 | harden the MythOS/n3xu5 bridge (`/api/nodes`, `/api/infra`) | **done** — real-handler tests, error contract + stability rule decided, `web-infra` validated; audit at `tasks/round-2/AUDIT-R2.md` |
 | 3 | parser coverage + workspace features that atrophied during the rewrite | **done** — coverage floor verified (0 methods lost), workspace fast path fixed to the `ext_`+`externalPackage` shape, parser→bridge integration test; audit at `tasks/round-3/AUDIT-R3.md` |
-| 4 | consolidation — docs, dead-code sweep, decide the fate of `ai/teams.py` | **next** — brief at `tasks/round-4/00-ROUND-4.md` |
+| 4 | consolidation — docs, dead-code sweep, decide the fate of `ai/teams.py` | **done** — verdict: `ai/teams.py` deliberately dead (git history is the archive), 3.13 deprecations cleared, `/api/metrics` removed, README/CHANGELOG reconciled, vault mirrored; audit at `tasks/round-4/AUDIT-R4.md` |
+
+**The round protocol is parked.** Round 4 was the last planned round. Two items are flagged
+for Nova to decide/plan before any round 5 exists: `web-infra.json` regeneration (hand-update
+vs. generator — the file has drifted: `n3xu5-home`, `n3xu5-pages`, R2 `n3xu5-pages`,
+R2 `n3xu5-files`, `ChatRoom` DO missing since its 2026-07-19 `generatedAt`) and workspace
+sibling-project dependency resolution (proposed feature, separate from the external-import
+collector). No round-5 brief will be written until Nova writes one.
 
 ---
 

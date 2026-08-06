@@ -972,8 +972,8 @@ class TestWorkspaceManifest(unittest.TestCase):
         from parser.workspace import init_workspace
         with tempfile.TemporaryDirectory() as root:
             os.makedirs(os.path.join(root, 'proj-a'))
-            open(os.path.join(root, 'proj-a',
-                 'side.project.json'), 'w').write('{}')
+            with open(os.path.join(root, 'proj-a', 'side.project.json'), 'w') as f:
+                f.write('{}')
             m = init_workspace(root)
             self.assertIn('proj-a', m.projects)
 
@@ -1010,8 +1010,8 @@ class TestWorkspaceManifest(unittest.TestCase):
     def test_resolve_deps_from_imports(self):
         from parser.workspace import resolve_project_deps, WorkspaceManifest
         with tempfile.TemporaryDirectory() as proj:
-            open(os.path.join(proj, 'main.py'), 'w').write(
-                'import requests\nfrom numpy import array\nimport os\n')
+            with open(os.path.join(proj, 'main.py'), 'w') as f:
+                f.write('import requests\nfrom numpy import array\nimport os\n')
             m = WorkspaceManifest(packages={'requests':'>=2','numpy':'*','flask':'*'})
             deps = resolve_project_deps(proj, m)
             self.assertIn('requests', deps)
@@ -1361,6 +1361,34 @@ class TestSideNodeAdapter(unittest.TestCase):
             h._get_infra(bad)
             self.assertEqual(responses[0]["status"], 500)
             self.assertIn("web-infra.json", responses[0]["body"]["error"])
+
+    def test_get_nodes_on_real_parse_output(self):
+        """Round 3.2: lock parser imports/path conventions to the bridge's
+        childIds + skillHints assumptions using real parse_project output —
+        the two pipeline halves MythOS depends on, exercised end to end."""
+        h, responses = self._handler()
+        with _tmp_project(
+            ("app.py", "import utils\nimport os\n\n\ndef main():\n    pass\n"),
+            ("utils.py", "def helper():\n    return 1\n"),
+            ("README.md", "# Synthetic\n"),
+        ) as tmp:
+            from parser.project_parser import parse_project
+            parse_project(tmp, save_json=True)
+
+            h._get_nodes({"root": [tmp]})
+            self.assertEqual(responses[0]["status"], 200)
+            by_id = {n["id"]: n for n in responses[0]["body"]}
+
+            self.assertIn("side:app_py", by_id)
+            self.assertIn("side:utils_py", by_id)
+
+            app = by_id["side:app_py"]
+            self.assertEqual(app["skillHints"][:2], ["python", "backend"])
+            self.assertIn("os", app["skillHints"])
+            self.assertEqual(app["childIds"], ["side:utils"])
+
+            utils = by_id["side:utils_py"]
+            self.assertEqual(utils["childIds"], [])
 
     def test_record_xp_writes_metrics(self):
         """POST /api/xp appends to .side-metrics.json via the real handler."""

@@ -1050,6 +1050,57 @@ class TestWorkspaceManifest(unittest.TestCase):
             self.assertIn('myws', s)
             self.assertIn('rich', s)
 
+    def test_find_projects_in_workspace(self):
+        from parser.workspace import find_projects_in_workspace
+        with tempfile.TemporaryDirectory() as root:
+            for proj in ('proj-a', 'proj-b'):
+                os.makedirs(os.path.join(root, proj))
+                with open(os.path.join(root, proj, 'side.project.json'), 'w') as f:
+                    json.dump({"name": proj}, f)
+            os.makedirs(os.path.join(root, 'not-a-project'))   # no marker
+            os.makedirs(os.path.join(root, '.hidden-project'))  # dotfile skipped
+            found = find_projects_in_workspace(root)
+            self.assertEqual(found, ['proj-a', 'proj-b'])
+
+    def test_add_package_module_level(self):
+        from parser.workspace import add_package, load_workspace
+        with tempfile.TemporaryDirectory() as root:
+            m = add_package(root, 'requests', '>=2.28')
+            self.assertEqual(m.packages['requests'], '>=2.28')
+            reloaded = load_workspace(root)
+            self.assertEqual(reloaded.packages['requests'], '>=2.28')
+
+    def test_resolve_project_deps_uses_graph_external_edges(self):
+        """The graph fast path must match the real resolve_edges output shape
+        (target ext_<pkg> + externalPackage), not the pre-rewrite ext: form."""
+        from parser.workspace import resolve_project_deps, WorkspaceManifest
+        with tempfile.TemporaryDirectory() as proj:
+            with open(os.path.join(proj, 'main.py'), 'w') as f:
+                f.write('import os\n')
+            graph = {
+                "nodes": [{"id": "main_py", "path": "main.py", "isExternal": False}],
+                "edges": [
+                    {"id": "e_0", "source": "main_py", "target": "ext_requests",
+                     "type": "external", "isExternal": True, "externalPackage": "requests"},
+                    {"id": "e_1", "source": "main_py", "target": "ext_numpy",
+                     "type": "external", "isExternal": True, "externalPackage": "numpy"},
+                ],
+            }
+            m = WorkspaceManifest(packages={'requests': '>=2', 'numpy': '*', 'flask': '*'})
+            deps = resolve_project_deps(proj, m, graph)
+            self.assertEqual(set(deps), {'requests', 'numpy'})
+            self.assertNotIn('flask', deps)
+
+    def test_collect_external_imports_scan(self):
+        from parser.workspace import _collect_external_imports
+        with tempfile.TemporaryDirectory() as proj:
+            with open(os.path.join(proj, 'main.py'), 'w') as f:
+                f.write('import requests\nfrom numpy import array\nimport os\n')
+            imports = _collect_external_imports(proj, None)
+            self.assertIn('requests', imports)
+            self.assertIn('numpy', imports)
+            self.assertIn('os', imports)
+
 
 class TestSideNodeAdapter(unittest.TestCase):
     """Real-handler tests for the MythOS bridge (/api/nodes, /api/infra, /api/xp).

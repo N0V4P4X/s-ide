@@ -274,13 +274,26 @@ def _collect_external_imports(
         # Fast path: use pre-parsed graph data
         for node in graph.get("nodes", []):
             if node.get("isExternal"):
-                # External nodes have IDs like "ext:requests"
+                # External nodes have IDs like "ext_requests" (current
+                # resolve_edges) or the pre-rewrite "ext:requests".
                 nid = node.get("id", "")
-                if nid.startswith("ext:"):
+                if nid.startswith("ext_"):
+                    imports.add(nid[4:])
+                elif nid.startswith("ext:"):
                     imports.add(nid[4:])
         for edge in graph.get("edges", []):
             if edge.get("type") == "external":
-                imports.add(edge.get("target", "").replace("ext:", ""))
+                # Current resolve_edges emits target "ext_<pkg>" plus the
+                # real package name in externalPackage — use the latter.
+                pkg = edge.get("externalPackage")
+                if pkg:
+                    imports.add(pkg)
+                else:
+                    target = edge.get("target", "")
+                    if target.startswith("ext_"):
+                        imports.add(target[4:])
+                    elif target.startswith("ext:"):
+                        imports.add(target[4:])
         if imports:
             return imports
 

@@ -245,7 +245,7 @@ class _SinglePassVisitor(ast.NodeVisitor):
             if isinstance(target, ast.Name) and target.id == "__all__":
                 if isinstance(node.value, (ast.List, ast.Tuple)):
                     self._all_names = [
-                        elt.s if isinstance(elt, ast.Constant) and isinstance(elt.s, str)
+                        elt.value if isinstance(elt, ast.Constant) and isinstance(elt.value, str)
                         else ast.unparse(elt)
                         for elt in node.value.elts
                     ]

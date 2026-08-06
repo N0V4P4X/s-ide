@@ -31,6 +31,7 @@ the GUI to explicitly save it.
 
 from __future__ import annotations
 import json
+import multiprocessing
 import os
 import time
 from datetime import datetime, timezone
@@ -216,8 +217,11 @@ def parse_project(root_dir: str, save_json: bool = True) -> ProjectGraph:
                 changed_files.append(file_info)
 
         if changed_files:
-            # Parse only changed files in parallel
-            with concurrent.futures.ProcessPoolExecutor() as executor:
+            # Parse only changed files in parallel.
+            # spawn (not the default fork) avoids the multi-threaded-fork
+            # DeprecationWarning on 3.13+ and survives the spawn-default change.
+            ctx = multiprocessing.get_context("spawn")
+            with concurrent.futures.ProcessPoolExecutor(mp_context=ctx) as executor:
                 results = list(executor.map(_parse_file_worker, changed_files))
             for node in results:
                 nodes.append(node)

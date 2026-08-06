@@ -11,7 +11,7 @@ project_parser.parse_project(root)
     │
     ├─ project_config.py   load side.project.json, apply ignore rules
     ├─ walker.py            discover files → [FileNode stubs]
-    ├─ parsers/             per-language extraction (**Parallel-Safe**)
+    ├─ parsers/             per-language extraction (**Parallel-Safe**, spawn context)
     │   ├─ python_parser.py    single-pass AST visitor
     │   ├─ js_parser.py        regex on comment-stripped source
     │   ├─ json_parser.py      structural extraction

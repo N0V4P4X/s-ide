@@ -220,3 +220,99 @@ not a round-3 call. Flagged for the round-4 consolidation sweep.
 **Not a bridge change:** `SideNode` shape untouched; the round-3 brief's "if it touches the
 bridge" condition does not fire. `childIds`/`skillHints` matching was instead *confirmed*
 against real `parse_project` output by the new 3.2 integration test.
+
+## 2026-08-05 — round 4: `ai/teams.py` is deliberately dead; git history is the archive
+
+**Context:** Round 1 flagged `ai/teams.py` (460 lines — `TeamSession`, turn-based multi-agent
+orchestration with role-scoped tool permissions, sandboxed per-agent project copies, and a
+human-approval gate) as deleted *consequentially* rather than *specifically* deliberately. Its
+fate was carried through rounds 1–3 as the one open question. Round 4 was asked to decide for
+real, options: (1) accept as deliberately dead, (2) preserve the source somewhere documented,
+(3) port the orchestration into the current tree as an OpenCode-driving CLI.
+
+**Chosen: option 1 — deliberately dead, with the preservation pointer folded in.** The source
+is preserved by git history at `e772b8b^` (`git show e772b8b^:ai/teams.py`), so option 2's
+only value-add — "don't lose it" — is already satisfied by the VCS; nothing is lost to time.
+
+**Why not port (option 3):** `ai/teams.py` is not a self-contained engine. It imports
+`ai.client.OllamaClient`, `ai.context`, `ai.roles`, `ai.tools`, and `build.sandbox` — five
+more modules that went out with the same rewrite. The multi-agent engine is inseparable from
+the in-app Ollama stack it orchestrated; there is no standalone "teams" unit to rescue.
+Porting it to drive OpenCode sessions would be a new feature (what would multiple agent
+sessions do that one OpenCode instance doesn't already do in the round protocol?), with no
+signal from the vault or the codebase that anyone wants it. It stays a proposed idea, not a
+planned round.
+
+**Why not preserve-and-archive (option 2 as a separate step):** redundant with git. A copied
+`ai/teams.py` in a `legacy/` directory would be dead, untested, unimportable code in the tree —
+worse than git history, which keeps it frozen next to the exact `ai.client`/`roles`/`tools`
+APIs it called. The recovery pointer lives here instead.
+
+**The role `ai/` played is replaced, not vacant:** the round protocol (`AGENTS.md`) +
+`opencode.json` permission scoping + the human-driven round gate do what teams.py did — an
+agent with scoped tools whose output is reviewed before it lands — at repo level, with OpenCode
+as the single agent. `ai/tool_builder.py` and `ai/roles/` (self-improving tool creation, six
+role definitions) are covered by the same verdict: their functionality was in-app Ollama
+surface that OpenCode supersedes.
+
+**Reversible by Nova:** the decision is one line in this file away from being overturned; the
+source is one command away (`git show e772b8b^:ai/teams.py`). `ai/` itself stays deleted either
+way — restoring it would need stop-condition 4 handling.
+
+## 2026-08-05 — round 4: `/api/metrics` is dead surface and was removed
+
+**Context:** Round 1 noted `/api/metrics` "reads data nothing produces" — `.side-metrics.json`
+was written by the deleted `monitor/profiler.py`; the only surviving writer, `/api/xp`, appends
+`xp_log`/`total_xp`, not the `files`/`functions`-with-`avg_ms` shape `_get_metrics` read. Round 4
+verified: no caller in `gui/app.html`, no producer, no external consumer (greps of mythos-os and
+n3xu5 clean), no test.
+
+**Chosen:** remove the route, its dispatch entry, the handler, and the route-table comment. The
+frontend's Profile button that once called it was already removed in round 1; this is the
+server-side half of the same reconciliation. The `SideNode` bridge (`/api/nodes`, `/api/infra`)
+is untouched — `/api/metrics` was never part of the cross-repo contract. No `_record_xp`/`/api/xp`
+behavior changed; MythOS quest XP recording is unaffected.
+
+## 2026-08-05 — round 4: `web-infra.json` has drifted; generator decision proposed for Nova, file left untouched
+
+**Context:** `web-infra.json`'s `meta.generatedAt` is `2026-07-19`. Re-validated against n3xu5's
+live infra (wrangler configs + schemas under `~/DevOps/WebDev/n3xu5`) on 2026-08-05. Everything
+the graph tracks is still accurate — workers `homepage`/`n3xu5-auth`/`n3xu5-email-gate`,
+D1 `n3xu5-auth`, R2 `n3xu5-mail`, `RL_AUTH`/`RL_MSG`, `DAILY_SALT`/`RESEND_API_KEY`, all three
+domains, SSO/email-routing/calendar-api, resend/porkbun/c2-panel. **But it has drifted — five
+things n3xu5 added since the graph's date are missing:**
+
+| Missing from web-infra.json | Reality |
+|---|---|
+| `n3xu5-home` worker | apex `n3xu5.art` landing page, deployed 2026-07-27 (8 days after `generatedAt`) |
+| `n3xu5-pages` worker | wildcard `*.n3xu5.art` per-user pages worker |
+| R2 `n3xu5-pages` bucket | page content (auth worker writes, pages worker reads) |
+| R2 `n3xu5-files` bucket | Round 5.3 encrypted user-file storage |
+| `ChatRoom` durable object | chat DMs + groups, `/chat` routes on both domains |
+
+**Chosen: flag to Nova, do not regenerate.** The round-2 decision (2.3) keeps `web-infra.json`
+hand-maintained with a structural-integrity test; the generator option was proposed-but-not-built
+"because it crosses repo boundaries and regenerating real infrastructure data on a schedule is a
+decision Nova should make." That now fires: the file is demonstrably drifting (the 2026-07-27
+deploy and the R2/FILES/chat additions are exactly the class of change a generator or a hand-
+update should catch). Proposed to Nova: either (a) hand-update the five missing nodes/edges now
+and keep the hand-maintenance model with a stated review cadence, or (b) build the generator
+(option 2 from round 2) reading n3xu5's wrangler configs + schema. Not done unilaterally this
+round — a silent regen of committed infra data is exactly what the brief forbids.
+
+## 2026-08-05 — round 4: local imports do NOT count as workspace deps; sibling-project resolution is a separate proposed feature
+
+**Context:** Round 3 documented the fast/slow divergence in `_collect_external_imports` (fast =
+graph `isExternal` edges only, so third-party + stdlib; scan = all `.py` imports, which
+mis-guesses this repo's own packages `graph`/`parser`/`process` as external). The open question
+carried to round 4: do local imports count as workspace deps?
+
+**Chosen: no — keep both paths as-is; sibling-project dependency resolution is a distinct,
+unimplemented feature.** The graph's external edges encode exactly "not local"; folding local
+imports into `_collect_external_imports` would contaminate the fast path with the repo's own
+packages (the round-3 scan output shows that pollution). The workspace feature's headline —
+"which sibling projects does this project import?" — is real but is not the job of an
+*external*-import collector: it needs `resolve_project_deps` to resolve local imports against
+`manifest.projects` (directories), not fold them into `manifest.packages` matching. That is a
+feature build, not a consolidation fix. **Flagged as a proposed round-5+ item** (workspace
+sibling-dep resolution), same status as the web-infra generator.

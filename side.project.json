@@ -12,7 +12,8 @@
     "test": "python test/test_suite.py",
     "parse": "python main.py parse .",
     "self-check": "python main.py self-check .",
-    "serve": "python main.py serve ."
+    "serve": "python main.py serve .",
+    "plans": "python bin/relay-graph.py"
   },
   "meta": {}
 }

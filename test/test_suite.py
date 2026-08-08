@@ -1532,6 +1532,98 @@ class TestWebInfraIntegrity(unittest.TestCase):
             self.assertIn(e["to"], ids, f"edge to {e['to']} has no node")
 
 
+class TestPlansGraphGenerator(unittest.TestCase):
+    """The vault -> plans.graph.json generator (bin/relay-graph.py)."""
+
+    def _load_generator(self):
+        import importlib.util
+        import pathlib
+        spec = importlib.util.spec_from_file_location(
+            "relay_graph",
+            pathlib.Path(__file__).resolve().parent.parent / "bin" / "relay-graph.py",
+        )
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        return mod
+
+    def _make_vault(self, tmp):
+        projects = os.path.join(tmp, "20-projects")
+        tasks = os.path.join(tmp, "70-tasks")
+        os.makedirs(projects)
+        os.makedirs(tasks)
+        with open(os.path.join(projects, "alpha.md"), "w", encoding="utf-8") as f:
+            f.write("---\ntype: project\ntier: top\nstage: nigredo\n"
+                    "status: active\nblocked-by: [\"[[beta]]\"]\n---\n"
+                    "# Alpha project\n\n**One line.** The alpha thing.\n")
+        with open(os.path.join(projects, "beta.md"), "w", encoding="utf-8") as f:
+            f.write("---\ntype: project\nstatus: queued\n---\n# Beta project\n")
+        with open(os.path.join(projects, "not-a-project.md"), "w", encoding="utf-8") as f:
+            f.write("---\ntitle: generated snapshot\ndate: 2026-07-26\n---\n")
+        with open(os.path.join(tasks, "task-a.md"), "w", encoding="utf-8") as f:
+            f.write("---\ntitle: Task A\nstatus: open\nprojects: [\"[[alpha]]\"]\n---\n")
+        with open(os.path.join(tasks, "task-b.md"), "w", encoding="utf-8") as f:
+            f.write("---\ntitle: Task B\nstatus: open\nprojects: []\n---\n")
+        with open(os.path.join(tasks, "task-c.md"), "w", encoding="utf-8") as f:
+            f.write("---\ntitle: Task C\nstatus: open\nprojects: [\"[[beta]]\"]\n---\n")
+        return projects, tasks
+
+    def test_generator_builds_nodes_and_edges(self):
+        gen = self._load_generator()
+        with tempfile.TemporaryDirectory() as tmp:
+            self._make_vault(tmp)
+            graph = gen.build_graph(gen.collect_notes(tmp))
+
+        nodes = {n["id"]: n for n in graph["nodes"]}
+        self.assertIn("pro-alpha", nodes)
+        self.assertIn("tas-task-a", nodes)
+        self.assertNotIn("pro-not-a-project", nodes)
+        self.assertNotIn("tas-not-a-project", nodes)
+
+        # tier -> category, status maps through, stage carried.
+        self.assertEqual(nodes["pro-alpha"]["category"], "top")
+        self.assertEqual(nodes["pro-alpha"]["stage"], "nigredo")
+        self.assertEqual(nodes["pro-alpha"]["status"], "active")
+        self.assertEqual(nodes["pro-beta"]["category"], "unsorted")
+        self.assertEqual(nodes["tas-task-a"]["category"], "unsorted")
+
+        # blocked-by -> blocks edge (blocker -> blocked).
+        self.assertIn(
+            {"from": "pro-beta", "to": "pro-alpha", "type": "blocks"},
+            graph["edges"],
+        )
+        # projects: wikilink -> schedules edge (project -> task).
+        self.assertIn(
+            {"from": "pro-alpha", "to": "tas-task-a", "type": "schedules"},
+            graph["edges"],
+        )
+        self.assertIn(
+            {"from": "pro-beta", "to": "tas-task-c", "type": "schedules"},
+            graph["edges"],
+        )
+        # A task with no projects: link has no schedules edge.
+        self.assertNotIn(
+            {"from": "pro-alpha", "to": "tas-task-b", "type": "schedules"},
+            graph["edges"],
+        )
+
+    def test_generator_drops_dangling_wikilinks(self):
+        gen = self._load_generator()
+        with tempfile.TemporaryDirectory() as tmp:
+            projects = os.path.join(tmp, "20-projects")
+            tasks = os.path.join(tmp, "70-tasks")
+            os.makedirs(projects)
+            os.makedirs(tasks)
+            with open(os.path.join(projects, "alpha.md"), "w", encoding="utf-8") as f:
+                f.write("---\ntype: project\nstatus: active\n"
+                        "blocked-by: [\"[[missing]]\"]\n---\n")
+            with open(os.path.join(tasks, "t.md"), "w", encoding="utf-8") as f:
+                f.write("---\ntitle: T\nstatus: open\nprojects: [\"[[ghost]]\"]\n---\n")
+            graph = gen.build_graph(gen.collect_notes(tmp))
+        self.assertEqual(graph["edges"], [])
+        self.assertIn("[[missing]] resolves to no note", "\n".join(graph["warnings"]))
+        self.assertIn("[[ghost]] resolves to no note", "\n".join(graph["warnings"]))
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
 

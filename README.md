@@ -19,6 +19,7 @@ s-ide/
 │   └── workspace.py           # shared devspace dependency manifests
 ├── graph/types.py             # FileNode, Edge, ProjectGraph, Definition
 ├── process/                   # Subprocess lifecycle management
+├── bin/                       # Graph tooling (relay-graph.py → plans.graph.json)
 ├── examples/calculator/       # Reference project: PEMDAS GUI + CLI calc
 ├── test/test_suite.py         # Unit tests (stdlib unittest)
 ├── main.py                    # CLI entry point

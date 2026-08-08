@@ -1,0 +1,414 @@
+{
+  "version": "1.0.0",
+  "type": "plans",
+  "meta": {
+    "name": "Vault plans graph",
+    "description": "Tiers, stages, and blocking across every project and task note in the vault. Generated — never hand-edit.",
+    "generatedAt": "2026-08-08T23:51:32Z"
+  },
+  "nodes": [
+    {
+      "id": "pro-backups",
+      "label": "backups",
+      "kind": "project",
+      "category": "unsorted",
+      "stage": "",
+      "detail": "backups",
+      "estimateHours": 0,
+      "tech": [],
+      "status": "active",
+      "childIds": []
+    },
+    {
+      "id": "pro-corkboard",
+      "label": "CORKBOARD",
+      "kind": "project",
+      "category": "unsorted",
+      "stage": "",
+      "detail": "CORKBOARD",
+      "estimateHours": 0,
+      "tech": [],
+      "status": "active",
+      "childIds": []
+    },
+    {
+      "id": "pro-cybergear",
+      "label": "CYBERGEAR",
+      "kind": "project",
+      "category": "unsorted",
+      "stage": "",
+      "detail": "CYBERGEAR",
+      "estimateHours": 0,
+      "tech": [],
+      "status": "active",
+      "childIds": []
+    },
+    {
+      "id": "pro-daily-rhythm",
+      "label": "daily rhythm",
+      "kind": "project",
+      "category": "top",
+      "stage": "nigredo",
+      "detail": "The recurring shape of Nova's day — wake, meditate/eat, the $20/hr outdoor",
+      "estimateHours": 0,
+      "tech": [],
+      "status": "active",
+      "childIds": []
+    },
+    {
+      "id": "pro-homepage-redesign",
+      "label": "homepage redesign",
+      "kind": "project",
+      "category": "unsorted",
+      "stage": "",
+      "detail": "homepage redesign",
+      "estimateHours": 0,
+      "tech": [],
+      "status": "queued",
+      "childIds": []
+    },
+    {
+      "id": "pro-mythos-os",
+      "label": "MythOS",
+      "kind": "project",
+      "category": "unsorted",
+      "stage": "",
+      "detail": "MythOS",
+      "estimateHours": 0,
+      "tech": [],
+      "status": "active",
+      "childIds": []
+    },
+    {
+      "id": "pro-n3xu5-services",
+      "label": "n3xu5 — service roadmap",
+      "kind": "project",
+      "category": "unsorted",
+      "stage": "",
+      "detail": "n3xu5 — service roadmap",
+      "estimateHours": 0,
+      "tech": [],
+      "status": "queued",
+      "childIds": []
+    },
+    {
+      "id": "pro-n3xu5",
+      "label": "n3xu5",
+      "kind": "project",
+      "category": "unsorted",
+      "stage": "",
+      "detail": "n3xu5",
+      "estimateHours": 0,
+      "tech": [],
+      "status": "active",
+      "childIds": []
+    },
+    {
+      "id": "pro-personal-data-archive",
+      "label": "personal data archive",
+      "kind": "project",
+      "category": "unsorted",
+      "stage": "",
+      "detail": "personal data archive",
+      "estimateHours": 0,
+      "tech": [],
+      "status": "queued",
+      "childIds": []
+    },
+    {
+      "id": "pro-s-ide",
+      "label": "S.I.D.E.",
+      "kind": "project",
+      "category": "unsorted",
+      "stage": "",
+      "detail": "S.I.D.E.",
+      "estimateHours": 0,
+      "tech": [],
+      "status": "active",
+      "childIds": []
+    },
+    {
+      "id": "pro-savug-licensing",
+      "label": "SAVUG — get licensed",
+      "kind": "project",
+      "category": "unsorted",
+      "stage": "",
+      "detail": "SAVUG — get licensed",
+      "estimateHours": 0,
+      "tech": [],
+      "status": "active",
+      "childIds": []
+    },
+    {
+      "id": "pro-savug-safety",
+      "label": "SAVUG — safety & crew readiness",
+      "kind": "project",
+      "category": "unsorted",
+      "stage": "",
+      "detail": "SAVUG — safety & crew readiness",
+      "estimateHours": 0,
+      "tech": [],
+      "status": "active",
+      "childIds": []
+    },
+    {
+      "id": "pro-savug-site",
+      "label": "SAVUG — savug.art",
+      "kind": "project",
+      "category": "unsorted",
+      "stage": "",
+      "detail": "SAVUG — savug.art",
+      "estimateHours": 0,
+      "tech": [],
+      "status": "active",
+      "childIds": []
+    },
+    {
+      "id": "pro-workspace-overhaul",
+      "label": "workspace overhaul",
+      "kind": "project",
+      "category": "unsorted",
+      "stage": "",
+      "detail": "workspace overhaul",
+      "estimateHours": 0,
+      "tech": [],
+      "status": "active",
+      "childIds": []
+    },
+    {
+      "id": "tas-book-accountant-consult",
+      "label": "Book the accountant consult",
+      "kind": "task",
+      "category": "unsorted",
+      "stage": "",
+      "detail": "Book the accountant consult",
+      "estimateHours": 0,
+      "tech": [],
+      "status": "open",
+      "childIds": []
+    },
+    {
+      "id": "tas-book-georgia-attorney-consult",
+      "label": "Book the Georgia attorney consult",
+      "kind": "task",
+      "category": "unsorted",
+      "stage": "",
+      "detail": "Book the Georgia attorney consult",
+      "estimateHours": 0,
+      "tech": [],
+      "status": "open",
+      "childIds": []
+    },
+    {
+      "id": "tas-call-city-tourism-division",
+      "label": "Call City Tourism Division — insurance + registration",
+      "kind": "task",
+      "category": "unsorted",
+      "stage": "",
+      "detail": "Call City Tourism Division — insurance + registration",
+      "estimateHours": 0,
+      "tech": [],
+      "status": "open",
+      "childIds": []
+    },
+    {
+      "id": "tas-call-ga-dnr-guiding-on-state-land",
+      "label": "Call GA DNR — guiding on state land and WMAs",
+      "kind": "task",
+      "category": "unsorted",
+      "stage": "",
+      "detail": "Call GA DNR — guiding on state land and WMAs",
+      "estimateHours": 0,
+      "tech": [],
+      "status": "open",
+      "childIds": []
+    },
+    {
+      "id": "tas-city-tour-registration-annual-renewal",
+      "label": "City tour company registration — annual renewal",
+      "kind": "task",
+      "category": "unsorted",
+      "stage": "",
+      "detail": "City tour company registration — annual renewal",
+      "estimateHours": 0,
+      "tech": [],
+      "status": "open",
+      "childIds": []
+    },
+    {
+      "id": "tas-evening-unscheduled-block",
+      "label": "Evening unscheduled block — vibe coding / social / art / hygiene",
+      "kind": "task",
+      "category": "unsorted",
+      "stage": "",
+      "detail": "Evening unscheduled block — vibe coding / social / art / hygiene",
+      "estimateHours": 0,
+      "tech": [],
+      "status": "open",
+      "childIds": []
+    },
+    {
+      "id": "tas-fetch-and-commit-savug-fonts",
+      "label": "Fetch and commit the self-hosted SAVUG fonts",
+      "kind": "task",
+      "category": "unsorted",
+      "stage": "",
+      "detail": "Fetch and commit the self-hosted SAVUG fonts",
+      "estimateHours": 0,
+      "tech": [],
+      "status": "open",
+      "childIds": []
+    },
+    {
+      "id": "tas-get-general-liability-quote",
+      "label": "Get a general liability quote",
+      "kind": "task",
+      "category": "unsorted",
+      "stage": "",
+      "detail": "Get a general liability quote",
+      "estimateHours": 0,
+      "tech": [],
+      "status": "open",
+      "childIds": []
+    },
+    {
+      "id": "tas-monthly-check-first-aid-cert-expiry",
+      "label": "Check first-aid cert expiry for all three guides",
+      "kind": "task",
+      "category": "unsorted",
+      "stage": "",
+      "detail": "Check first-aid cert expiry for all three guides",
+      "estimateHours": 0,
+      "tech": [],
+      "status": "open",
+      "childIds": []
+    },
+    {
+      "id": "tas-morning-checkpoint",
+      "label": "Wake, meditate, eat — morning checkpoint",
+      "kind": "task",
+      "category": "unsorted",
+      "stage": "",
+      "detail": "Wake, meditate, eat — morning checkpoint",
+      "estimateHours": 0,
+      "tech": [],
+      "status": "open",
+      "childIds": []
+    },
+    {
+      "id": "tas-outdoor-work-shift",
+      "label": "Outdoor work shift — $20/hr (12:00–21:00, phone only)",
+      "kind": "task",
+      "category": "unsorted",
+      "stage": "",
+      "detail": "Outdoor work shift — $20/hr (12:00–21:00, phone only)",
+      "estimateHours": 0,
+      "tech": [],
+      "status": "open",
+      "childIds": []
+    },
+    {
+      "id": "tas-record-first-aid-certs-for-all-three",
+      "label": "Record first-aid cert body + expiry for Nova, Gair, August",
+      "kind": "task",
+      "category": "unsorted",
+      "stage": "",
+      "detail": "Record first-aid cert body + expiry for Nova, Gair, August",
+      "estimateHours": 0,
+      "tech": [],
+      "status": "open",
+      "childIds": []
+    },
+    {
+      "id": "tas-register-savug-art-domain",
+      "label": "Register savug.art on Porkbun",
+      "kind": "task",
+      "category": "unsorted",
+      "stage": "",
+      "detail": "Register savug.art on Porkbun",
+      "estimateHours": 0,
+      "tech": [],
+      "status": "open",
+      "childIds": []
+    },
+    {
+      "id": "tas-stand-up-an-owned-git-remote",
+      "label": "Stand up a git remote I own",
+      "kind": "task",
+      "category": "unsorted",
+      "stage": "",
+      "detail": "Stand up a git remote I own",
+      "estimateHours": 0,
+      "tech": [],
+      "status": "open",
+      "childIds": []
+    }
+  ],
+  "edges": [
+    {
+      "from": "pro-savug-licensing",
+      "to": "tas-book-accountant-consult",
+      "type": "schedules"
+    },
+    {
+      "from": "pro-savug-licensing",
+      "to": "tas-book-georgia-attorney-consult",
+      "type": "schedules"
+    },
+    {
+      "from": "pro-savug-licensing",
+      "to": "tas-call-city-tourism-division",
+      "type": "schedules"
+    },
+    {
+      "from": "pro-savug-licensing",
+      "to": "tas-call-ga-dnr-guiding-on-state-land",
+      "type": "schedules"
+    },
+    {
+      "from": "pro-savug-licensing",
+      "to": "tas-city-tour-registration-annual-renewal",
+      "type": "schedules"
+    },
+    {
+      "from": "pro-savug-site",
+      "to": "tas-fetch-and-commit-savug-fonts",
+      "type": "schedules"
+    },
+    {
+      "from": "pro-savug-licensing",
+      "to": "tas-get-general-liability-quote",
+      "type": "schedules"
+    },
+    {
+      "from": "pro-savug-safety",
+      "to": "tas-monthly-check-first-aid-cert-expiry",
+      "type": "schedules"
+    },
+    {
+      "from": "pro-daily-rhythm",
+      "to": "tas-morning-checkpoint",
+      "type": "schedules"
+    },
+    {
+      "from": "pro-daily-rhythm",
+      "to": "tas-outdoor-work-shift",
+      "type": "schedules"
+    },
+    {
+      "from": "pro-savug-safety",
+      "to": "tas-record-first-aid-certs-for-all-three",
+      "type": "schedules"
+    },
+    {
+      "from": "pro-savug-site",
+      "to": "tas-register-savug-art-domain",
+      "type": "schedules"
+    },
+    {
+      "from": "pro-n3xu5-services",
+      "to": "tas-stand-up-an-owned-git-remote",
+      "type": "schedules"
+    }
+  ]
+}

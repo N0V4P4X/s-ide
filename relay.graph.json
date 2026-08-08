@@ -1,0 +1,364 @@
+{
+  "version": "1.0.0",
+  "type": "web-infra",
+  "meta": {
+    "name": "n3xu5 Orchestration Relay",
+    "description": "Who did what, in what order, and what it produced. Opus plans -> Sonnet refines -> OpenCode implements -> Nova gates. Hand-authored seed; regenerate with bin/relay-graph.py. Node kinds: session, artifact, job, gate, blocker.",
+    "generatedAt": "2026-08-08T22:00:00Z"
+  },
+  "nodes": [
+    {
+      "id": "opus-01",
+      "label": "OPUS 01 — strategy + structure",
+      "kind": "session",
+      "category": "opus",
+      "detail": "Read nova-ops-strategy-brief.md and the Vault. Produced charter, game-plans, onboarding-runbook, standards-system, scheduling-system. Then research-system, explanation-standard, learning-system, structure-stress-test. Then the relay plan, CORRECTIONS, timesheet, this graph.",
+      "estimateHours": 0,
+      "tech": ["claude-opus", "cowork"],
+      "status": "live",
+      "childIds": ["art-charter", "art-gameplans", "art-onboarding", "art-standards", "art-scheduling", "art-research", "art-explanation", "art-learning", "art-stresstest", "art-relayplan", "art-corrections", "art-timesheet"]
+    },
+    {
+      "id": "s1",
+      "label": "S1 — deploy runway",
+      "kind": "session",
+      "category": "sonnet",
+      "detail": "Ran Fri night. Found migrations 0009/0010/0011 ALREADY applied (0009 on 07-31, 0010/0011 on 08-02, by hand, SQL never committed). Buckets already existed. Corrected bucket name to n3xu5-files. Deploy succeeded, smoke 5/6, /openpgp.min.mjs 200. Found /support HEAD 500 (pre-existing, kept deploy). Flagged admin account already has udk_wrapped set.",
+      "estimateHours": 0,
+      "tech": ["claude-sonnet", "wrangler", "d1"],
+      "status": "live",
+      "childIds": ["art-deploycard"]
+    },
+    {
+      "id": "s2",
+      "label": "S2 — day-tracking floor",
+      "kind": "session",
+      "category": "sonnet",
+      "detail": "Ran Fri night. Wrote day-tracking-setup.md and 3 task notes (morning-checkpoint, outdoor-work-shift, evening-unscheduled-block). Syncthing NOT yet installed on the machine.",
+      "estimateHours": 0,
+      "tech": ["claude-sonnet", "tasknotes", "syncthing"],
+      "status": "live",
+      "childIds": ["art-daytracking"]
+    },
+    {
+      "id": "s3",
+      "label": "S3 — full QA + reset script",
+      "kind": "session",
+      "category": "sonnet",
+      "detail": "Sat 21:00+. Walks DEPLOY-QA-RUNBOOK parts 3/5/6. Owns the UDK rotate-and-still-opens acceptance test. Must first establish whether the admin account's existing udk_wrapped is real key material or stray test data (S1's flag). Emits OpenCode prompts for reset-test-accounts.sh.",
+      "estimateHours": 2,
+      "tech": ["claude-sonnet", "openpgp"],
+      "status": "planned",
+      "childIds": ["gate-udk"]
+    },
+    {
+      "id": "s6",
+      "label": "S6 — C2 packaging + ICS alarms",
+      "kind": "session",
+      "category": "sonnet",
+      "detail": "RUNNING as of Sat 17:00. Desktop build (needs Go installed first), ICS calendar subscription for native Android alarms, manifest-only installable shortcut (NOT a service-worker PWA), APK spec only.",
+      "estimateHours": 3,
+      "tech": ["claude-sonnet", "go", "ics"],
+      "status": "in-progress"
+    },
+    {
+      "id": "s7",
+      "label": "S7 — test group/project isolation",
+      "kind": "session",
+      "category": "sonnet",
+      "detail": "Queued. Bobby/Khoshekh must appear ONLY in one admin-only test group + test project. Groups fan an encrypted copy of every message to each member, so a test account in a real group receives real members' mail. Must answer whether any surface enumerates all users.",
+      "estimateHours": 2,
+      "tech": ["claude-sonnet", "d1"],
+      "status": "planned",
+      "childIds": ["gate-testiso"]
+    },
+    {
+      "id": "s8",
+      "label": "S8 — API contract + CLI/TUI",
+      "kind": "session",
+      "category": "sonnet",
+      "detail": "Queued. The keystone: write the data-object/function map for the n3xu5 API, per the mapped-interface rebase procedure. Everything downstream (CLI, TUI, Flutter, agent tokens) is a client of it.",
+      "estimateHours": 4,
+      "tech": ["claude-sonnet"],
+      "status": "planned"
+    },
+    {
+      "id": "s9",
+      "label": "S9 — toolbelt + OSS/OSH intake",
+      "kind": "session",
+      "category": "sonnet",
+      "detail": "Queued. Kills the repeated paper cuts: stale index.lock, credential pasting, gh handling. Plus the starred-repos manifest -> OSS/OSH classification.",
+      "estimateHours": 3,
+      "tech": ["claude-sonnet", "bash", "gh"],
+      "status": "planned"
+    },
+    {
+      "id": "oc-deploy",
+      "label": "OpenCode — round-5 deploy",
+      "kind": "job",
+      "category": "opencode",
+      "detail": "Executed the deploy card. Repo untouched, nothing committed by OpenCode. Verified by S1 independently.",
+      "estimateHours": 0,
+      "tech": ["opencode", "wrangler"],
+      "status": "live"
+    },
+    {
+      "id": "job-standup",
+      "label": "sched: Friday stand-up skeleton",
+      "kind": "job",
+      "category": "scheduled",
+      "detail": "trig_01RFHE4ZfHF1KzA5xQRTj5s9 — Fri 17:00 EDT (21:00 UTC). Pre-fills the mechanical half of the weekly stand-up so a lapsed week is a file full of facts with no commentary, not an absent file.",
+      "estimateHours": 0,
+      "tech": ["scheduled-task"],
+      "status": "live"
+    },
+    {
+      "id": "job-extract",
+      "label": "sched: chatgpt-archive-extraction",
+      "kind": "job",
+      "category": "scheduled",
+      "detail": "trig_01Wr7L9CejqHihPuVmZG27SN — every 2 days, 22:00 EDT (02:00 UTC). MOVED from 09:00 EDT because Nova wakes ~11:00, so the desktop was asleep and the job silently did nothing twice. 120 done / 1355 pending. Push now ON so a no-run is visible.",
+      "estimateHours": 0,
+      "tech": ["scheduled-task", "claude-sonnet"],
+      "status": "live"
+    },
+    {
+      "id": "job-workstart",
+      "label": "sched: work-start checkpoint",
+      "kind": "job",
+      "category": "scheduled",
+      "detail": "trig_01TXbpNuVoxVJmCAqoEctdQu — daily 11:55 EDT. Opens with the clock-in line, then timesheet math: hours/day still needed to hit the $1,500 move target.",
+      "estimateHours": 0,
+      "tech": ["scheduled-task"],
+      "status": "live"
+    },
+    {
+      "id": "job-workend",
+      "label": "sched: work-end log prompt",
+      "kind": "job",
+      "category": "scheduled",
+      "detail": "trig_01Br4CHcz7KwUMFzeRAT9EpP — daily 21:05 EDT. Clock-out line, writes the 3-prompt daily log skeleton, reports what moved without Nova.",
+      "estimateHours": 0,
+      "tech": ["scheduled-task"],
+      "status": "live"
+    },
+    {
+      "id": "gate-udk",
+      "label": "GATE: UDK rotate-and-still-opens",
+      "kind": "gate",
+      "category": "nova",
+      "detail": "HARD GATE on Monday's real onboard. Upload a file, rotate the PGP key, complete the challenge with the new key, re-wrap the data key, download again and confirm it opens. If it fails, real onboard is cancelled — a friend's data would become unreadable after their first rotation.",
+      "estimateHours": 1,
+      "tech": ["openpgp", "human"],
+      "status": "planned"
+    },
+    {
+      "id": "gate-testiso",
+      "label": "GATE: test accounts isolated",
+      "kind": "gate",
+      "category": "nova",
+      "detail": "Signed in as a non-admin non-test account, the test group and project are invisible AND no test handle appears in any picker, directory or autocomplete. Gate on Monday's real onboard.",
+      "estimateHours": 0,
+      "tech": ["human"],
+      "status": "planned"
+    },
+    {
+      "id": "blk-go",
+      "label": "BLOCKER: Go not installed",
+      "kind": "blocker",
+      "category": "toolchain",
+      "detail": "No go binary anywhere. The committed c2panel is a prebuilt x86-64 ELF, so C2-Panel currently cannot be rebuilt or cross-compiled at all. ~150 MB install. Blocks desktop/CLI/TUI/APK work.",
+      "estimateHours": 0,
+      "tech": ["go"],
+      "status": "blocked"
+    },
+    {
+      "id": "blk-android",
+      "label": "BLOCKER: no Android toolchain",
+      "kind": "blocker",
+      "category": "toolchain",
+      "detail": "JRE 11 only — no javac, no gradle, no SDK, no NDK, ANDROID_HOME unset. 6-10 GB acquisition before line one. Note: Android alarms/notifications need native code a WebView cannot reach, which is why the ICS path exists instead.",
+      "estimateHours": 0,
+      "tech": ["jdk", "android-sdk", "ndk", "gradle"],
+      "status": "blocked"
+    },
+    {
+      "id": "blk-infra-edges",
+      "label": "BLOCKER: _get_infra drops edges",
+      "kind": "blocker",
+      "category": "s-ide",
+      "detail": "gui/server.py::_get_infra never reads the edges array — it only rebuilds childIds (pure containment), so every typed relationship is silently dropped before /api/infra returns. This is why data FLOWS cannot be seen today, only nesting. Fix is additive and node-graph-model.md states explicitly it does not touch the bridge freeze.",
+      "estimateHours": 1,
+      "tech": ["python", "s-ide"],
+      "status": "blocked"
+    },
+    {
+      "id": "blk-resend",
+      "label": "BLOCKER: RESEND_API_KEY missing",
+      "kind": "blocker",
+      "category": "cloudflare",
+      "detail": "Mail send fails cleanly. Invites are links so onboarding survives, but outbound mail does not work.",
+      "estimateHours": 0,
+      "tech": ["resend"],
+      "status": "blocked"
+    },
+    {
+      "id": "blk-keys",
+      "label": "BLOCKER: keys still on the machine",
+      "kind": "blocker",
+      "category": "nova",
+      "detail": "ops/TODO.md calls this 'the highest-value unblocked item'. Passwords.kdbx, exported PGP secret key, restic password, B2 keyID + application key, LUKS passphrase — all still only on the laptop that goes in a car on Aug 17. Also proton-recovery-phrase.pdf sitting in the clear in ~/Downloads.",
+      "estimateHours": 1,
+      "tech": ["human"],
+      "status": "blocked"
+    },
+    {
+      "id": "art-charter",
+      "label": "charter.md",
+      "kind": "artifact",
+      "category": "vault",
+      "detail": "Magnum Opus per artifact; Eightfold Path as the exit; exitable artifacts vs accumulators. Vault/40-reference/.",
+      "estimateHours": 0, "tech": ["markdown"], "status": "live"
+    },
+    {
+      "id": "art-gameplans",
+      "label": "game-plans.md",
+      "kind": "artifact",
+      "category": "vault",
+      "detail": "Tier table, workstreams vs practices, long/mid/short per workstream. MythOS split: game third tier, learning graph second.",
+      "estimateHours": 0, "tech": ["markdown"], "status": "live"
+    },
+    {
+      "id": "art-onboarding",
+      "label": "onboarding-runbook.md",
+      "kind": "artifact",
+      "category": "vault",
+      "detail": "Test onboard then real onboard, per module per surface. Absorbs DEPLOY-QA-RUNBOOK part 4.",
+      "estimateHours": 0, "tech": ["markdown"], "status": "live"
+    },
+    {
+      "id": "art-standards",
+      "label": "standards-system.md",
+      "kind": "artifact",
+      "category": "vault",
+      "detail": "Six artifact types: standard, convention, procedure, pipeline, template, corpus. Two promotion paths. The mapped-interface rebase procedure. The ratio rule.",
+      "estimateHours": 0, "tech": ["markdown"], "status": "live"
+    },
+    {
+      "id": "art-scheduling",
+      "label": "scheduling-system.md",
+      "kind": "artifact",
+      "category": "vault",
+      "detail": "Eisenhower from tier + due. tier: unsorted. blocked-by field. The check-in lapse diagnosis.",
+      "estimateHours": 0, "tech": ["markdown"], "status": "live"
+    },
+    {
+      "id": "art-research",
+      "label": "research-system.md",
+      "kind": "artifact",
+      "category": "vault",
+      "detail": "Capture -> quarantine -> integrate -> cite. 167 items in 00-inbox. The corpus type.",
+      "estimateHours": 0, "tech": ["markdown"], "status": "live"
+    },
+    {
+      "id": "art-explanation",
+      "label": "explanation-standard.md",
+      "kind": "artifact",
+      "category": "vault",
+      "detail": "One page per non-obvious choice. Split ARCHITECTURE-DECISIONS.md (108 KB, 24 decisions) to one file per decision.",
+      "estimateHours": 0, "tech": ["markdown"], "status": "live"
+    },
+    {
+      "id": "art-learning",
+      "label": "learning-system.md",
+      "kind": "artifact",
+      "category": "vault",
+      "detail": "node-graph-model.md is already a Montessori curriculum engine: plane=concrete/abstract, requires edges = prerequisites, status+reach = mastery and frontier. ESCO already imported in MythOS.",
+      "estimateHours": 0, "tech": ["markdown"], "status": "live"
+    },
+    {
+      "id": "art-stresstest",
+      "label": "structure-stress-test.md",
+      "kind": "artifact",
+      "category": "vault",
+      "detail": "Seven breaks found by loading research + teaching onto the structure. Nine framework docs, zero instances — the ratio rule fired on day one.",
+      "estimateHours": 0, "tech": ["markdown"], "status": "live"
+    },
+    {
+      "id": "art-relayplan",
+      "label": "relay-plan-aug7-17.md",
+      "kind": "artifact",
+      "category": "vault",
+      "detail": "The sprint plan and the relay routing rules. Escalate to Opus on any crypto failure.",
+      "estimateHours": 0, "tech": ["markdown"], "status": "live"
+    },
+    {
+      "id": "art-corrections",
+      "label": "CORRECTIONS-2026-08-07.md",
+      "kind": "artifact",
+      "category": "vault",
+      "detail": "Read ops/TODO.md late. B2 is wired and Tier 0 done (~$0.36/mo for both tiers). Keys-off-machine is Nova's own top item. Contracts blocked on a Georgia attorney. The $20/hr day job IS the cash sprint now.",
+      "estimateHours": 0, "tech": ["markdown"], "status": "live"
+    },
+    {
+      "id": "art-timesheet",
+      "label": "timesheet-2026-08.md",
+      "kind": "artifact",
+      "category": "vault",
+      "detail": "Vault/30-ventures/. Answers one question: is the move funded by Aug 17. $1,500 target, $400 on hand as of Jul 26 (stale), $20/hr.",
+      "estimateHours": 0, "tech": ["markdown"], "status": "live"
+    },
+    {
+      "id": "art-deploycard",
+      "label": "deploy-card-2026-08-07.md",
+      "kind": "artifact",
+      "category": "vault",
+      "detail": "S1's output. Rollback card, ordered commands, verified results.",
+      "estimateHours": 0, "tech": ["markdown"], "status": "live"
+    },
+    {
+      "id": "art-daytracking",
+      "label": "day-tracking-setup.md",
+      "kind": "artifact",
+      "category": "vault",
+      "detail": "S2's output. TaskNotes folder setting, Syncthing procedure, mobile verification.",
+      "estimateHours": 0, "tech": ["markdown"], "status": "live"
+    }
+  ],
+  "edges": [
+    {"from": "opus-01", "to": "s1", "type": "dispatches"},
+    {"from": "opus-01", "to": "s2", "type": "dispatches"},
+    {"from": "opus-01", "to": "s3", "type": "dispatches"},
+    {"from": "opus-01", "to": "s6", "type": "dispatches"},
+    {"from": "opus-01", "to": "s7", "type": "dispatches"},
+    {"from": "opus-01", "to": "s8", "type": "dispatches"},
+    {"from": "opus-01", "to": "s9", "type": "dispatches"},
+    {"from": "s1", "to": "oc-deploy", "type": "dispatches"},
+    {"from": "oc-deploy", "to": "s1", "type": "reports-to"},
+    {"from": "s1", "to": "s3", "type": "unblocks"},
+    {"from": "s2", "to": "job-workstart", "type": "feeds"},
+    {"from": "s2", "to": "job-workend", "type": "feeds"},
+    {"from": "job-workstart", "to": "art-timesheet", "type": "reads"},
+    {"from": "job-workend", "to": "art-timesheet", "type": "reads"},
+    {"from": "job-standup", "to": "art-scheduling", "type": "implements"},
+    {"from": "s3", "to": "gate-udk", "type": "produces"},
+    {"from": "s7", "to": "gate-testiso", "type": "produces"},
+    {"from": "gate-udk", "to": "gate-testiso", "type": "blocks"},
+    {"from": "blk-go", "to": "s6", "type": "blocks"},
+    {"from": "blk-android", "to": "s6", "type": "blocks"},
+    {"from": "blk-infra-edges", "to": "opus-01", "type": "blocks"},
+    {"from": "s8", "to": "s6", "type": "requires"},
+    {"from": "s9", "to": "blk-keys", "type": "addresses"},
+    {"from": "art-corrections", "to": "art-charter", "type": "corrects"},
+    {"from": "art-corrections", "to": "art-gameplans", "type": "corrects"},
+    {"from": "art-stresstest", "to": "art-charter", "type": "corrects"},
+    {"from": "art-stresstest", "to": "art-standards", "type": "corrects"},
+    {"from": "art-stresstest", "to": "art-scheduling", "type": "corrects"},
+    {"from": "art-stresstest", "to": "art-gameplans", "type": "corrects"},
+    {"from": "art-research", "to": "art-standards", "type": "extends"},
+    {"from": "art-learning", "to": "art-standards", "type": "extends"},
+    {"from": "art-onboarding", "to": "gate-udk", "type": "requires"},
+    {"from": "art-relayplan", "to": "opus-01", "type": "governs"},
+    {"from": "job-extract", "to": "art-research", "type": "implements"}
+  ]
+}

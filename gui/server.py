@@ -31,7 +31,9 @@ GET  /api/state?root=
 POST /api/state {root,key,value}
 GET  /api/nodes?root=&category=&lang=  → SideNode-shaped JSON for MythOS bridge
 POST /api/xp  {root, node_id, xp, skills}  → record quest completion XP
-GET  /api/infra                            → web-infra graph nodes as SideNode JSON
+GET  /api/infra?graph=web-infra            → graph nodes as SideNode JSON; typed edges
+                                            pass through as a per-node additive `edges`
+                                            field. graph: web-infra | relay | plans.
 """
 
 from __future__ import annotations
@@ -123,7 +125,7 @@ class Handler(BaseHTTPRequestHandler):
             "/api/file/list":lambda: self._get_file_list(qs),
             "/api/file/defs":lambda: self._get_file_defs(qs),
             "/api/nodes":    lambda: self._get_nodes(qs),
-            "/api/infra":    self._get_infra,
+            "/api/infra":    lambda: self._get_infra(graph=(qs.get("graph") or [None])[0] or None),
             "/api/processes":self._get_processes,
             "/api/state":    lambda: self._get_state(qs),
             "/events":       self._sse,
@@ -447,16 +449,45 @@ class Handler(BaseHTTPRequestHandler):
         except Exception as e:
             self._error(500, str(e))
 
-    # ── Infrastructure graph (web-infra.json → SideNode shape) ───────────────
-    def _get_infra(self, infra_path=None):
-        infra_path = infra_path or os.path.join(_ROOT_DIR, "web-infra.json")
+    # ── Infrastructure / hand-authored graphs (web-infra.json → SideNode shape) ──
+    # Hand-authored graph files live at the repo root and are picked up the same
+    # way web-infra.json always has been (a named file in _ROOT_DIR read on each
+    # request). The `graph=` query param selects which one; the default keeps the
+    # frozen `/api/infra` contract exactly as it was.
+    _INFRA_GRAPHS = {
+        "web-infra": "web-infra.json",
+        "relay": "relay.graph.json",
+        "plans": "plans.graph.json",
+    }
+
+    def _get_infra(self, infra_path=None, graph=None):
+        graph = graph or "web-infra"
+        if graph not in self._INFRA_GRAPHS:
+            self._error(404, f"unknown graph: {graph}")
+            return
+        infra_path = infra_path or os.path.join(_ROOT_DIR, self._INFRA_GRAPHS[graph])
         if not os.path.isfile(infra_path):
             self._json([]); return
         try:
             with open(infra_path, encoding="utf-8") as f:
                 data = json.load(f)
         except Exception as e:
-            self._error(500, f"Failed to load web-infra.json: {e}"); return
+            self._error(500, f"Failed to load {self._INFRA_GRAPHS[graph]}: {e}"); return
+
+        # Group typed edges by source node so each node carries its OUTGOING
+        # edges as an additive field. The response stays a bare array (the
+        # frozen SideNode contract MythOS's InfraView depends on); the union of
+        # every node's `edges` is the full edge set, so no relationship is lost.
+        edges_by_from = {}
+        for e in data.get("edges", []):
+            src = e.get("from")
+            if not src:
+                continue
+            edges_by_from.setdefault(src, []).append({
+                "from": f"infra:{src}",
+                "to": f"infra:{e.get('to', '')}",
+                "type": e.get("type", ""),
+            })
 
         nodes_out = []
         for n in data.get("nodes", []):
@@ -469,6 +500,7 @@ class Handler(BaseHTTPRequestHandler):
                 "skillHints": n.get("tech", []),
                 "estimateHours": n.get("estimateHours", 0),
                 "childIds": [f"infra:{cid}" for cid in n.get("childIds", [])],
+                "edges": edges_by_from.get(n["id"], []),
                 "_source": {
                     "type": "web-infra",
                     "status": n.get("status", "unknown"),

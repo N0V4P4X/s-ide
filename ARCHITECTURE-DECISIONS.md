@@ -37,6 +37,110 @@ shape (work → self-audit → write the next round → stop) doesn't care about
 **Revisit when:** never, unless the round protocol itself changes in n3xu5/mythos-os, in which
 case bring the change here too rather than letting the three repos drift apart.
 
+## 2026-08-06 — S-IDE's node model converges on MythOS's Map spec, not a separate invention
+
+**Context:** The UX-rebuild scoping (below) surfaced the question of what a "node" is allowed
+to be once it's not just a file. MythOS's Map (`mythos-os/src/types/index.ts`) already answers
+this for one domain — `plane` ("tangible"/"abstract"), `horizon`+derived `reach` (which
+produces Village/Kingdom/Empire), and an 8-value `EdgeKind` (`requires`/`enables`/`blocks`/
+`funds`/`schedules`/`routes_through`/`costs`/`restores`) that reads as domain-agnostic as
+written. Nova's framing: code, a business, a film shoot, and a supply chain all run on the
+same node/edge primitive — code is just the domain transparent enough to parse automatically.
+
+**Chosen:** converge on one shared spec, not one shared codebase. Full spec:
+`~/Documents/Vault/40-reference/node-graph-model.md`. Two additions to what MythOS has today,
+both written there in full: `kind` becomes an open vocabulary (MythOS's `NodeKind` is a closed
+16-value union; S-IDE's own `FileNode.category`/`tags` are already open strings, and that's the
+shape needed) rather than a fixed enum, organized into domain "kind packs"; and edge provenance
+becomes three-way (`authored` / `parsed` / `inferred`) rather than MythOS's binary
+`approved`/`confidence`, because a parser-found import is a fact, not a model's guess, and
+treating it like one would put every code edge through a review queue that makes no sense for
+it.
+
+**Why:** MythOS solved the hard parts (the two-plane split, horizon/reach-derived scope,
+directed typed edges with provenance) once, for a life. Building S-IDE a second, parallel
+model would be redundant work that drifts from MythOS's the moment either one changes.
+
+**Explicitly not decided here:** no shared library, no code changes in either repo. S-IDE's
+`graph/types.py` doesn't compute `plane`/`horizon`/`status` today — extending it toward this
+spec is scoped work for a future round, not done by this entry. The `SideNode` bridge
+(`/api/nodes`, `/api/infra`) stays exactly as frozen below; this spec is the target for a
+*future* versioned bridge evolution, not a change to the live contract. MythOS's own
+`NodeKind` migration is that repo's call, on its own round protocol — not made here.
+
+**Revisit when:** either repo actually starts building against this (at which point the open
+questions in `node-graph-model.md` — shared `reach`/scope derivation, MythOS's own migration
+timing — need answers) or the convergence call turns out to be wrong in practice.
+
+## 2026-08-06 — the UX vision is a rebuild; the bridge contract is frozen through it
+
+**Context:** Nova's target for the frontend is closer to Obsidian's Canvas merged with
+Scratch — one DOM-backed surface spanning zoom levels, live/composable nodes — than an
+incremental improvement on `gui/app.html`'s current canvas-plus-four-tabs layout. Full
+reasoning and the component-by-component inventory: `~/Documents/Vault/20-projects/s-ide/
+the-canvas.md`. Scope (fresh UI only vs. a data-model extension too) is still open; not
+decided here.
+
+**Chosen (the one piece that is decided):** `GET /api/nodes` and `GET /api/infra` keep their
+exact `SideNode` shape, unchanged, for the duration of any UX rewrite — same additive-only
+rule as the 2026-08-05 bridge-stability decision below, just reaffirmed explicitly now that a
+rewrite is actually on the table. MythOS's `SideImporter`/`InfraView` were verified against
+their real fetch calls, not assumed to still work.
+
+**Why:** A frontend rewrite is exactly the kind of change that tempts a contract break "since
+we're already in there." The bridge is a cross-repo dependency; breaking it is MythOS's
+problem too, and gets its own coordinated round if it ever needs to happen — not a side effect
+of a UI decision made in this repo alone.
+
+**Not decided here, tracked as open in `the-canvas.md`:** whether the rewrite covers the
+frontend only (parser, graph model, and bridge untouched) or also extends `graph/types.py`
+with live/runtime and authored-vs-inferred-edge concepts the current static model has no field
+for. Round 5 does not get written until Nova picks.
+
+## 2026-08-08 — `/api/infra` passes typed edges through as an additive per-node field; graphs are named and selectable
+
+**Context:** The orchestration-visibility work (`~/Documents/Vault/40-reference/
+orchestration-visibility.md`) requires that hand-authored graphs' typed edges (`dispatches`,
+`reads/writes`, `blocks`, …) be visible to consumers, not just the node hierarchy. `_get_infra`
+previously emitted only `nodes` + `childIds` — the `edges` array in `web-infra.json` was never
+serialized, so edge *types* were lost the moment a graph left the file. This is the S-IDE side
+of a node-graph-model concern: edges are the semantics (node-graph-model.md), not decoration.
+
+**Chosen:** three changes, all within the frozen bridge contract:
+
+1. **Typed edges pass through per-node, not top-level.** The response stays a bare array —
+   MythOS's `InfraView` (`mythos-os/src/components/InfraView.tsx:70`) does
+   `const data: InfraNode[] = await res.json()`, so any top-level field is a contract break.
+   Instead each node gains an additive `edges: [{from, to, type}]` field listing its
+   **outgoing** edges, ids `infra:`-prefixed to match the node id namespace. The union across
+   nodes is the full edge set, so nothing is lost and no relationship is double-counted.
+   Edges whose `from` is not a node are dropped (nothing to attach them to).
+2. **`?graph=` query param selects a named graph file.** `web-infra` → `web-infra.json`
+   (default, unchanged), `relay` → `relay.graph.json`, `plans` → `plans.graph.json` — all
+   committed files at the repo root, read on each request exactly as `web-infra.json` always
+   was. An unknown graph name is a structured 404 (`{"error": "unknown graph: <name>"}`) —
+   a malformed request, not an empty import, matching the bridge's other error cases.
+3. **`relay.graph.json` is registered.** The hand-authored relay orchestration graph
+   (`opus-01` → subsystems → daily jobs/gates, the artifact of the orchestration-visibility
+   work) becomes a first-class named graph served by the same endpoint.
+
+**Why:** The additive-only stability rule (2026-08-05) permits new fields freely; a per-node
+`edges` field is exactly that — MythOS's `InfraNode`/`SideNode` readers ignore unknown keys
+(verified in 2026-08-05 round-2 audit: `calendarBridge.ts` reads only the documented fields).
+Edge types belong on the wire because they are the graph's meaning; a consumer (MythOS,
+InfraView, or S-IDE's own future canvas) that only sees `childIds` gets hierarchy without
+flow, which is the exact gap this work closes.
+
+**Explicitly not decided here:** no S-IDE frontend rendering yet (the new `/api/infra?graph=`
+paths and the `edges` field are additive data; the canvas work is the separate UX-rebuild
+decision above, still open). `graph/types.py`'s `Edge` model is untouched — `edges` are
+passed through structurally, not validated against `Edge`. MythOS coordination is not needed
+for additive fields, but this entry is the record in case `InfraView` wants to render edges.
+
+**Revisit when:** MythOS's `InfraView` (or S-IDE's canvas) starts consuming `node.edges` and
+wants a shared edge vocabulary; or if a graph name collides with a future generated-graph
+plan.
+
 ## 2026-08-05 — round 1 fixes the tree before building anything new
 
 **Context:** Before scaffolding rounds, the tree was checked. It has a large uncommitted diff

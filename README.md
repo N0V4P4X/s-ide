@@ -122,14 +122,19 @@ GET /api/nodes?root=&category=&lang=
 
 ## Web Infrastructure graph
 
-The `/api/infra` endpoint serves the n3xu5 web infrastructure as importable SideNode-shaped JSON. Source data: `web-infra.json`.
+The `/api/infra` endpoint serves hand-authored infrastructure graphs as importable SideNode-shaped JSON. Source data: committed graph files at the repo root, selected by name.
 
 ```
-GET /api/infra
+GET /api/infra?graph=web-infra
 ```
 
-**Response:** Array of infrastructure nodes (workers, databases, buckets, domains, services, external deps) with edges showing relationships.
+**Query params:**
+| Param | Required | Description |
+|---|---|---|
+| `graph` | no | Which committed graph file to serve. `web-infra` (default) → `web-infra.json`, `relay` → `relay.graph.json`, `plans` → `plans.graph.json`. Unknown names return a structured 404 `{"error": "unknown graph: <name>"}`. |
 
-**Components tracked:** homepage worker, n3xu5-auth worker, email-gate worker, D1 database, R2 bucket, rate limits, secrets, domains (n0v4-n3xu5.art, n3xu5.art, forsythzines.art), SSO IdP, email routing, calendar API, Resend, Porkbun, C2-Panel.
+**Response:** Array of nodes (workers, databases, buckets, domains, services, external deps) with relationships. Each node carries the `SideNode` shape plus an additive `edges` field listing its **outgoing** typed edges as `{from, to, type}` (ids `infra:`-prefixed). The union of every node's `edges` is the full edge set — hierarchy via `childIds`, flow via `edges`.
+
+**Components tracked (web-infra):** homepage worker, n3xu5-auth worker, email-gate worker, D1 database, R2 bucket, rate limits, secrets, domains (n0v4-n3xu5.art, n3xu5.art, forsythzines.art), SSO IdP, email routing, calendar API, Resend, Porkbun, C2-Panel.
 
 **MythOS integration:** `InfraView` component shows infrastructure health dashboard with import-as-quest capability.

@@ -1362,6 +1362,90 @@ class TestSideNodeAdapter(unittest.TestCase):
             self.assertEqual(responses[0]["status"], 500)
             self.assertIn("web-infra.json", responses[0]["body"]["error"])
 
+    def test_get_infra_edges_pass_through(self):
+        """Typed edges reach /api/infra as an additive per-node field.
+
+        The response stays a bare array (MythOS's InfraView does
+        `const data: InfraNode[] = await res.json()`), so edges cannot be a
+        top-level field without breaking the frozen contract. Each node carries
+        its OUTGOING edges as `edges: [{from, to, type}]`, ids `infra:`-prefixed
+        to match the node id namespace; the union across nodes is the full edge
+        set. Edges whose `from` is not a node are dropped (nothing to attach to).
+        """
+        h, responses = self._handler()
+        with tempfile.TemporaryDirectory() as tmp:
+            infra = os.path.join(tmp, "web-infra.json")
+            fixture = {
+                "nodes": [
+                    {"id": "worker-a", "label": "worker A", "kind": "worker",
+                     "category": "cloudflare", "detail": "", "tech": ["d1"],
+                     "estimateHours": 0, "status": "live", "childIds": []},
+                    {"id": "db-x", "label": "D1: x", "kind": "database",
+                     "category": "cloudflare", "detail": "", "tech": ["d1"],
+                     "estimateHours": 0, "status": "live"},
+                    {"id": "sink", "label": "sink", "kind": "service",
+                     "category": "cloudflare", "detail": "", "tech": [],
+                     "estimateHours": 0, "status": "live"},
+                ],
+                "edges": [
+                    {"from": "worker-a", "to": "db-x", "type": "reads/writes"},
+                    {"from": "worker-a", "to": "sink", "type": "uses"},
+                    {"from": "db-x", "to": "sink", "type": "feeds"},
+                    {"from": "ghost", "to": "sink", "type": "dangling"},
+                ],
+            }
+            with open(infra, "w", encoding="utf-8") as f:
+                json.dump(fixture, f)
+            h._get_infra(infra)
+
+            self.assertEqual(responses[0]["status"], 200)
+            # Contract preserved: still a bare array of SideNode objects.
+            self.assertIsInstance(responses[0]["body"], list)
+            by_id = {n["id"]: n for n in responses[0]["body"]}
+
+            worker = by_id["infra:worker-a"]
+            self.assertEqual(worker["edges"], [
+                {"from": "infra:worker-a", "to": "infra:db-x", "type": "reads/writes"},
+                {"from": "infra:worker-a", "to": "infra:sink", "type": "uses"},
+            ])
+            db = by_id["infra:db-x"]
+            self.assertEqual(db["edges"], [
+                {"from": "infra:db-x", "to": "infra:sink", "type": "feeds"},
+            ])
+            # Nodes with no outgoing edges still carry the additive field ([]).
+            self.assertEqual(by_id["infra:sink"]["edges"], [])
+
+            # The dangling edge (from: ghost, not a node) is not attached anywhere.
+            all_edges = [e for n in responses[0]["body"] for e in n.get("edges", [])]
+            self.assertNotIn({"from": "infra:ghost", "to": "infra:sink", "type": "dangling"},
+                             all_edges)
+            # Union over nodes is the full surviving edge set.
+            self.assertEqual(len(all_edges), 3)
+
+    def test_get_infra_graph_param_selects_file(self):
+        """?graph=relay loads the committed relay.graph.json through the same
+        mechanism web-infra.json uses (a named graph file at the repo root),
+        and its typed edges pass through."""
+        h, responses = self._handler()
+        h._get_infra(graph="relay")
+        self.assertEqual(responses[0]["status"], 200)
+        self.assertIsInstance(responses[0]["body"], list)
+        by_id = {n["id"]: n for n in responses[0]["body"]}
+        self.assertIn("infra:opus-01", by_id)
+        self.assertIn("infra:s1", by_id)
+        opus = by_id["infra:opus-01"]
+        self.assertTrue(opus["edges"])
+        self.assertIn({"from": "infra:opus-01", "to": "infra:s1", "type": "dispatches"},
+                      opus["edges"])
+
+    def test_get_infra_unknown_graph_404(self):
+        """An unregistered graph name is a malformed request, not an empty
+        import — structured 404 like the other bridge error cases."""
+        h, responses = self._handler()
+        h._get_infra(graph="bogus")
+        self.assertEqual(responses[0]["status"], 404)
+        self.assertEqual(responses[0]["body"], {"error": "unknown graph: bogus"})
+
     def test_get_nodes_on_real_parse_output(self):
         """Round 3.2: lock parser imports/path conventions to the bridge's
         childIds + skillHints assumptions using real parse_project output —

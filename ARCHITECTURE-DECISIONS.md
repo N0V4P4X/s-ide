@@ -8,6 +8,50 @@ Canonical project-level notes live in Nova's vault at
 
 ---
 
+## 2026-08-09 — the frontend gains a graph selector; typed edges render in the canvas
+
+**Context:** The `edges` pass-through and `relay.graph.json` registration landed 2026-08-08
+(`ae0721b`, `050bb34`), but nothing in `gui/app.html` consumed `/api/infra` — the canvas only
+rendered parser-generated project graphs (`.nodegraph.json`, `source`/`target` edges, nodes
+with positions). The orchestration-graph visibility work stopped at the API; the browser had
+no way to see it. This entry records how the frontend consumes the additive per-node `edges`
+field.
+
+**Chosen (all additive, no bridge change, no project-graph-view change):**
+
+1. **A topbar `<select>`** (`Graph: Project | web-infra | relay | plans`) calls
+   `loadGraphByName(name)` → `GET /api/infra?graph=name`. "Project" restores the last loaded
+   parse graph (stashed in `projectGraph`); the parse-graph path is untouched.
+2. **`applyInfraGraph`** flattens each SideNode's outgoing `edges: [{from,to,type}]` into the
+   canvas's `{source,target,type}` shape (deduped by from→to→type), and assigns a **grid
+   layout**, because SideNode objects carry no `position` — they are API data, not layout
+   nodes. `fitView()` then frames it.
+3. **Typed-edge rendering gated to infra mode** (`isInfra`). `EDGE_COL` maps every edge type
+   present in `web-infra.json` and `relay.graph.json` to a color; **unknown types fall back to
+   a default `_` entry, so a future edge type renders instead of disappearing** — the
+   frontend never switches on a closed set and drops the rest. A small type label is drawn at
+   the bezier midpoint (zoom > 0.55). Project parse graphs keep their exact prior rendering
+   (the existing renderer never switched on edge type, so nothing could disappear there).
+4. **Inspector** shows `detail` + the node's outgoing typed edges (`type → target label`) for
+   hand-authored nodes, which have no `path`/`definitions`/`imports`.
+
+**Why:** Acceptance is "select the orchestration graph and see labelled nodes AND typed edges."
+The smallest path is a selector + a SideNode→canvas adapter in the frontend; coloring/labeling
+in infra mode only keeps the project view bit-for-bit unchanged. Grid layout is the sane
+default for a mixed DAG/hierarchy response with no positions and no shared layout engine —
+`fitView` + pan/zoom cover the rest, and a proper layered layout is a future-round nicety, not
+a requirement to see the flow.
+
+**Rejected:** adding an editor tab for graphs (overkill), extending `graph/types.py` or the
+server to emit positions (would change the bridge's response — the frozen contract), and
+making the frontend read `relay.graph.json`/`web-infra.json` directly (bypasses the bridge and
+duplicates its loading mechanism).
+
+**Revisit when:** a consumer wants a shared layout algorithm, or the UX-rebuild decision
+(2026-08-06) subsumes this rendering.
+
+---
+
 ## 2026-08-05 — adopt the n3xu5/mythos-os round convention here too
 
 **Context:** S.I.D.E. started as a personal dev tool. It isn't one anymore — MythOS's Map

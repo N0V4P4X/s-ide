@@ -40,6 +40,8 @@ button,input,select,textarea{font-family:var(--font);font-size:12px;color:var(--
 .tb-btn.active{color:var(--green);border-bottom:2px solid var(--green)}
 .tb-right{margin-left:auto;display:flex;align-items:center;gap:0}
 #tb-project-name{padding:0 12px;font-size:10px;color:var(--t2);border-right:1px solid var(--line1);height:42px;display:flex;align-items:center;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#graph-select{height:42px;padding:0 10px;background:var(--bg1);border:none;border-right:1px solid var(--line1);color:var(--t1);font-family:var(--font);font-size:11px;letter-spacing:.04em;cursor:pointer}
+#graph-select:hover{color:var(--t0);background:var(--bg2)}
 #tb-zoom{padding:0 10px;font-size:10px;color:var(--t2);min-width:48px;text-align:center}
 
 /* ── LEFT SIDEBAR ── */
@@ -188,6 +190,13 @@ button,input,select,textarea{font-family:var(--font);font-size:12px;color:var(--
   <button class="tb-btn active" id="btn-graph">⬡ Graph</button>
   <div class="tb-sep"></div>
   <button class="tb-btn" onclick="doReparse()">↺ Re-parse</button>
+  <div class="tb-sep"></div>
+  <select id="graph-select" title="Load a hand-authored graph" onchange="loadGraphByName(this.value)">
+    <option value="">Graph: Project</option>
+    <option value="web-infra">Graph: web-infra</option>
+    <option value="relay">Graph: relay</option>
+    <option value="plans">Graph: plans</option>
+  </select>
   <div class="tb-right">
     <div id="tb-project-name">no project</div>
     <div id="tb-zoom">100%</div>
@@ -354,10 +363,25 @@ const CAT_COL = {
   config: {fill:'#100a18',accent:'#aa66ff',border:'#1e1230'},
   other:  {fill:'#0a0a14',accent:'#8888a8',border:'#181828'},
 };
+// Typed-edge palette for hand-authored graphs (web-infra / relay / plans).
+// Covers every type currently in web-infra.json and relay.graph.json; unknown
+// types fall back to `_`, so a future edge type still renders instead of
+// disappearing. Project parse graphs are unaffected (isInfra is false there).
+const EDGE_COL = {
+  dispatches:'#39ff8a', produces:'#39ff8a', implements:'#39ff8a', 'implemented-by':'#39ff8a',
+  'reports-to':'#ffaa33', unblocks:'#ffaa33', requires:'#ffaa33',
+  blocks:'#ff4466', corrects:'#ff55aa', triggers:'#ff55aa',
+  reads:'#4da6ff', 'reads/writes':'#4da6ff', writes:'#4da6ff', addresses:'#4da6ff',
+  feeds:'#33ddcc', routes:'#33ddcc', 'email-routes':'#33ddcc', 'api-for':'#33ddcc', 'sends-via':'#33ddcc',
+  governs:'#aa66ff', 'authenticates-via':'#aa66ff', 'stores-events':'#aa66ff', 'stores-tickets':'#aa66ff',
+  uses:'#8888a8', extends:'#8888a8',
+  _:'#8888a8',
+};
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
 let graph = null, root = null;
 let nodes = [], edges = [], nodeMap = {};
+let isInfra = false, projectGraph = null;
 let selId = null, hovId = null;
 let termHistory = [], termHistIdx = -1;
 let editorTabs = []; // [{path, content, modified, lang}]
@@ -417,8 +441,9 @@ function renderEdges() {
     const sp=w2s(s.position.x+NW, s.position.y+HH/2);
     const tp=w2s(t.position.x, t.position.y+HH/2);
     const mx=(sp.x+tp.x)/2;
+    const col = isInfra ? (EDGE_COL[e.type]||EDGE_COL._) : (isSel?C.line3:C.line1);
     ctx.save();
-    ctx.strokeStyle = isSel?C.line3:C.line1;
+    ctx.strokeStyle = col;
     ctx.lineWidth = isSel?1.5*vp.z:1*vp.z;
     ctx.beginPath(); ctx.moveTo(sp.x,sp.y);
     ctx.bezierCurveTo(mx,sp.y,mx,tp.y,tp.x,tp.y);
@@ -426,12 +451,18 @@ function renderEdges() {
     // arrow
     const ang=Math.atan2(tp.y-tp.y*0+tp.y-((sp.y+tp.y)/2), tp.x-mx);
     const al=5*vp.z;
-    ctx.fillStyle=isSel?C.line3:C.line2;
+    ctx.fillStyle=isSel?C.line3:col;
     ctx.beginPath();
     ctx.moveTo(tp.x,tp.y);
     ctx.lineTo(tp.x-al*Math.cos(ang-.5),tp.y-al*Math.sin(ang-.5));
     ctx.lineTo(tp.x-al*Math.cos(ang+.5),tp.y-al*Math.sin(ang+.5));
     ctx.closePath(); ctx.fill();
+    // type label — infra graphs only, so project parse views stay unchanged
+    if(isInfra && vp.z>0.55) {
+      ctx.fillStyle=C.t2; ctx.font=`400 ${Math.round(8*vp.z)}px "IBM Plex Mono"`;
+      ctx.textAlign='center';
+      ctx.fillText(e.type||'', mx, (sp.y+tp.y)/2 - 4*vp.z);
+    }
     ctx.restore();
   }
 }
@@ -588,10 +619,20 @@ function showInspector(n) {
   if(!n) { document.getElementById('inspector').classList.add('hidden'); return; }
   document.getElementById('inspector').classList.remove('hidden');
   document.getElementById('insp-name').textContent=n.label||n.id;
-  document.getElementById('insp-path').textContent=n.path||'';
+  document.getElementById('insp-path').textContent=n.path||(n._source?.type?n._source.type+(n._source.status?' · '+n._source.status:''):(n.kind||''));
   const body=document.getElementById('insp-body');
   const defs=n.definitions||[];
   const imports=n.imports||[];
+  // Detail + outgoing typed edges (hand-authored graph nodes only — project
+  // file nodes have neither).
+  const detail=n.detail?`<div class="insp-sec">Detail</div><div style="font-size:10px;color:var(--t1);line-height:1.5;white-space:pre-line">${escHtml(n.detail)}</div>`:'';
+  const flow=(n.edges||[]).length?`
+    <div class="insp-sec" style="margin-top:8px">Flow — outgoing (${n.edges.length})</div>
+    ${n.edges.slice(0,12).map(e=>{
+      const tgt=nodeMap[e.to];
+      const c=EDGE_COL[e.type]||EDGE_COL._;
+      return `<div class="def-row" style="cursor:default"><div class="dn" style="color:${c}">▸ ${escHtml(e.type)}</div><div class="dm">→ ${tgt?escHtml(tgt.label):escHtml(e.to)}</div></div>`;
+    }).join('')}`:'';
   body.innerHTML=`
     <div class="insp-grid">
       <div class="kv"><div class="k">Lines</div><div class="v">${n.lines||'—'}</div></div>
@@ -599,7 +640,9 @@ function showInspector(n) {
       <div class="kv"><div class="k">Category</div><div class="v">${n.category||'—'}</div></div>
       <div class="kv"><div class="k">Imports</div><div class="v">${imports.length}</div></div>
     </div>
-    ${defs.length?`<div class="insp-sec">Definitions (${defs.length})</div>`:''}
+    ${detail}
+    ${flow}
+    ${defs.length?`<div class="insp-sec" style="margin-top:8px">Definitions (${defs.length})</div>`:''}
     ${defs.map(d=>`
       <div class="def-row" onclick="openDefInEditor('${n.path}',${d.line})">
         <div class="dn">${d.kind==='class'?'⬡':'→'} ${d.name}</div>
@@ -636,6 +679,8 @@ async function loadProject(projectRoot) {
 
 function applyGraph(g, projectRoot) {
   graph=g; root=projectRoot||g.meta?.root;
+  isInfra=false; projectGraph=g;
+  document.getElementById('graph-select').value='';
   nodes=(g.nodes||[]).filter(n=>n.position&&!n.isExternal);
   edges=(g.edges||[]).filter(e=>!nodeMap[e.source]?.isExternal&&!nodeMap[e.target]?.isExternal);
   nodeMap={};
@@ -652,6 +697,59 @@ function applyGraph(g, projectRoot) {
   loadSessionState();
   fitView();
   refreshProjects();
+}
+
+// ── HAND-AUTHORED GRAPHS (web-infra / relay / plans) ─────────────────────────
+// The graph selector loads a named graph from /api/infra?graph=NAME. The
+// response is a bare array of SideNode objects; each carries its OUTGOING typed
+// edges as `edges: [{from, to, type}]` (ids infra:-prefixed) plus childIds for
+// containment. SideNode objects have no canvas position, so a grid layout is
+// assigned here; edges are flattened to the frontend's {source,target,type}
+// shape. Nothing here touches the project parse-graph path.
+async function loadGraphByName(name) {
+  if(!name) {
+    if(projectGraph) { applyGraph(projectGraph, root); setStatus('Loaded project graph'); }
+    else { nodes=[]; edges=[]; nodeMap={}; isInfra=false;
+      document.getElementById('empty-hint').classList.remove('hidden');
+      document.getElementById('tb-project-name').textContent='no project';
+      document.getElementById('sb-nodes').textContent='0 nodes';
+      document.getElementById('sb-edges').textContent='0 edges';
+      showInspector(null); schedRender(); setStatus(''); }
+    return;
+  }
+  setStatus('Loading graph: '+name+'…');
+  try {
+    const res=await get('/api/infra?graph='+encodeURIComponent(name));
+    if(res.error){setStatus('Error: '+res.error);return}
+    applyInfraGraph(res, name);
+    setStatus(`Loaded: ${nodes.length} nodes / ${edges.length} edges`);
+  } catch(e){setStatus('Server error: '+e.message)}
+}
+
+function applyInfraGraph(res, name) {
+  isInfra=true;
+  graph={meta:{project:{name:name}}};
+  nodes=(res||[]).map(n=>Object.assign({},n));
+  nodeMap={};
+  nodes.forEach(n=>nodeMap[n.id]=n);
+  // Grid layout — SideNode objects carry no position.
+  const cols=Math.max(1,Math.ceil(Math.sqrt(nodes.length)));
+  nodes.forEach((n,i)=>{
+    n.position={x:(i%cols)*(NW+90), y:Math.floor(i/cols)*(NH+70)};
+  });
+  // Flatten each node's outgoing edges into the renderer's shape, deduped.
+  const seen=new Set(); edges=[];
+  for(const n of nodes) for(const e of (n.edges||[])) {
+    const key=e.from+'→'+e.to+'→'+e.type;
+    if(seen.has(key)) continue; seen.add(key);
+    edges.push({source:e.from,target:e.to,type:e.type});
+  }
+  document.getElementById('tb-project-name').textContent=name;
+  document.getElementById('empty-hint').classList.add('hidden');
+  document.getElementById('sb-nodes').textContent=`${nodes.length} nodes`;
+  document.getElementById('sb-edges').textContent=`${edges.length} edges`;
+  showInspector(null);
+  fitView();
 }
 
 function buildFileList() {

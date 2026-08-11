@@ -179,6 +179,29 @@ button,input,select,textarea{font-family:var(--font);font-size:12px;color:var(--
 .dlg-btn:hover{border-color:var(--blue);color:var(--blue)}
 .dlg-btn.primary{border-color:var(--green);color:var(--green);background:rgba(57,255,138,.08)}
 .dlg-btn.primary:hover{background:rgba(57,255,138,.16)}
+
+/* ── FILE PICKER ── */
+.dialog-wide{min-width:560px;max-width:640px}
+.fs-bookmarks{display:flex;gap:6px;flex-wrap:wrap}
+.fs-bookmark{background:var(--bg3);border:1px solid var(--line3);color:var(--t1);padding:3px 10px;font-size:10px;cursor:pointer}
+.fs-bookmark:hover{border-color:var(--blue);color:var(--blue)}
+.fs-path{background:var(--bg3);border:1px solid var(--line3);color:var(--t0);padding:5px 8px;font-size:10px;font-family:monospace;display:flex;flex-wrap:wrap;align-items:center;gap:2px}
+.fs-crumb{color:var(--t1);cursor:pointer;padding:0 2px}
+.fs-crumb:hover{color:var(--blue)}
+.fs-crumb.sep{color:var(--t3);cursor:default}
+.fs-crumb.cur{color:var(--green)}
+.fs-pane{background:var(--bg1);border:1px solid var(--line3);max-height:280px;overflow-y:auto;margin-bottom:8px;outline:none}
+.fs-row{display:flex;align-items:center;gap:6px;padding:4px 8px;font-size:10px;color:var(--t1);cursor:pointer}
+.fs-row.sel{background:var(--bg3);color:var(--t0);outline:1px solid var(--blue)}
+.fs-row .fs-icon{width:14px;text-align:center;flex:none}
+.fs-row .fs-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fs-row .fs-mtime{color:var(--t3);font-size:9px;flex:none}
+.fs-row .fs-badge{font-size:8px;padding:1px 5px;border-radius:3px;flex:none}
+.fs-badge.git{border:1px solid var(--amber);color:var(--amber);background:rgba(255,170,51,.08)}
+.fs-badge.graph{border:1px solid var(--purple);color:var(--purple);background:rgba(170,102,255,.08)}
+.fs-msg{font-size:10px;min-height:14px;margin-bottom:6px}
+.fs-msg.err{color:var(--red)}
+.fs-msg.ok{color:var(--green)}
 </style>
 </head>
 <body>
@@ -226,8 +249,8 @@ button,input,select,textarea{font-family:var(--font);font-size:12px;color:var(--
     <canvas id="main-cvs"></canvas>
     <div id="minimap"><canvas id="mm-cvs"></canvas></div>
     <div id="empty-hint">
-      <div class="hint-title">S-IDE</div>
-      <div class="hint-sub">Open a project to begin<br>⊕ Open project in the sidebar</div>
+      <div class="hint-title" id="hint-title">S-IDE</div>
+      <div class="hint-sub" id="hint-sub">Open a project to begin<br>⊕ Open project in the sidebar</div>
     </div>
   </div>
 
@@ -317,13 +340,18 @@ button,input,select,textarea{font-family:var(--font);font-size:12px;color:var(--
 
 <!-- DIALOGS -->
 <div class="dialog-backdrop hidden" id="dlg-open">
-  <div class="dialog">
+  <div class="dialog dialog-wide">
     <h2>Open Project</h2>
-    <div class="dlg-field"><label>Absolute project path</label>
-      <input id="dlg-open-path" type="text" placeholder="/home/user/my-project" onkeydown="if(event.key==='Enter')dlgOpenConfirm()"></div>
+    <div class="dlg-field"><label>Bookmarks</label>
+      <div id="fs-bookmarks" class="fs-bookmarks"></div></div>
+    <div class="dlg-field"><label>Path</label>
+      <div id="fs-path" class="fs-path"></div></div>
+    <div id="fs-pane" class="fs-pane" tabindex="0"
+         aria-label="directory picker"></div>
+    <div class="fs-msg" id="fs-msg"></div>
     <div class="dlg-btns">
       <button class="dlg-btn" onclick="hideDlg('dlg-open')">Cancel</button>
-      <button class="dlg-btn primary" onclick="dlgOpenConfirm()">Open</button>
+      <button class="dlg-btn primary" onclick="fsParseHere()">Parse this</button>
     </div>
   </div>
 </div>
@@ -667,12 +695,20 @@ function fitView() {
 }
 
 // ── PROJECT LOADING ────────────────────────────────────────────────────────────
+function showCanvasHint(title, sub) {
+  document.getElementById('hint-title').textContent=title;
+  document.getElementById('hint-sub').innerHTML=sub;
+  document.getElementById('empty-hint').classList.remove('hidden');
+}
+
 async function loadProject(projectRoot) {
   setStatus('Parsing…');
   try {
     const res=await post('/api/projects/open',{root:projectRoot});
     if(res.error){setStatus('Error: '+res.error);return}
     applyGraph(res, projectRoot);
+    if(nodes.length===0) showCanvasHint('No nodes found',
+      `Parse completed, but found 0 nodes.<br><span style="opacity:.6">No parseable source files in ${projectRoot}</span>`);
     setStatus(`Loaded: ${nodes.length} nodes`);
   } catch(e){setStatus('Server error: '+e.message)}
 }
@@ -710,6 +746,8 @@ async function loadGraphByName(name) {
   if(!name) {
     if(projectGraph) { applyGraph(projectGraph, root); setStatus('Loaded project graph'); }
     else { nodes=[]; edges=[]; nodeMap={}; isInfra=false;
+      document.getElementById('hint-title').textContent='S-IDE';
+      document.getElementById('hint-sub').innerHTML='Open a project to begin<br>⊕ Open project in the sidebar';
       document.getElementById('empty-hint').classList.remove('hidden');
       document.getElementById('tb-project-name').textContent='no project';
       document.getElementById('sb-nodes').textContent='0 nodes';
@@ -782,9 +820,14 @@ async function removeProject(p) {
 async function doReparse() {
   if(!root){setStatus('No project loaded');return}
   setStatus('Parsing…');
-  const res=await post('/api/projects/parse',{root});
-  if(!res.error) applyGraph(res,root);
-  setStatus(`Parsed: ${nodes.length} nodes`);
+  try {
+    const res=await post('/api/projects/parse',{root});
+    if(res.error){setStatus('Error: '+res.error);return}
+    applyGraph(res,root);
+    if(nodes.length===0) showCanvasHint('No nodes found',
+      'Reparse completed, but found 0 nodes.<br><span style="opacity:.6">No parseable source files in this project</span>');
+    setStatus(`Parsed: ${nodes.length} nodes`);
+  } catch(e){setStatus('Server error: '+e.message)}
 }
 
 // ── SESSION STATE ─────────────────────────────────────────────────────────────
@@ -1027,11 +1070,126 @@ function setTab(tab) {
 // ── DIALOGS ───────────────────────────────────────────────────────────────────
 function showDlg(id){document.getElementById(id).classList.remove('hidden')}
 function hideDlg(id){document.getElementById(id).classList.add('hidden')}
-function showOpenDialog(){showDlg('dlg-open');document.getElementById('dlg-open-path').focus()}
-async function dlgOpenConfirm(){
-  const p=document.getElementById('dlg-open-path').value.trim();
-  if(!p) return; hideDlg('dlg-open');
-  await loadProject(p);
+
+// ── FILE PICKER ───────────────────────────────────────────────────────────────
+// Replaces the absolute-path text input. The server enforces the allow-list and
+// GLOBAL_IGNORE, so this browser never shows what the parser would refuse to walk.
+let fsCur = null;        // {path,parent,entries,...} from GET /api/fs
+let fsSel = 0;           // selected row index into fsCur.entries
+function fsEl(id){return document.getElementById(id)}
+function fsMsg(text, cls){
+  const el=fsEl('fs-msg'); el.textContent=text||'';
+  el.className='fs-msg'+(cls?' '+cls:'');
+}
+function fsJoin(dir,name){return (dir.endsWith('/')?dir:dir+'/')+name}
+
+async function fsLoad(p){
+  fsMsg('',null); fsSel=0;
+  try{
+    const res=await get('/api/fs?path='+encodeURIComponent(p));
+    if(res.error){fsMsg(res.error,'err');return}
+    fsCur=res; fsSel=0; fsRender();
+    fsEl('fs-pane').focus();
+  }catch(e){fsMsg('cannot list: '+e.message,'err')}
+}
+
+function fsRender(){
+  const c=fsCur; if(!c) return;
+  // Breadcrumbs — each segment navigable, current one green.
+  const el=fsEl('fs-path'); el.innerHTML='';
+  const segs=c.path.split('/').filter(Boolean);
+  let acc='';
+  segs.forEach((seg,i)=>{
+    acc+='/'+seg; const cur=(i===segs.length-1);
+    const span=document.createElement('span');
+    span.className='fs-crumb'+(cur?' cur':'');
+    span.textContent=(i===0?'/':'')+seg;
+    span.onclick=()=>fsLoad(cur&&c.parent?c.parent:acc);
+    el.appendChild(span);
+  });
+  // Bookmarks
+  const bm=fsEl('fs-bookmarks'); bm.innerHTML='';
+  (c.bookmarks||[]).forEach(b=>{
+    const btn=document.createElement('button');
+    btn.className='fs-bookmark';
+    btn.textContent=escHtml(b.split('/').slice(-2).join('/'));
+    btn.onclick=()=>fsLoad(b);
+    bm.appendChild(btn);
+  });
+  // Entries (dirs first, then files — server already sorts them)
+  const pane=fsEl('fs-pane'); pane.innerHTML='';
+  if(!c.entries.length){
+    const row=document.createElement('div');
+    row.className='fs-row'; row.textContent='(empty — no files or dirs here)';
+    pane.appendChild(row); return;
+  }
+  c.entries.forEach((en,i)=>{
+    const row=document.createElement('div');
+    row.className='fs-row'+(i===fsSel?' sel':''); row.dataset.idx=i;
+    const icon=document.createElement('span'); icon.className='fs-icon';
+    if(en.type==='dir'){
+      icon.textContent='▸';
+      icon.style.color=en.has_graph?'var(--purple)':'var(--blue)';
+    } else { icon.textContent='·'; icon.style.color='var(--t3)'; }
+    const nm=document.createElement('span'); nm.className='fs-name';
+    nm.textContent=en.name; nm.title=en.name;
+    row.appendChild(icon); row.appendChild(nm);
+    if(en.type==='dir'){
+      if(en.is_git_root){
+        const b=document.createElement('span'); b.className='fs-badge git';
+        b.textContent='git'; row.appendChild(b);
+      }
+      if(en.has_graph){
+        const b=document.createElement('span'); b.className='fs-badge graph';
+        b.textContent='graph'; row.appendChild(b);
+      }
+    }
+    const mt=document.createElement('span'); mt.className='fs-mtime';
+    mt.textContent=(en.mtime||'').slice(0,16).replace('T',' ');
+    row.appendChild(mt);
+    row.onclick=()=>{fsSel=i; fsRender()};
+    row.ondblclick=()=>{if(en.type==='dir')fsLoad(fsJoin(c.path,en.name))};
+    pane.appendChild(row);
+  });
+}
+
+function fsKey(e){
+  if(!fsCur) return;
+  if(fsEl('dlg-open').classList.contains('hidden')) return;
+  const c=fsCur, n=c.entries.length;
+  switch(e.key){
+    case 'ArrowDown': e.preventDefault(); fsSel=Math.min(n-1,fsSel+1); fsRender(); break;
+    case 'ArrowUp':   e.preventDefault(); fsSel=Math.max(0,fsSel-1);  fsRender(); break;
+    case 'Enter': {
+      const en=c.entries[fsSel];
+      if(en&&en.type==='dir'){e.preventDefault(); fsLoad(fsJoin(c.path,en.name));}
+      break;
+    }
+    case 'Backspace':
+      if(c.parent){e.preventDefault(); fsLoad(c.parent);}
+      break;
+  }
+}
+fsEl('fs-pane').addEventListener('keydown',fsKey);
+
+function showOpenDialog(){
+  showDlg('dlg-open');
+  fsLoad(fsCur?fsCur.path:'');   // '' → server default (first allow root)
+}
+
+// "Parse this" — the one action that fixes the confusion: register AND parse in
+// a single click, with a visible node/edge count or a stated failure reason.
+async function fsParseHere(){
+  if(!fsCur||!fsCur.path) return;
+  fsMsg('parsing '+fsCur.path+'…',null);
+  const res=await post('/api/parse',{path:fsCur.path});
+  if(res&&res.ok){
+    fsMsg(`${res.nodes} nodes, ${res.edges} edges (${res.ms} ms)`,'ok');
+    hideDlg('dlg-open');
+    await loadProject(fsCur.path);
+  }else{
+    fsMsg(res&&res.error?res.error:'parse failed','err');
+  }
 }
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){document.querySelectorAll('.dialog-backdrop').forEach(d=>d.classList.add('hidden'))}});
 

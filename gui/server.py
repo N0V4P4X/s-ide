@@ -34,10 +34,16 @@ POST /api/xp  {root, node_id, xp, skills}  → record quest completion XP
 GET  /api/infra?graph=web-infra            → graph nodes as SideNode JSON; typed edges
                                             pass through as a per-node additive `edges`
                                             field. graph: web-infra | relay | plans.
+GET  /api/fs?path=…              → one directory level, GLOBAL_IGNORE-filtered,
+                                   entries carry name/type/is_git_root/has_graph/mtime.
+                                   Paths outside the allow-list are rejected (403).
+POST /api/parse {path}           → register + parse in one action;
+                                   {ok:true,nodes,edges,ms} or {ok:false,error}.
 """
 
 from __future__ import annotations
 import json, os, sys, threading, queue, time
+from datetime import datetime, timezone
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 from typing import Any
@@ -48,7 +54,12 @@ for _p in (_ROOT_DIR, _HERE):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
+from logsetup import setup_logging
+
+log = setup_logging()
+
 from parser.project_parser import parse_project
+from parser.walker import _should_ignore
 from process.process_manager import ProcessManager
 
 # ── Persistence ───────────────────────────────────────────────────────────────
@@ -88,6 +99,28 @@ def _load_graph(root):
         except Exception: pass
     return None
 
+# ── Filesystem picker allow-list ──────────────────────────────────────────────
+# The file picker may only browse inside these roots. A file browser that walks
+# `/` is a bad habit to build into an operator tool, so anything outside these
+# (or a symlink pointing out of them) is rejected. Bookmarks are shortcuts into
+# the places Nova actually works; they are always inside the allow-list.
+FS_ALLOW_ROOTS: tuple[str, ...] = tuple(
+    os.path.abspath(os.path.expanduser(p)) for p in ("~/DevOps", "~/Documents/Vault")
+)
+FS_BOOKMARKS: tuple[str, ...] = tuple(
+    os.path.abspath(os.path.expanduser(p))
+    for p in ("~/DevOps/Native", "~/DevOps/WebDev", "~/Documents/Vault")
+)
+
+def _fs_allowed(path: str) -> bool:
+    """True if *path* is exactly an allowed root or inside one."""
+    path = os.path.abspath(path)
+    return any(path == r or path.startswith(r + os.sep) for r in FS_ALLOW_ROOTS)
+
+def _fs_mtime(st_mtime: float) -> str:
+    """Format a stat mtime as an ISO-8601 UTC string ('YYYY-MM-DDTHH:MM:SSZ')."""
+    return datetime.fromtimestamp(st_mtime, timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
 # ── Global state ──────────────────────────────────────────────────────────────
 proc_mgr   = ProcessManager()
 sse_clients = []
@@ -121,6 +154,7 @@ class Handler(BaseHTTPRequestHandler):
 
         {
             "/api/projects": self._get_projects,
+            "/api/fs":       lambda: self._get_fs(qs),
             "/api/file":     lambda: self._get_file(qs),
             "/api/file/list":lambda: self._get_file_list(qs),
             "/api/file/defs":lambda: self._get_file_defs(qs),
@@ -135,9 +169,10 @@ class Handler(BaseHTTPRequestHandler):
         body = self._body()
         path = urlparse(self.path).path.rstrip("/")
         {
-            "/api/projects/open":    lambda: self._open(body),
-            "/api/projects/parse":   lambda: self._open(body),
+            "/api/projects/open":    lambda: self._open(body, "open"),
+            "/api/projects/parse":   lambda: self._open(body, "parse"),
             "/api/projects/remove":  lambda: self._remove(body),
+            "/api/parse":            lambda: self._parse(body),
             "/api/file/write":       lambda: self._write_file(body),
             "/api/git":              lambda: self._git(body),
             "/api/processes/start":  lambda: self._proc_start(body),
@@ -172,9 +207,80 @@ class Handler(BaseHTTPRequestHandler):
     # ── Projects ──────────────────────────────────────────────────────────────
     def _get_projects(self): self._json(_load_projects())
 
-    def _open(self, body):
+    # ── Filesystem picker ─────────────────────────────────────────────────────
+    def _get_fs(self, qs):
+        p = (qs.get("path") or [""])[0].strip()
+        root = os.path.abspath(os.path.expanduser(p)) if p else FS_ALLOW_ROOTS[0]
+        if not _fs_allowed(root):
+            log.info("fs %r → 403 outside allowed roots", root)
+            self._error(403, f"path outside allowed roots: {root!r}"); return
+        if not os.path.isdir(root):
+            self._error(404, f"no such directory: {root!r}"); return
+        entries = []
+        try:
+            for e in os.scandir(root):
+                name = e.name
+                if _should_ignore(name, []):
+                    continue
+                try:
+                    if e.is_dir(follow_symlinks=False):
+                        kind = "dir"
+                    elif e.is_file(follow_symlinks=False):
+                        kind = "file"
+                    else:
+                        continue
+                    st = e.stat(follow_symlinks=False)
+                except OSError:
+                    continue
+                entries.append({
+                    "name": name,
+                    "type": kind,
+                    "is_git_root": kind == "dir" and os.path.isdir(os.path.join(e.path, ".git")),
+                    "has_graph": os.path.isfile(os.path.join(e.path, ".nodegraph.json")),
+                    "mtime": _fs_mtime(st.st_mtime),
+                })
+        except Exception as e:
+            log.exception("fs %s → FAILED: %s", root, e)
+            self._error(500, f"cannot list {root!r}: {e}"); return
+        entries.sort(key=lambda x: (x["type"] != "dir", x["name"].lower()))
+        parent = os.path.dirname(root)
+        self._json({
+            "path": root,
+            "parent": parent if _fs_allowed(parent) else None,
+            "allowed_roots": list(FS_ALLOW_ROOTS),
+            "bookmarks": list(FS_BOOKMARKS),
+            "entries": entries,
+        })
+
+    def _parse(self, body):
+        """POST /api/parse — register and parse in one action."""
+        root = (body.get("path") or body.get("root") or "").strip()
+        if not root or not os.path.isdir(root):
+            log.info("parse %r → 400 invalid path", root)
+            self._error(400, f"invalid path: {root!r}"); return
+        t0 = time.time()
+        try:
+            graph = parse_project(root)
+            gd = graph.to_dict()
+            ps = _load_projects()
+            nm = os.path.basename(root.rstrip("/")) or root
+            if not any(p["path"] == root for p in ps):
+                ps.insert(0, {"path": root, "name": nm}); _save_projects(ps)
+            m = gd.get("meta", {})
+            count_nodes = m.get("totalFiles", len(gd.get("nodes", [])))
+            count_edges = m.get("totalEdges", len(gd.get("edges", [])))
+            ms = int((time.time() - t0) * 1000)
+            log.info("parse %s → %d nodes, %d edges (%d ms)",
+                     root, count_nodes, count_edges, ms)
+            self._json({"ok": True, "nodes": count_nodes, "edges": count_edges, "ms": ms})
+        except Exception as e:
+            log.exception("parse %s → FAILED: %s", root, e)
+            self._json({"ok": False, "error": str(e)})
+
+    def _open(self, body, action="open"):
         root = body.get("root","").strip()
         if not root or not os.path.isdir(root):
+            log.info("%s %r → 400 invalid path", action, root)
             self._error(400,f"invalid path: {root!r}"); return
         try:
             graph = parse_project(root)
@@ -183,8 +289,12 @@ class Handler(BaseHTTPRequestHandler):
             nm = os.path.basename(root)
             if not any(p["path"]==root for p in ps):
                 ps.insert(0,{"path":root,"name":nm}); _save_projects(ps)
+            log.info("%s %s → %d nodes, %d edges",
+                     action, root, gd["meta"]["totalFiles"], gd["meta"]["totalEdges"])
             self._json(gd)
-        except Exception as e: self._error(500,str(e))
+        except Exception as e:
+            log.exception("%s %s → FAILED: %s", action, root, e)
+            self._error(500,str(e))
 
     def _remove(self, body):
         root = body.get("root")
@@ -557,9 +667,11 @@ class Handler(BaseHTTPRequestHandler):
 # ── Entry point ───────────────────────────────────────────────────────────────
 def run(port=7700):
     server = HTTPServer(("127.0.0.1", port), Handler)
+    log.info("S-IDE server listening on http://127.0.0.1:%d", port)
     print(f"\n  S-IDE v0.6.0  →  http://127.0.0.1:{port}\n")
     try: server.serve_forever()
     except KeyboardInterrupt:
+        log.info("shutting down (SIGINT)")
         print("\n[s-ide] shutting down...")
         proc_mgr.stop_all(); server.server_close()
 

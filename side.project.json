@@ -8,12 +8,12 @@
     ".nodegraph.json"
   ],
   "run": {
-    "server": "python run.py",
-    "test": "python test/test_suite.py",
-    "parse": "python main.py parse .",
-    "self-check": "python main.py self-check .",
-    "serve": "python main.py serve .",
-    "plans": "python bin/relay-graph.py"
+    "server": "python3 run.py",
+    "test": "python3 test/test_suite.py",
+    "parse": "python3 main.py parse .",
+    "self-check": "python3 main.py self-check .",
+    "serve": "python3 main.py serve .",
+    "plans": "python3 bin/relay-graph.py"
   },
   "meta": {}
 }

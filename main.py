@@ -33,6 +33,10 @@ import json
 import os
 import sys
 
+from logsetup import setup_logging
+
+log = setup_logging()
+
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -51,6 +55,7 @@ def cmd_parse(args: argparse.Namespace) -> None:
     from parser.project_parser import parse_project
 
     root = _require_dir(args.project)
+    log.info("parse invoked: %s", root)
     print(f"[s-ide] Parsing: {root}")
 
     graph = parse_project(root)
@@ -61,6 +66,8 @@ def cmd_parse(args: argparse.Namespace) -> None:
         json.dump(d, f, indent=2)
 
     m = d["meta"]
+    log.info("parse %s → %d nodes, %d edges (%s ms) → %s",
+             root, m["totalFiles"], m["totalEdges"], m["parseTime"], out_path)
     print(f"[s-ide] {m['totalFiles']} nodes, {m['totalEdges']} edges "
           f"({m['parseTime']} ms) → {out_path}")
 
@@ -78,6 +85,7 @@ def cmd_run(args: argparse.Namespace) -> None:
     root = _require_dir(args.project)
     config = load_project_config(root)
     scripts = config.get("run") or {}
+    log.info("run invoked: %s %s", root, args.script)
 
     if not scripts:
         print("[s-ide] No 'run' scripts defined in side.project.json", file=sys.stderr)
@@ -103,6 +111,8 @@ def cmd_self_check(args: argparse.Namespace) -> None:
 
     root = _require_dir(args.project)
     use_json = args.json
+
+    log.info("self-check invoked: %s", root)
 
     report = {
         "project": root,
@@ -197,6 +207,7 @@ def cmd_serve(args) -> None:
     """Launch the S-IDE web interface."""
     from gui.server import run as start_server
     root = _require_dir(args.project)
+    log.info("serve invoked: %s (port %s)", root, args.port)
     graph_path = os.path.join(root, ".nodegraph.json")
     if not os.path.exists(graph_path):
         print(f"[s-ide] No graph found at {graph_path}. Parsing first...")

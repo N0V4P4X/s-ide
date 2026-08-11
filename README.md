@@ -32,10 +32,10 @@ s-ide/
 ## Quick start
 
 ```bash
-python run.py                          # start server, open browser
-python run.py --project ~/my-project   # pre-load a project
-python main.py parse ~/my-project      # parse only, no server
-python test/test_suite.py             # run tests
+python3 run.py                          # start server, open browser
+python3 run.py --project ~/my-project   # pre-load a project
+python3 main.py parse ~/my-project      # parse only, no server
+python3 test/test_suite.py             # run tests
 ```
 
 ---

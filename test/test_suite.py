@@ -1511,6 +1511,154 @@ class TestSideNodeAdapter(unittest.TestCase):
         self.assertEqual(responses[0]["body"], {"error": "root and node_id required"})
 
 
+class TestApiFs(unittest.TestCase):
+    """Real-handler tests for the file picker endpoints.
+
+    GET /api/fs  — one-level listing, GLOBAL_IGNORE-filtered, allow-list enforced
+    POST /api/parse — register + parse in one action, visible counts on success.
+    Uses the same stub _json/_error sink as TestSideNodeAdapter; no socket.
+    """
+
+    @staticmethod
+    def _handler():
+        import gui.server as server
+
+        class _Stub(server.Handler):
+            def __init__(self):
+                pass
+
+            def _json(self, data):
+                responses.append({"status": 200, "body": data})
+
+            def _error(self, code, msg):
+                responses.append({"status": code, "body": {"error": str(msg)}})
+
+        responses = []
+        h = _Stub()
+        return server, h, responses
+
+    def _restrict_roots(self, server, root):
+        """Point the allow-list at a hermetic dir; restore after the test."""
+        old_roots = server.FS_ALLOW_ROOTS
+        old_bookmarks = server.FS_BOOKMARKS
+        server.FS_ALLOW_ROOTS = (root,)
+        server.FS_BOOKMARKS = (root,)
+        self.addCleanup(setattr, server, "FS_ALLOW_ROOTS", old_roots)
+        self.addCleanup(setattr, server, "FS_BOOKMARKS", old_bookmarks)
+
+    def test_fs_lists_one_level_filtered(self):
+        server, h, responses = self._handler()
+        with tempfile.TemporaryDirectory() as root:
+            self._restrict_roots(server, root)
+            # Ignored by the walker — must never appear in the picker.
+            for d in ("node_modules", "__pycache__", ".venv"):
+                os.makedirs(os.path.join(root, d), exist_ok=True)
+            # A git root and a dir that already has a parsed graph.
+            os.makedirs(os.path.join(root, "repo", ".git"), exist_ok=True)
+            os.makedirs(os.path.join(root, "graphed"), exist_ok=True)
+            with open(os.path.join(root, "graphed", ".nodegraph.json"), "w") as f:
+                f.write("{}")
+            with open(os.path.join(root, "main.py"), "w") as f:
+                f.write("print('hi')\n")
+            with open(os.path.join(root, "note.txt"), "w") as f:
+                f.write("x\n")
+
+            h._get_fs({"path": [root]})
+            self.assertEqual(responses[0]["status"], 200)
+            body = responses[0]["body"]
+            self.assertEqual(body["path"], root)
+            self.assertIsNone(body["parent"])   # top of an allow root — no going up
+            self.assertEqual(body["allowed_roots"], [root])
+            names = [e["name"] for e in body["entries"]]
+
+            for bad in ("node_modules", "__pycache__", ".venv", ".nodegraph.json"):
+                self.assertNotIn(bad, names, f"{bad} must be hidden from the picker")
+            self.assertIn("main.py", names)
+            self.assertIn("note.txt", names)
+
+            by_name = {e["name"]: e for e in body["entries"]}
+            repo = by_name["repo"]
+            self.assertEqual(repo["type"], "dir")
+            self.assertTrue(repo["is_git_root"])
+            self.assertFalse(repo["has_graph"])
+            graphed = by_name["graphed"]
+            self.assertTrue(graphed["has_graph"])
+            self.assertFalse(graphed["is_git_root"])
+            for e in body["entries"]:
+                self.assertIn("mtime", e)
+                self.assertTrue(e["mtime"].endswith("Z"), e["mtime"])
+            # Directories sort before files.
+            kinds = [e["type"] for e in body["entries"]]
+            self.assertNotIn("file", kinds[:kinds.index("dir") + 1])
+
+    def test_fs_defaults_to_first_allowed_root(self):
+        server, h, responses = self._handler()
+        with tempfile.TemporaryDirectory() as root:
+            self._restrict_roots(server, root)
+            h._get_fs({"path": [""]})
+            self.assertEqual(responses[0]["status"], 200)
+            self.assertEqual(responses[0]["body"]["path"], root)
+
+    def test_fs_rejects_allowlist_escape(self):
+        server, h, responses = self._handler()
+        with tempfile.TemporaryDirectory() as root:
+            self._restrict_roots(server, root)
+            h._get_fs({"path": ["/etc"]})
+            self.assertEqual(responses[0]["status"], 403)
+            self.assertIn("outside allowed roots",
+                          responses[0]["body"]["error"])
+
+    def test_fs_rejects_missing_dir(self):
+        server, h, responses = self._handler()
+        with tempfile.TemporaryDirectory() as root:
+            self._restrict_roots(server, root)
+            h._get_fs({"path": [os.path.join(root, "nope")]})
+            self.assertEqual(responses[0]["status"], 404)
+
+    def test_fs_hides_git_root_itself(self):
+        server, h, responses = self._handler()
+        with tempfile.TemporaryDirectory() as root:
+            self._restrict_roots(server, root)
+            os.makedirs(os.path.join(root, ".git"), exist_ok=True)
+            h._get_fs({"path": [root]})
+            names = [e["name"] for e in responses[0]["body"]["entries"]]
+            self.assertNotIn(".git", names)
+
+    def test_parse_registers_and_reports_counts(self):
+        server, h, responses = self._handler()
+        with tempfile.TemporaryDirectory() as root:
+            # Point PROJECTS_FILE at a temp file so the real projects.json is
+            # never touched by a test.
+            old_pf = server.PROJECTS_FILE
+            pf = os.path.join(root, "projects.json")
+            server.PROJECTS_FILE = pf
+            self.addCleanup(setattr, server, "PROJECTS_FILE", old_pf)
+            with open(os.path.join(root, "main.py"), "w") as f:
+                f.write("from utils import greet\nif __name__=='__main__':\n    greet()\n")
+            os.makedirs(os.path.join(root, "utils"), exist_ok=True)
+            with open(os.path.join(root, "utils", "__init__.py"), "w") as f:
+                f.write("def greet():\n    print('hi')\n")
+
+            h._parse({"path": root})
+            self.assertEqual(responses[0]["status"], 200)
+            body = responses[0]["body"]
+            self.assertTrue(body["ok"], body)
+            self.assertGreaterEqual(body["nodes"], 2)
+            self.assertGreaterEqual(body["edges"], 1)
+            self.assertGreaterEqual(body["ms"], 0)
+
+            # Registered in the (temp) project list.
+            with open(pf, encoding="utf-8") as f:
+                projs = json.load(f)
+            self.assertTrue(any(p["path"] == root for p in projs))
+
+    def test_parse_rejects_invalid_path(self):
+        server, h, responses = self._handler()
+        h._parse({"path": "/definitely/not/a/real/dir"})
+        self.assertEqual(responses[0]["status"], 400)
+        self.assertIn("invalid path", responses[0]["body"]["error"])
+
+
 class TestWebInfraIntegrity(unittest.TestCase):
     """Structural validation of the committed web-infra.json (round 2.3)."""
 

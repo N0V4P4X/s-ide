@@ -6,17 +6,22 @@ run.py — S-IDE launcher
 =======================
 The single entry point for everything.
 
-    python run.py                          # start server, open browser
-    python run.py --port 7800             # custom port
-    python run.py --no-browser            # server only
-    python run.py --project ~/my-project  # pre-load a project
-    python run.py parse ~/my-project      # parse only, no server
-    python run.py test                    # run test suite
+    python3 run.py                          # start server, open browser
+    python3 run.py --port 7800             # custom port
+    python3 run.py --no-browser            # server only
+    python3 run.py --project ~/my-project  # pre-load a project
+    python3 run.py parse ~/my-project      # parse only, no server
+    python3 run.py test                    # run test suite
 """
 
 import argparse, os, subprocess, sys, threading, time, webbrowser
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
+if ROOT not in sys.path:
+    sys.path.insert(0, ROOT)
+from logsetup import setup_logging
+
+log = setup_logging()
 
 def _add_to_path():
     if ROOT not in sys.path:
@@ -37,8 +42,26 @@ def cmd_serve(args):
             projects.insert(0, {"path": project_root, "name": name})
             _save_projects(projects)
             print(f"[s-ide] Project registered: {project_root}")
+            log.info("project registered: %s", project_root)
+
+        from parser.project_parser import parse_project
+        log.info("parse invoked (--project): %s", project_root)
+        print(f"[s-ide] Pre-loading project: {project_root}")
+        try:
+            graph = parse_project(project_root)
+            gd = graph.to_dict()
+            m = gd["meta"]
+            print(f"[s-ide] {m['totalFiles']} nodes, {m['totalEdges']} edges "
+                  f"({m['parseTime']} ms)")
+            log.info("parse %s → %d nodes, %d edges (%s ms)",
+                     project_root, m["totalFiles"], m["totalEdges"], m["parseTime"])
+        except Exception as e:
+            print(f"[s-ide] WARNING: failed to pre-parse {project_root}: {e}",
+                  file=sys.stderr)
+            log.exception("parse %s → FAILED: %s", project_root, e)
 
     url = f"http://localhost:{args.port}"
+    log.info("server starting: %s", url)
     print(f"\n  S-IDE v0.6.0")
     print(f"  → {url}")
     if args.project:
@@ -61,12 +84,15 @@ def cmd_parse(args):
     root = os.path.abspath(args.project)
     if not os.path.isdir(root):
         print(f"[s-ide] ERROR: not a directory: {root}", file=sys.stderr); sys.exit(1)
+    log.info("parse invoked: %s", root)
     print(f"[s-ide] Parsing: {root}")
     graph = parse_project(root)
     gd = graph.to_dict()
     out = args.out or os.path.join(root, ".nodegraph.json")
     with open(out, "w") as f: json.dump(gd, f, indent=2)
     m = gd["meta"]
+    log.info("parse %s → %d nodes, %d edges (%s ms) → %s",
+             root, m["totalFiles"], m["totalEdges"], m["parseTime"], out)
     print(f"[s-ide] {m['totalFiles']} nodes, {m['totalEdges']} edges ({m['parseTime']}ms) → {out}")
 
 
@@ -86,11 +112,11 @@ def build_parser():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 examples:
-  python run.py                             start server, open browser
-  python run.py --project ~/my-project      pre-load a project
-  python run.py --port 7800 --no-browser    headless server
-  python run.py parse ~/my-project          parse only
-  python run.py test                        run test suite
+  python3 run.py                             start server, open browser
+  python3 run.py --project ~/my-project      pre-load a project
+  python3 run.py --port 7800 --no-browser    headless server
+  python3 run.py parse ~/my-project          parse only
+  python3 run.py test                        run test suite
 """)
     p.add_argument("--port", type=int, default=7700, help="Server port (default: 7700)")
     p.add_argument("--no-browser", action="store_true", help="Don't open browser on start")

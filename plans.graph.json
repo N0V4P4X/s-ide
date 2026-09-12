@@ -4,7 +4,7 @@
   "meta": {
     "name": "Vault plans graph",
     "description": "Tiers, stages, and blocking across every project and task note in the vault. Generated — never hand-edit.",
-    "generatedAt": "2026-08-11T01:45:42Z"
+    "generatedAt": "2026-09-12T05:06:26Z"
   },
   "nodes": [
     {
@@ -32,18 +32,6 @@
       "childIds": []
     },
     {
-      "id": "pro-cybergear",
-      "label": "CYBERGEAR",
-      "kind": "project",
-      "category": "unsorted",
-      "stage": "",
-      "detail": "CYBERGEAR",
-      "estimateHours": 0,
-      "tech": [],
-      "status": "active",
-      "childIds": []
-    },
-    {
       "id": "pro-daily-rhythm",
       "label": "daily rhythm",
       "kind": "project",
@@ -56,15 +44,15 @@
       "childIds": []
     },
     {
-      "id": "pro-homepage-redesign",
-      "label": "homepage redesign",
+      "id": "pro-littlebrother",
+      "label": "LittleBrother",
       "kind": "project",
       "category": "unsorted",
       "stage": "",
-      "detail": "homepage redesign",
+      "detail": "LittleBrother",
       "estimateHours": 0,
       "tech": [],
-      "status": "queued",
+      "status": "active",
       "childIds": []
     },
     {
@@ -80,30 +68,6 @@
       "childIds": []
     },
     {
-      "id": "pro-n3xu5-services",
-      "label": "n3xu5 — service roadmap",
-      "kind": "project",
-      "category": "unsorted",
-      "stage": "",
-      "detail": "n3xu5 — service roadmap",
-      "estimateHours": 0,
-      "tech": [],
-      "status": "queued",
-      "childIds": []
-    },
-    {
-      "id": "pro-n3xu5",
-      "label": "n3xu5",
-      "kind": "project",
-      "category": "unsorted",
-      "stage": "",
-      "detail": "n3xu5",
-      "estimateHours": 0,
-      "tech": [],
-      "status": "active",
-      "childIds": []
-    },
-    {
       "id": "pro-personal-data-archive",
       "label": "personal data archive",
       "kind": "project",
@@ -113,18 +77,6 @@
       "estimateHours": 0,
       "tech": [],
       "status": "queued",
-      "childIds": []
-    },
-    {
-      "id": "pro-s-ide",
-      "label": "S.I.D.E.",
-      "kind": "project",
-      "category": "unsorted",
-      "stage": "",
-      "detail": "S.I.D.E.",
-      "estimateHours": 0,
-      "tech": [],
-      "status": "active",
       "childIds": []
     },
     {
@@ -403,11 +355,6 @@
     {
       "from": "pro-savug-site",
       "to": "tas-register-savug-art-domain",
-      "type": "schedules"
-    },
-    {
-      "from": "pro-n3xu5-services",
-      "to": "tas-stand-up-an-owned-git-remote",
       "type": "schedules"
     }
   ]
